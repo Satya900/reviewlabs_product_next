@@ -1,0 +1,78 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { requireCreator } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { env } from "@/lib/env";
+import { paiseToRupeesString } from "@/lib/money";
+import { Badge, Notice, Panel, buttonClass } from "@/components/ui";
+import type { PageField, PageFile, PaymentPage } from "@/lib/types";
+import { PageDetailsForm } from "./page-details-form";
+import { FieldsEditor } from "./fields-editor";
+import { FilesManager } from "./files-manager";
+import { DeletePageButton } from "./delete-page-button";
+import { TrackingPanel } from "./tracking-panel";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export default async function EditPage({ params }: PageProps<"/dashboard/pages/[id]">) {
+  const { id } = await params;
+  const profile = await requireCreator();
+  const supabase = await createClient();
+
+  const { data: page } = await supabase.from("payment_pages").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle<PaymentPage>();
+  if (!page) notFound();
+  const admin = createAdminClient();
+  const [{ data: fields }, { data: files }, { data: ownPixel }, { data: accountPixel }] = await Promise.all([
+    supabase.from("page_fields").select("*").eq("page_id", id).order("position"),
+    supabase.from("page_files").select("*").eq("page_id", id).order("created_at"),
+    // Tokens are never selected here; only whether tracking is set up.
+    admin.from("page_pixel_settings").select("pixel_id, test_event_code").eq("page_id", id).maybeSingle(),
+    admin.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle(),
+  ]);
+  const accountPixelId = accountPixel?.pixel_id && accountPixel.capi_token_encrypted ? accountPixel.pixel_id : null;
+  const publicUrl = `${env.appUrl()}/p/${page.slug}`;
+
+  return (
+    <>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <Link href="/dashboard/pages" className="link text-[14px]">← Back to pages</Link>
+          <h1 className="display flex flex-wrap items-center gap-3 text-[32px]">{page.title} <Badge status={page.status} /></h1>
+        </div>
+        {page.status === "live" && (
+          <a href={publicUrl} target="_blank" className={buttonClass.secondary}>View live page</a>
+        )}
+      </div>
+      {page.status === "live" && (
+        <Notice tone="good">
+          Share this link: <span className="num select-all break-all">{publicUrl}</span>
+        </Notice>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <Panel title="Page details">
+          <PageDetailsForm creatorId={profile.id} appUrl={env.appUrl()} page={{ ...page, price: paiseToRupeesString(page.amount_paise) }} />
+        </Panel>
+        <div className="space-y-6">
+          <Panel title="Files buyers receive">
+            <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment.</p>
+            <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
+          </Panel>
+          <Panel title="Meta tracking">
+            <TrackingPanel
+              pageId={page.id}
+              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
+              accountPixelId={accountPixelId}
+            />
+          </Panel>
+          <Panel title="Checkout questions">
+            <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>
+            <FieldsEditor pageId={page.id} fields={(fields ?? []) as PageField[]} />
+          </Panel>
+          <Panel title="Delete page">
+            <DeletePageButton pageId={page.id} />
+          </Panel>
+        </div>
+      </div>
+    </>
+  );
+}
