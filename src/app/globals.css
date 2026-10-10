@@ -87,6 +87,36 @@
   }
 }
 
+/* Product descriptions: same styles in the editor, the preview and the live page. */
+.rich-text {
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.rich-text > * + * { margin-top: 0.85em; }
+.rich-text h2 { font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; margin-top: 1.2em; }
+.rich-text h3 { font-size: 22px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; margin-top: 1.1em; }
+.rich-text h4 { font-size: 18px; line-height: 1.3; font-weight: 600; margin-top: 1em; }
+.rich-text > :first-child { margin-top: 0; }
+.rich-text a { color: var(--color-primary); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.rich-text ul { list-style: disc; padding-left: 1.4em; }
+.rich-text ol { list-style: decimal; padding-left: 1.4em; }
+.rich-text li + li { margin-top: 0.3em; }
+.rich-text li > p { margin: 0; }
+.rich-text blockquote { border-left: 3px solid var(--color-primary); padding: 0.2em 0 0.2em 1em; color: var(--color-body); font-style: italic; }
+.rich-text hr { border: 0; border-top: 1px solid var(--color-hairline); margin: 1.6em 0; }
+.rich-text img { display: block; max-width: 100%; height: auto; border-radius: 16px; margin-left: auto; margin-right: auto; }
+.rich-text span[style*="background-color"] { border-radius: 4px; padding: 0.05em 0.2em; }
+.rich-text .ProseMirror-selectednode { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 16px; }
+.rich-text p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted-soft);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

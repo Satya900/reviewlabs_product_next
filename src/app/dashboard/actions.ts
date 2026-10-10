@@ -12,6 +12,7 @@ import { env } from "@/lib/env";
 import { sendMetaEvent } from "@/lib/meta";
 import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
 import { hasCreatorPlan } from "@/lib/plans";
+import { htmlToText, sanitizeDescription } from "@/lib/rich-text";
 import { rupeesToPaise } from "@/lib/money";
 
 export type ActionState = { error?: string; ok?: string } | null;
@@ -49,7 +50,7 @@ const pageSchema = z.object({
   id: z.uuid(),
   title: z.string().trim().min(1, "Title is required").max(200),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])$/, "Slug: 3-60 chars, lowercase letters, numbers and hyphens"),
-  description: z.string().max(10000),
+  description_html: z.string().max(200000, "The description is too long"),
   price: z.string(),
   button_label: z.string().trim().min(1).max(40),
   thank_you_message: z.string().trim().max(2000),
@@ -73,7 +74,9 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
     .update({
       title: input.title,
       slug: input.slug,
-      description: input.description,
+      // Clean the editor HTML before storing; keep a plain-text copy for SEO and emails.
+      description_html: sanitizeDescription(input.description_html),
+      description: htmlToText(input.description_html).slice(0, 10000),
       amount_paise: amount,
       button_label: input.button_label,
       thank_you_message: input.thank_you_message || "Thank you for your purchase!",

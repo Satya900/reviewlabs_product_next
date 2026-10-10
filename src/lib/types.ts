@@ -8,6 +8,7 @@ export type PaymentPage = {
   slug: string;
   title: string;
   description: string;
+  description_html: string;
   cover_image_url: string | null;
   amount_paise: number;
   currency: "INR";

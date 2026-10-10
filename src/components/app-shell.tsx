@@ -21,7 +21,7 @@ export function AppShell({ label, nav, email, children }: { label: string; nav: 
           <span className="truncate text-[13px] text-body">{email}</span>
           <form action="/auth/signout" method="post"><button className="link text-[14px]">Sign out</button></form>
         </div>
-        <main className="mx-auto max-w-[1120px] space-y-6 p-5 md:p-10">{children}</main>
+        <main className="mx-auto max-w-[1360px] space-y-6 p-5 md:p-10">{children}</main>
       </div>
     </div>
   );

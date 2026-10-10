@@ -50,35 +50,36 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         </Notice>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <Panel title="Page details">
-          <PageDetailsForm creatorId={profile.id} appUrl={env.appUrl()} page={{ ...page, price: paiseToRupeesString(page.amount_paise) }} />
+      <PageDetailsForm
+        creatorId={profile.id}
+        appUrl={env.appUrl()}
+        page={{ ...page, price: paiseToRupeesString(page.amount_paise) }}
+        files={((files ?? []) as PageFile[]).map((f) => ({ file_name: f.file_name, size_bytes: f.size_bytes }))}
+        fields={(fields ?? []) as PageField[]}
+      >
+        <Panel title="Files buyers receive">
+          <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment.</p>
+          <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
         </Panel>
-        <div className="space-y-6">
-          <Panel title="Files buyers receive">
-            <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment.</p>
-            <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
-          </Panel>
-          <Panel title="Meta tracking">
-            {hasCreatorPlan(profile) ? (
-              <TrackingPanel
-                pageId={page.id}
-                own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
-                accountPixelId={accountPixelId}
-              />
-            ) : (
-              <UpgradeCard feature="meta" compact />
-            )}
-          </Panel>
-          <Panel title="Checkout questions">
-            <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>
-            <FieldsEditor pageId={page.id} fields={(fields ?? []) as PageField[]} />
-          </Panel>
-          <Panel title="Delete page">
-            <DeletePageButton pageId={page.id} />
-          </Panel>
-        </div>
-      </div>
+        <Panel title="Checkout questions">
+          <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>
+          <FieldsEditor pageId={page.id} fields={(fields ?? []) as PageField[]} />
+        </Panel>
+        <Panel title="Meta tracking">
+          {hasCreatorPlan(profile) ? (
+            <TrackingPanel
+              pageId={page.id}
+              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
+              accountPixelId={accountPixelId}
+            />
+          ) : (
+            <UpgradeCard feature="meta" compact />
+          )}
+        </Panel>
+        <Panel title="Delete page">
+          <DeletePageButton pageId={page.id} />
+        </Panel>
+      </PageDetailsForm>
     </>
   );
 }

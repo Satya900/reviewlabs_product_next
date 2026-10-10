@@ -11,6 +11,8 @@ type Props = {
   page: { id: string; slug: string; title: string; amountPaise: number; currency: string; buttonLabel: string };
   fields: CheckoutField[];
   pixelId: string | null;
+  // Editor preview: looks identical but can't take payments.
+  preview?: boolean;
 };
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -33,7 +35,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function CheckoutForm({ page, fields, pixelId }: Props) {
+export function CheckoutForm({ page, fields, pixelId, preview }: Props) {
   const router = useRouter();
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -63,6 +65,7 @@ export function CheckoutForm({ page, fields, pixelId }: Props) {
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (preview) return;
     setBusy(true);
     setError(null);
 
@@ -123,6 +126,7 @@ export function CheckoutForm({ page, fields, pixelId }: Props) {
       <p className="text-[20px] font-semibold">Checkout</p>
       <p className="mt-1 text-[14px] text-muted">Your files arrive by email right after payment.</p>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <fieldset disabled={preview} className="contents">
         <Field label="Full name">
           <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} className={inputClass} autoComplete="name" />
         </Field>
@@ -185,6 +189,8 @@ export function CheckoutForm({ page, fields, pixelId }: Props) {
         <Button type="submit" variant="hero" className="w-full" disabled={busy}>
           {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
         </Button>
+        </fieldset>
+        {preview && <p className="text-center text-[12px] text-muted">Preview only. Checkout works on your live page.</p>}
       </form>
     </div>
   );
