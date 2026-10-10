@@ -13,7 +13,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Payment, dashboard and download pages are all per-request, so we keep
   // the classic dynamic rendering model instead of Cache Components.
-  serverExternalPackages: ["razorpay"],
+  serverExternalPackages: ["razorpay", "sharp"],
   // Lets the dev server answer through a Cloudflare quick tunnel (HTTPS testing). Ignored in production.
   allowedDevOrigins: ["*.trycloudflare.com"],
   poweredByHeader: false,

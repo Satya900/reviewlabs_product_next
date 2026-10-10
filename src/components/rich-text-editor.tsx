@@ -217,10 +217,64 @@ function Toolbar({ editor, uploading, onPickImage }: { editor: Editor; uploading
   );
 }
 
-export function RichTextEditor({ value, onChange, creatorId, placeholder }: { value: string; onChange: (html: string) => void; creatorId: string; placeholder?: string }) {
+type EditorProps = {
+  value: string;
+  onChange: (html: string) => void;
+  creatorId: string;
+  placeholder?: string;
+  // Tells the parent when images are still uploading, so it can hold off saving.
+  onBusyChange?: (busy: boolean) => void;
+};
+
+export function RichTextEditor({ value, onChange, creatorId, placeholder, onBusyChange }: EditorProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [uploading, setUploading] = useState(0);
+  const importing = useRef(new Set<string>());
+
+  // Images pasted or dragged in from other websites are copied into the
+  // creator's storage by the server, then swapped in place of the original link.
+  function importExternalImages(ed: Editor) {
+    const found = new Set<string>();
+    ed.state.doc.descendants((node) => {
+      const src = node.type.name === "image" ? (node.attrs.src as string | undefined) : undefined;
+      if (src && /^https?:\/\//.test(src) && !isAllowedImageSrc(src) && !importing.current.has(src)) found.add(src);
+    });
+    for (const src of found) {
+      importing.current.add(src);
+      setUploading((n) => n + 1);
+      void (async () => {
+        let replacement: string | null = null;
+        try {
+          const res = await fetch("/api/media/import", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url: src }) });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.url) replacement = data.url;
+          else setUploadError(data.error ? `One image couldn't be copied: ${data.error}` : "One image couldn't be copied.");
+        } catch {
+          setUploadError("One image couldn't be copied. Check your connection.");
+        } finally {
+          replaceImageSrc(ed, src, replacement);
+          importing.current.delete(src);
+          setUploading((n) => n - 1);
+        }
+      })();
+    }
+  }
+
+  // Points every image using `from` at `to`, or removes them if the copy failed.
+  function replaceImageSrc(ed: Editor, from: string, to: string | null) {
+    if (ed.isDestroyed) return;
+    const hits: { pos: number; size: number; attrs: Record<string, unknown> }[] = [];
+    ed.state.doc.descendants((node, pos) => {
+      if (node.type.name === "image" && node.attrs.src === from) hits.push({ pos, size: node.nodeSize, attrs: node.attrs });
+    });
+    if (!hits.length) return;
+    const tr = ed.state.tr;
+    for (const hit of hits.reverse()) {
+      if (to) tr.setNodeMarkup(hit.pos, undefined, { ...hit.attrs, src: to });
+      else tr.delete(hit.pos, hit.pos + hit.size);
+    }
+    ed.view.dispatch(tr);
+  }
 
   // Uploads image files and inserts them (at the drop point, or at the cursor).
   async function insertImages(files: File[], editorRef: Editor | null, at?: number) {
@@ -281,27 +335,24 @@ export function RichTextEditor({ value, onChange, creatorId, placeholder }: { va
         void insertImages(files, editorRef.current, pos);
         return true;
       },
-      // Images copied from other websites can't be shown live, so drop them on paste.
-      transformPastedHTML: (html) => {
-        let removed = 0;
-        const cleaned = html.replace(/<img\b[^>]*>/gi, (tag) => {
-          const src = /\ssrc=["']([^"']+)["']/i.exec(tag)?.[1];
-          if (isAllowedImageSrc(src)) return tag;
-          removed++;
-          return "";
-        });
-        setNotice(removed ? "Images copied from other websites can't be used. Add them with the image button, or paste or drop the image file itself." : null);
-        return cleaned;
-      },
     },
-    onUpdate: ({ editor: e }) => onChange(e.isEmpty ? "" : e.getHTML()),
+    onUpdate: ({ editor: e }) => {
+      onChange(e.isEmpty ? "" : e.getHTML());
+      importRef.current(e);
+    },
   });
 
-  // Lets the paste/drop handlers (created once) reach the live editor instance.
+  // Lets handlers created once (paste, drop, update) reach the latest values.
   const editorRef = useRef<Editor | null>(null);
+  const importRef = useRef(importExternalImages);
   useEffect(() => {
     editorRef.current = editor;
-  }, [editor]);
+    importRef.current = importExternalImages;
+  });
+
+  useEffect(() => {
+    onBusyChange?.(uploading > 0);
+  }, [uploading, onBusyChange]);
 
   // Keep the editor in sync if the saved value changes from outside (e.g. after save).
   useEffect(() => {
@@ -320,12 +371,7 @@ export function RichTextEditor({ value, onChange, creatorId, placeholder }: { va
       <EditorContent editor={editor} />
       {uploading > 0 && <p className="px-4 pb-3 text-[13px] text-muted">Uploading image…</p>}
       {uploadError && <p className="px-4 pb-3 text-[13px] text-down">{uploadError}</p>}
-      {notice && (
-        <p className="flex items-start justify-between gap-3 px-4 pb-3 text-[13px] text-body">
-          <span>{notice}</span>
-          <button type="button" onClick={() => setNotice(null)} className="link shrink-0 text-[13px]">Dismiss</button>
-        </p>
-      )}
+
     </div>
   );
 }

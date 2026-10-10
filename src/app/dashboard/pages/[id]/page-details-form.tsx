@@ -57,6 +57,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, childr
     return result;
   }, null);
   const [uploading, setUploading] = useState(false);
+  const [editorBusy, setEditorBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [mobilePreview, setMobilePreview] = useState(false);
 
@@ -136,7 +137,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, childr
 
             <div className="space-y-1.5">
               <span className="block text-[14px] font-semibold">Description</span>
-              <RichTextEditor value={draft.description_html} onChange={(html) => set("description_html", html)} creatorId={creatorId} />
+              <RichTextEditor value={draft.description_html} onChange={(html) => set("description_html", html)} creatorId={creatorId} onBusyChange={setEditorBusy} />
               <span className="block text-[13px] text-muted">Format text, add headings, lists, links and images. Images are compressed automatically.</span>
             </div>
 
@@ -163,7 +164,9 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, childr
             </Field>
 
             <div className="sticky bottom-0 -mx-6 flex flex-wrap items-center gap-3 border-t border-hairline bg-canvas/95 px-6 py-4 backdrop-blur">
-              <Button type="submit" disabled={pending || uploading || !dirty}>{pending ? "Saving" : dirty ? "Save changes" : "Saved"}</Button>
+              <Button type="submit" disabled={pending || uploading || editorBusy || !dirty}>
+                {pending ? "Saving" : editorBusy ? "Uploading images" : dirty ? "Save changes" : "Saved"}
+              </Button>
               {dirty && (
                 <button type="button" onClick={() => setDraft(JSON.parse(saved))} className="link text-[14px]">Discard</button>
               )}
