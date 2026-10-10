@@ -14,8 +14,8 @@ export default function Contact() {
             <a href={`mailto:${site.supportEmail}`} className="mt-2 block break-all text-[20px] font-semibold">{site.supportEmail}</a>
             <p className="mt-4 text-[14px] text-on-dark-soft">Monday to Saturday, 10 am to 6 pm IST.</p>
           </div>
-          <FeatureCard icon="spark" title="Become a creator">
-            Send a link to your Instagram, YouTube or website and a line about what you want to sell. We will invite the email you write from.
+          <FeatureCard icon="spark" title="Start selling">
+            Anyone can sign up. Create a free account at reviewlabs.space/signup and write to us if you get stuck setting up.
           </FeatureCard>
           <FeatureCard icon="mail" title="Help with an order">
             Include the order ID from your receipt email. For refunds, see our refund policy first; most requests are sorted the same day.

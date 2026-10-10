@@ -25,6 +25,15 @@ export function verifyCheckoutSignature(orderId: string, paymentId: string, sign
   return safeEqualHex(expected, signature);
 }
 
+// Subscription checkout signature: HMAC_SHA256(payment_id + "|" + subscription_id, key_secret)
+export function verifySubscriptionSignature(paymentId: string, subscriptionId: string, signature: string): boolean {
+  const expected = crypto
+    .createHmac("sha256", env.razorpayKeySecret())
+    .update(`${paymentId}|${subscriptionId}`)
+    .digest("hex");
+  return safeEqualHex(expected, signature);
+}
+
 // Webhook signature: HMAC_SHA256(raw body, webhook secret)
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {
   const expected = crypto.createHmac("sha256", env.razorpayWebhookSecret()).update(rawBody).digest("hex");

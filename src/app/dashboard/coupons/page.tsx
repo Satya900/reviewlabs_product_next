@@ -4,6 +4,8 @@ import { formatPaise } from "@/lib/money";
 import { Badge, EmptyState, PageTitle, Panel, tableClass } from "@/components/ui";
 import type { Coupon } from "@/lib/coupons";
 import { CouponActions, CouponForm } from "./coupon-forms";
+import { hasCreatorPlan } from "@/lib/plans";
+import { UpgradeCard } from "@/components/upgrade-card";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
 
@@ -17,6 +19,14 @@ function currentTime() {
 
 export default async function CouponsPage() {
   const profile = await requireCreator();
+  if (!hasCreatorPlan(profile)) {
+    return (
+      <>
+        <PageTitle>Coupons</PageTitle>
+        <UpgradeCard feature="coupons" />
+      </>
+    );
+  }
   const supabase = await createClient();
   const [{ data: coupons }, { data: pages }] = await Promise.all([
     supabase.from("coupons").select("*").eq("creator_id", profile.id).order("created_at", { ascending: false }),

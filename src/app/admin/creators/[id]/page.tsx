@@ -5,7 +5,9 @@ import { formatPaise } from "@/lib/money";
 import { PageTitle, Panel, Stat } from "@/components/ui";
 import { LedgerTable } from "@/components/ledger-table";
 import type { LedgerEntry } from "@/lib/types";
-import { AdjustmentForm, PayoutForm, SubscriptionForm } from "../../forms";
+import { AdjustmentForm, PayoutForm, PlanForm } from "../../forms";
+import { hasCreatorPlan } from "@/lib/plans";
+import { Badge } from "@/components/ui";
 
 export default async function AdminCreator({ params }: PageProps<"/admin/creators/[id]">) {
   const { id } = await params;
@@ -39,8 +41,13 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
           </dl>
           <PayoutForm creatorId={p.id} suggestedPaise={owed} />
         </Panel>
-        <Panel title="Monthly plan">
-          <SubscriptionForm creatorId={p.id} active={p.subscription_active} planPaise={p.plan_amount_paise} />
+        <Panel title="Plan" aside={<Badge status={hasCreatorPlan(p) ? "live" : "archived"} label={p.is_admin ? "Admin" : hasCreatorPlan(p) ? "Creator" : "Free"} />}>
+          <p className="mb-4 text-[14px] text-body">
+            Status: {p.plan_status}
+            {p.plan_current_period_end ? `, until ${new Date(p.plan_current_period_end).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}
+            {p.razorpay_subscription_id ? ` · ${p.razorpay_subscription_id}` : ""}
+          </p>
+          {!p.is_admin && <PlanForm creatorId={p.id} onPaidPlan={hasCreatorPlan(p)} hasSubscription={Boolean(p.razorpay_subscription_id)} />}
         </Panel>
         <Panel title="Manual adjustment">
           <AdjustmentForm creatorId={p.id} />

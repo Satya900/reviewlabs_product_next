@@ -16,7 +16,7 @@ export default function HowItWorks() {
         <div className="mt-10">
           <Steps
             items={[
-              { title: "Get your invite", body: "Write to us with a link to your profile and what you want to sell. We add your email and you log in with a one-time link." },
+              { title: "Create your account", body: "Sign up with your email and a password, then click the link we email you to verify it. It's free." },
               { title: "Make your page", body: "Add a title, price, description, cover and the file. Turn it live when it looks right." },
               { title: "Share and get paid", body: "Post the link anywhere. Orders, analytics and your balance update on their own." },
             ]}
@@ -50,7 +50,7 @@ export default function HowItWorks() {
         </div>
       </Section>
 
-      <CtaBand title="Want to sell your first file this week?" primary={{ href: "/contact", label: "Get an invite" }} secondary={{ href: "/features", label: "See all features" }} />
+      <CtaBand title="Want to sell your first file this week?" primary={{ href: "/signup", label: "Start for free" }} secondary={{ href: "/features", label: "See all features" }} />
     </>
   );
 }

@@ -2,67 +2,72 @@ import Link from "next/link";
 import { CheckList, CtaBand, Faq, PageHero, Section, SectionHead } from "@/components/marketing";
 import { buttonClass, cx, tableClass } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
-import { site } from "@/lib/site";
+import { COMMISSION_PERCENT, CREATOR_PRICE_PAISE, creatorFeatures, freeFeatures } from "@/lib/plans";
 
 export const metadata = { title: "Pricing" };
 
-const plan = formatPaise(site.creatorPlanPaise).replace(".00", "");
+const plan = formatPaise(CREATOR_PRICE_PAISE).replace(".00", "");
 
 function example(pricePaise: number) {
-  const fee = Math.round(pricePaise * 0.02 * 1.18);
-  return { price: pricePaise, fee, keep: pricePaise - fee };
+  const gateway = Math.round(pricePaise * 0.02 * 1.18);
+  const platform = Math.round((pricePaise * COMMISSION_PERCENT) / 100);
+  return { price: pricePaise, gateway, platform, keep: pricePaise - gateway - platform };
 }
 
 export default function Pricing() {
   const rows = [9900, 29900, 49900, 99900].map(example);
   return (
     <>
-      <PageHero kicker="Pricing" title="One plan. No commission." sub={`${plan} a month, taken from your earnings. Every rupee of every sale is yours, minus Razorpay's gateway fee.`} />
+      <PageHero
+        kicker="Pricing"
+        title="Start free. Upgrade when you grow."
+        sub={`Sell your first product on the Free plan. Move to Creator for ${plan} a month when you want more pages and the growth tools. Both plans have a simple ${COMMISSION_PERCENT}% fee per sale.`}
+      />
 
       <Section className="pt-4 md:pt-8">
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-hairline p-8 sm:p-10">
+            <p className="text-[18px] font-semibold">Free</p>
+            <p className="mt-2 flex items-baseline gap-2">
+              <span className="display text-[64px]">₹0</span>
+              <span className="text-[16px] text-body">/ month</span>
+            </p>
+            <p className="text-[15px] text-body">{COMMISSION_PERCENT}% platform fee per sale</p>
+            <Link href="/signup" className={cx(buttonClass.secondary, "mt-8 h-14 w-full px-8 sm:w-auto")}>Start for free</Link>
+            <div className="mt-8"><CheckList items={freeFeatures} /></div>
+          </div>
           <div className="relative overflow-hidden rounded-3xl bg-dark p-8 text-white sm:p-10">
             <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/40 blur-[100px]" />
             <div className="relative">
-              <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Everything included</span>
-              <p className="mt-6 text-[18px] font-semibold">Creator plan</p>
+              <div className="flex items-center gap-3">
+                <p className="text-[18px] font-semibold">Creator</p>
+                <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Most popular</span>
+              </div>
               <p className="mt-2 flex items-baseline gap-2">
-                <span className="display text-[72px]">{plan}</span>
+                <span className="display text-[64px]">{plan}</span>
                 <span className="text-[16px] text-on-dark-soft">/ month</span>
               </p>
-              <p className="text-[15px] text-on-dark-soft">No card to add. Cancel by writing to us.</p>
-              <Link href="/contact" className={cx(buttonClass.hero, "mt-8 w-full sm:w-auto")}>Get an invite</Link>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-hairline p-8 sm:p-10">
-            <p className="text-[18px] font-semibold">What you get</p>
-            <div className="mt-6">
-              <CheckList
-                items={[
-                  "Unlimited payment pages and unlimited sales",
-                  "₹0 commission on every sale",
-                  "Instant delivery with lifetime access for buyers",
-                  "UPI, cards and netbanking through Razorpay",
-                  "Coupons, custom checkout questions",
-                  "Meta Pixel and Conversions API",
-                  "Page analytics, orders, ledger and CSV export",
-                  "Payouts to UPI or bank with UTR records",
-                ]}
-              />
+              <p className="text-[15px] text-on-dark-soft">{COMMISSION_PERCENT}% platform fee per sale · UPI autopay or card · cancel any time</p>
+              <Link href="/signup" className={cx(buttonClass.hero, "mt-8 w-full sm:w-auto")}>Start free, upgrade anytime</Link>
+              <div className="mt-8"><CheckList dark items={["Everything in Free", ...creatorFeatures]} /></div>
             </div>
           </div>
         </div>
       </Section>
 
       <Section tone="soft">
-        <SectionHead kicker="The maths" title="What you keep from each sale." sub="Razorpay's fee is about 2% plus 18% GST on the fee for most UPI and Indian card payments. We add nothing on top." />
+        <SectionHead
+          kicker="The maths"
+          title="What you keep from each sale."
+          sub={`Two fees per sale: Razorpay's gateway fee (about 2% plus GST on the fee for most UPI and Indian cards) and our ${COMMISSION_PERCENT}% platform fee. Nothing else.`}
+        />
         <div className={cx(tableClass.wrap, "mt-10")}>
           <table className={tableClass.table}>
             <thead>
               <tr>
                 <th className={tableClass.th}>Price</th>
                 <th className={`${tableClass.th} text-right`}>Razorpay fee</th>
-                <th className={`${tableClass.th} text-right`}>Our commission</th>
+                <th className={`${tableClass.th} text-right`}>Platform fee ({COMMISSION_PERCENT}%)</th>
                 <th className={`${tableClass.th} text-right`}>You keep</th>
               </tr>
             </thead>
@@ -70,15 +75,15 @@ export default function Pricing() {
               {rows.map((r) => (
                 <tr key={r.price}>
                   <td className={`${tableClass.td} num`}>{formatPaise(r.price)}</td>
-                  <td className={`${tableClass.td} num text-right text-body`}>−{formatPaise(r.fee)}</td>
-                  <td className={`${tableClass.td} num text-right text-body`}>{formatPaise(0)}</td>
+                  <td className={`${tableClass.td} num text-right text-body`}>−{formatPaise(r.gateway)}</td>
+                  <td className={`${tableClass.td} num text-right text-body`}>−{formatPaise(r.platform)}</td>
                   <td className={`${tableClass.td} num text-right text-up`}>{formatPaise(r.keep)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-[13px] text-muted">Approximate. The exact fee for each sale is shown in your ledger. The {plan} plan fee is taken once a month, not per sale.</p>
+        <p className="mt-4 text-[13px] text-muted">Gateway fees are approximate and set by Razorpay. The exact fees for each sale are shown in your ledger. The Creator subscription is billed separately and never taken from your earnings.</p>
       </Section>
 
       <Section>
@@ -86,17 +91,18 @@ export default function Pricing() {
           <SectionHead kicker="Questions" title="Pricing, answered." />
           <Faq
             items={[
-              { q: "Do you take a percentage of my sales?", a: `No. You pay ${plan} a month and nothing per sale. The only per-sale cost is Razorpay's gateway fee.` },
-              { q: "How do I pay the monthly fee?", a: `We take ${plan} from your earnings balance at the start of each month. You never enter a card.` },
-              { q: "What if I make no sales in a month?", a: "The fee still applies and your balance goes below zero. We settle it from your next sales. If you want to stop, write to us and we will close your account." },
-              { q: "Who pays for refunds?", a: "Refunds come out of your balance. Razorpay keeps its gateway fee on refunded payments, so that fee stays a cost." },
-              { q: "Are there setup fees or hidden charges?", a: "No setup fee, no payout fee from our side, and no limit on pages or sales." },
+              { q: "Is the Free plan really free?", a: `Yes. There's no monthly charge. You pay only the ${COMMISSION_PERCENT}% platform fee and Razorpay's gateway fee when you make a sale.` },
+              { q: "What's the difference between Free and Creator?", a: "Free gives you one product page with checkout, delivery, orders and payouts. Creator adds unlimited pages, coupons, page analytics, Meta Pixel and Conversions API, and CSV export." },
+              { q: `Why is there a ${COMMISSION_PERCENT}% fee on both plans?`, a: "It covers delivery, storage, emails and support for every sale. It's the same on both plans, so upgrading is only about the extra features." },
+              { q: "How do I pay for Creator?", a: "Through Razorpay with UPI autopay or a card. It renews monthly and you can cancel any time from Plan and billing." },
+              { q: "What happens if I cancel?", a: "You keep Creator until the end of the month you paid for. Then you move to Free: your oldest live page stays live and the others become drafts. Nothing is deleted, and upgrading again lets you publish them." },
+              { q: "Who pays for refunds?", a: `Refunds come out of your balance, and we return the ${COMMISSION_PERCENT}% platform fee on the refunded amount. Razorpay keeps its gateway fee on refunded payments.` },
             ]}
           />
         </div>
       </Section>
 
-      <CtaBand title="Keep what you earn." primary={{ href: "/contact", label: "Get an invite" }} secondary={{ href: "/how-it-works", label: "How it works" }} />
+      <CtaBand title="Put your first product online today." sub="Free to start. No card needed." primary={{ href: "/signup", label: "Start for free" }} secondary={{ href: "/features", label: "See features" }} />
     </>
   );
 }

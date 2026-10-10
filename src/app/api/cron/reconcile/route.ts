@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { isAuthorizedCron } from "@/lib/cron";
+import { fetchSubscription, syncSubscription } from "@/lib/billing";
 
 export const maxDuration = 60;
 
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   if (!isAuthorizedCron(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const admin = createAdminClient();
   const now = Date.now();
-  const summary = { checked: 0, recovered: 0, refundsSynced: 0, postPaymentRetried: 0, errors: 0 };
+  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, errors: 0 };
 
   // 1. Unpaid orders 10 minutes to 3 days old: ask Razorpay what happened.
   const { data: pending } = await admin
@@ -100,7 +101,31 @@ export async function GET(request: Request) {
     await runPostPaymentTasks(orderId);
   }
 
-  // 4. Housekeeping: rate-limit windows older than a day are useless.
+  // 4. Creator plans past their paid period (missed renewal or cancel webhook):
+  //    ask Razorpay for the real state.
+  const { data: lapsed } = await admin
+    .from("profiles")
+    .select("id, razorpay_subscription_id")
+    .eq("plan", "creator")
+    .eq("is_admin", false)
+    .lt("plan_current_period_end", new Date(now - 3600_000).toISOString())
+    .limit(50);
+  for (const p of lapsed ?? []) {
+    summary.plansChecked++;
+    try {
+      if (p.razorpay_subscription_id) {
+        await syncSubscription(await fetchSubscription(p.razorpay_subscription_id));
+      } else {
+        // A plan granted by an admin without a subscription has simply run out.
+        await admin.rpc("downgrade_to_free", { p_creator_id: p.id, p_status: "expired" });
+      }
+    } catch (e) {
+      summary.errors++;
+      console.error(`[reconcile] plan ${p.id}:`, e);
+    }
+  }
+
+  // 5. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return NextResponse.json(summary);

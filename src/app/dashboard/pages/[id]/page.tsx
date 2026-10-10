@@ -11,6 +11,8 @@ import { FieldsEditor } from "./fields-editor";
 import { FilesManager } from "./files-manager";
 import { DeletePageButton } from "./delete-page-button";
 import { TrackingPanel } from "./tracking-panel";
+import { hasCreatorPlan } from "@/lib/plans";
+import { UpgradeCard } from "@/components/upgrade-card";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function EditPage({ params }: PageProps<"/dashboard/pages/[id]">) {
@@ -58,11 +60,15 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
             <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
           </Panel>
           <Panel title="Meta tracking">
-            <TrackingPanel
-              pageId={page.id}
-              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
-              accountPixelId={accountPixelId}
-            />
+            {hasCreatorPlan(profile) ? (
+              <TrackingPanel
+                pageId={page.id}
+                own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
+                accountPixelId={accountPixelId}
+              />
+            ) : (
+              <UpgradeCard feature="meta" compact />
+            )}
           </Panel>
           <Panel title="Checkout questions">
             <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>

@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
 import { sendMetaEvent } from "@/lib/meta";
 import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
 import type { ActionState } from "../../actions";
+import { hasCreatorPlan } from "@/lib/plans";
 
 // RLS on payment_pages makes this return null for pages the creator doesn't own.
 async function ownedPage(pageId: string) {
@@ -29,6 +30,7 @@ export async function savePageTracking(_prev: ActionState, formData: FormData): 
   if (!pageId.success) return { error: "Invalid page" };
   const owned = await ownedPage(pageId.data);
   if (!owned) return { error: "Page not found" };
+  if (!hasCreatorPlan(owned.profile)) return { error: "Meta tracking is part of the Creator plan." };
 
   const parsed = pixelSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -74,6 +76,7 @@ export async function switchToAccountPixel(pageId: string): Promise<ActionState>
 export async function sendPageTestEvent(pageId: string): Promise<ActionState> {
   const owned = await ownedPage(pageId);
   if (!owned) return { error: "Page not found" };
+  if (!hasCreatorPlan(owned.profile)) return { error: "Meta tracking is part of the Creator plan." };
   const { data: settings } = await createAdminClient().from("page_pixel_settings").select("test_event_code").eq("page_id", pageId).maybeSingle();
   // Without the creator's test code this would land in their real data.
   if (!settings?.test_event_code) return { error: "Add a test event code first, so the test doesn't count as a real visit." };

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f7f7f7;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f7;padding:40px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #dee1e6;border-radius:24px;">
+            <tr>
+              <td style="padding:36px 36px 8px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td width="32" height="32" align="center" valign="middle" style="width:32px;height:32px;background:#0052ff;border-radius:16px;color:#ffffff;font-size:16px;font-weight:700;line-height:32px;">&#10003;</td>
+                    <td style="padding-left:10px;font-size:18px;font-weight:600;color:#0a0b0d;letter-spacing:-0.3px;">Reviewlabs</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 36px 0 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <h1 style="margin:0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;color:#0a0b0d;">Confirm your new email</h1>
+                <p style="margin:12px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">Click the button to confirm this address for your Reviewlabs account.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 36px 0 36px;">
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/dashboard/settings" style="display:inline-block;background:#0052ff;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:100px;">Confirm email</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 36px 36px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#7c828a;">
+                <p style="margin:0;">If you didn't ask to change your email, contact us straight away.</p>
+                <p style="margin:12px 0 0 0;">If the button doesn't work, copy this link into your browser:<br><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/dashboard/settings" style="color:#0052ff;word-break:break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/dashboard/settings</a></p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:20px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#a8acb3;">Reviewlabs is a product of Veyrn Labs. Questions? Write to <a href="mailto:satyabrata@veyrnlabs.com" style="color:#7c828a;">satyabrata@veyrnlabs.com</a>.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

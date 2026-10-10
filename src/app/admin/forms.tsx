@@ -1,19 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { addAdjustment, chargeSubscriptionsNow, recordPayout, refundOrder, updateSubscription } from "./actions";
+import { useActionState, useState, useTransition } from "react";
+import { addAdjustment, grantCreatorPlan, recordPayout, refundOrder, revokeCreatorPlan } from "./actions";
 import { Button, Field, FormMessage, inputClass } from "@/components/ui";
 import { paiseToRupeesString } from "@/lib/money";
-
-export function ChargeSubscriptionsButton() {
-  const [state, action, pending] = useActionState(chargeSubscriptionsNow, null);
-  return (
-    <form action={action} className="flex flex-col items-end gap-1">
-      <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Charging" : "Charge this month's plan fees"}</Button>
-      <FormMessage state={state} />
-    </form>
-  );
-}
 
 export function PayoutForm({ creatorId, suggestedPaise }: { creatorId: string; suggestedPaise: number }) {
   const [state, action, pending] = useActionState(recordPayout, null);
@@ -55,18 +45,37 @@ export function AdjustmentForm({ creatorId }: { creatorId: string }) {
   );
 }
 
-export function SubscriptionForm({ creatorId, active, planPaise }: { creatorId: string; active: boolean; planPaise: number }) {
-  const [state, action, pending] = useActionState(updateSubscription, null);
+export function PlanForm({ creatorId, onPaidPlan, hasSubscription }: { creatorId: string; onPaidPlan: boolean; hasSubscription: boolean }) {
+  const [state, action, pending] = useActionState(grantCreatorPlan, null);
+  const [revokeState, setRevokeState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [revoking, start] = useTransition();
   return (
-    <form action={action} className="space-y-3">
-      <input type="hidden" name="creator_id" value={creatorId} />
-      <Field label="Monthly plan (₹)"><input name="plan" defaultValue={paiseToRupeesString(planPaise)} className={inputClass} /></Field>
-      <label className="flex items-center gap-2 text-[13px]"><input type="checkbox" name="active" defaultChecked={active} /> Plan active</label>
-      <div className="flex items-center gap-3">
-        <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
-        <FormMessage state={state} />
-      </div>
-    </form>
+    <div className="space-y-4">
+      <form action={action} className="space-y-3">
+        <input type="hidden" name="creator_id" value={creatorId} />
+        <Field label="Grant Creator for (days)" hint="For partners or support cases. No Razorpay charge.">
+          <input name="days" defaultValue="30" inputMode="numeric" className={inputClass} />
+        </Field>
+        <div className="flex items-center gap-3">
+          <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Grant Creator"}</Button>
+          <FormMessage state={state} />
+        </div>
+      </form>
+      {onPaidPlan && (
+        <div className="space-y-2 border-t border-hairline pt-4">
+          {hasSubscription && <p className="text-[13px] text-muted">This only changes our records. Cancel the subscription in Razorpay too, or it keeps charging.</p>}
+          <Button
+            type="button"
+            variant="danger"
+            disabled={revoking}
+            onClick={() => { if (confirm("Move this creator to Free?")) start(async () => setRevokeState(await revokeCreatorPlan(creatorId))); }}
+          >
+            {revoking ? "Moving" : "Move to Free"}
+          </Button>
+          <FormMessage state={revokeState} />
+        </div>
+      )}
+    </div>
   );
 }
 

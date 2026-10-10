@@ -32,6 +32,7 @@ Follow these in order. Each step says where to do it and what to check.
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | **Live** key id (`rzp_live_…`), see step 5. Use the test key until Razorpay activates live mode. |
 | `RAZORPAY_KEY_SECRET` | **Live** key secret |
 | `RAZORPAY_WEBHOOK_SECRET` | A new random value, also entered in Razorpay's live webhook (step 5) |
+| `RAZORPAY_CREATOR_PLAN_ID` | The monthly Creator plan id from `node scripts/create-razorpay-plan.mjs`. Test and live mode each need their own plan. |
 | `RESEND_API_KEY` | A **new** Resend key (the old one was shared in chat, so rotate it) |
 | `EMAIL_FROM` | `Reviewlabs <no-reply@reviewlabs.space>` |
 | `META_GRAPH_VERSION` | `v24.0` |
@@ -57,7 +58,17 @@ Supabase → **Authentication → URL Configuration**:
 - **Site URL:** `https://reviewlabs.space`
 - **Redirect URLs:** add `https://reviewlabs.space/auth/callback`. Keep `http://localhost:3000/auth/callback` for local development.
 
-Already done earlier, nothing to change: custom SMTP through Resend, the branded email templates, and the email rate limit.
+Then **Authentication → Sign In / Providers → Email**:
+- **Allow new users to sign up:** on
+- **Confirm email:** on (users must verify before they can log in)
+- **Minimum password length:** 8
+
+And **Authentication → Emails → Templates**, paste from `supabase/templates/` (subjects are in its README):
+- **Confirm signup** → `confirm-signup.html`
+- **Reset password** → `reset-password.html`
+- **Change email address** → `change-email.html`
+
+Custom SMTP through Resend and the email rate limit were set up earlier.
 
 ---
 
@@ -73,7 +84,9 @@ Already done earlier, nothing to change: custom SMTP through Resend, the branded
 2. Once activated, switch the dashboard to **Live mode** and:
    - **Settings → API Keys →** generate live keys and put them in Vercel (`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
    - **Settings → Payment capture →** Automatic.
-   - **Settings → Webhooks → Add:** URL `https://reviewlabs.space/api/webhooks/razorpay`, the secret = `RAZORPAY_WEBHOOK_SECRET` from Vercel, and the events `payment.captured`, `payment.authorized`, `payment.failed`, `order.paid`, `refund.created`, `refund.processed`, `refund.failed`.
+   - **Settings → Webhooks → Add:** URL `https://reviewlabs.space/api/webhooks/razorpay`, the secret = `RAZORPAY_WEBHOOK_SECRET` from Vercel, and the events `payment.captured`, `payment.authorized`, `payment.failed`, `order.paid`, `refund.created`, `refund.processed`, `refund.failed`, plus the subscription events `subscription.authenticated`, `subscription.activated`, `subscription.charged`, `subscription.pending`, `subscription.halted`, `subscription.cancelled`, `subscription.completed`, `subscription.resumed`.
+   - **Creator plan:** with the live keys in your local `.env`, run `node scripts/create-razorpay-plan.mjs` and put the printed id in Vercel as `RAZORPAY_CREATOR_PLAN_ID`.
+   - **Subscriptions** must be enabled on your Razorpay account (Dashboard → Subscriptions). Ask Razorpay support if the menu isn't there.
    - Optional: **Settings → Branding →** upload `src/assets/logo-mark.svg` (as a PNG if it asks) so buyers see the logo in the payment popup.
 3. Vercel → **Deployments → Redeploy** so the new keys take effect.
 
@@ -83,7 +96,7 @@ Test-mode and live-mode webhooks are separate in Razorpay. Add the live one even
 
 ## 6. Fast recovery job (every 15 minutes)
 
-Vercel's free plan only runs crons daily (`vercel.json` reconciles once a day at 2 am IST and charges the ₹99 plan on the 1st).
+Vercel's free plan only runs crons daily (`vercel.json` reconciles once a day at 2 am IST).
 For 15-minute recovery of missed payments:
 1. Supabase → **Database → Extensions** → enable **pg_cron** and **pg_net**.
 2. Open `supabase/cron.sql`, replace `PASTE_CRON_SECRET_HERE` with the `CRON_SECRET` from Vercel, and run it in the SQL editor.
@@ -109,7 +122,7 @@ For 15-minute recovery of missed payments:
 
 ## Day-to-day after launch
 
-- **Invite creators:** Admin → Invites → add their email, then they log in at `/login`.
+- **New creators** sign up themselves at `/signup` and start on Free. Admin → a creator → **Grant Creator** gives a free period without a subscription.
 - **Payouts:** Admin → Creators → a creator → pay them by UPI or bank → **Record payout** with the UTR.
-- **Monthly plan fee:** charged automatically on the 1st. The Admin button does the same, and nobody is charged twice.
+- **Creator plan billing** runs through Razorpay Subscriptions. Renewals, failures and cancellations update accounts automatically, with the reconcile job as a safety net.
 - **Logs:** Vercel → Project → **Logs**. Payment problems show up there, and in the `webhook_events` and `meta_events` tables.

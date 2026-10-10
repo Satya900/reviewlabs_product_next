@@ -15,7 +15,7 @@ export default async function EarningsPage() {
 
   return (
     <>
-      <PageTitle sub={`Balance = sales, minus Razorpay fees, refunds, the ${formatPaise(profile.plan_amount_paise)} monthly plan and payouts already sent.`}>
+      <PageTitle sub={`Balance = sales, minus Razorpay's gateway fee, the ${profile.commission_bps / 100}% platform fee, refunds and payouts already sent.`}>
         Earnings
       </PageTitle>
       <div className="grid gap-4 sm:grid-cols-3">

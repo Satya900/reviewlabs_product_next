@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat, buttonClass, tableClass } from "@/components/ui";
 import { DayBars } from "@/components/day-bars";
+import { hasCreatorPlan } from "@/lib/plans";
+import { UpgradeCard } from "@/components/upgrade-card";
 
 const ranges = [7, 30, 90] as const;
 const istDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" });
@@ -18,6 +20,14 @@ const pct = (n: number, d: number) => (d > 0 ? `${((n / d) * 100).toFixed(1)}%` 
 
 export default async function AnalyticsPage({ searchParams }: PageProps<"/dashboard/analytics">) {
   const profile = await requireCreator();
+  if (!hasCreatorPlan(profile)) {
+    return (
+      <>
+        <PageTitle>Analytics</PageTitle>
+        <UpgradeCard feature="analytics" />
+      </>
+    );
+  }
   const { range } = await searchParams;
   const days = ranges.find((r) => String(r) === range) ?? 30;
   const dayKeys = dayRange(days);

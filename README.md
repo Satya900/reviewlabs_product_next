@@ -1,6 +1,6 @@
 # Reviewlabs: payment pages + transactions
 
-Creators sell digital files from a payment page. Buyers pay once with Razorpay and get lifetime access to their files by email. Money lands in the platform's Razorpay account. An append-only ledger tracks what each creator is owed, and the admin pays creators manually.
+Creators sell digital files from a payment page. Buyers pay once with Razorpay and get lifetime access to their files by email. Anyone can sign up (email and password, verified) and starts on the Free plan (one page); the Creator plan (₹99/month via Razorpay Subscriptions) unlocks unlimited pages, coupons, analytics, Meta tracking and CSV export. Every sale carries a 2% platform fee. Money lands in the platform's Razorpay account, an append-only ledger tracks what each creator is owed, and the admin pays creators manually.
 
 **Stack:** Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Razorpay · Meta Pixel + Conversions API · Resend
 
@@ -43,7 +43,7 @@ openssl rand -hex 32      # → CRON_SECRET
 
 ### 2. Supabase
 1. Create a project. Copy the URL, the **publishable** key and the **secret** key into `.env.local`.
-2. Open the SQL editor and run every file in `supabase/migrations/` in order (`0001` to `0005`). Together they create the tables, Row Level Security policies, money functions, storage buckets, invites, coupons, analytics and per-page pixels.
+2. Open the SQL editor and run every file in `supabase/migrations/` in order (`0001` to `0006`). Together they create the tables, Row Level Security policies, money functions, storage buckets, invites, coupons, analytics and per-page pixels.
 3. Go to Authentication → URL Configuration. Set the Site URL to your app URL and add `http://localhost:3000/auth/callback` (plus your production URL) to the Redirect URLs.
 4. Sign in once through `/login`, then make yourself the admin:
    ```sql

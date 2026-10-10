@@ -66,35 +66,31 @@ export async function addAdjustment(_prev: ActionState, formData: FormData): Pro
   return { ok: "Adjustment added" };
 }
 
-const subscriptionSchema = z.object({
-  creator_id: z.uuid(),
-  plan: z.string(),
-  active: z.literal("on").optional(),
-});
+const grantSchema = z.object({ creator_id: z.uuid(), days: z.coerce.number().int().min(1).max(3650) });
 
-export async function updateSubscription(_prev: ActionState, formData: FormData): Promise<ActionState> {
+// Gives a creator the Creator plan without a Razorpay subscription (comps, partners).
+export async function grantCreatorPlan(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
-  const parsed = subscriptionSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { error: "Invalid input" };
-  const plan = rupeesToPaise(parsed.data.plan);
-  if (plan === null) return { error: "Enter a valid plan amount" };
-
+  const parsed = grantSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Enter the number of days" };
+  const until = new Date(Date.now() + parsed.data.days * 86_400_000).toISOString();
   const { error } = await createAdminClient()
     .from("profiles")
-    .update({ subscription_active: parsed.data.active === "on", plan_amount_paise: plan })
+    .update({ plan: "creator", plan_status: "active", plan_current_period_end: until })
     .eq("id", parsed.data.creator_id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
-  return { ok: "Saved" };
+  revalidatePath("/admin");
+  return { ok: `Creator plan active until ${until.slice(0, 10)}` };
 }
 
-export async function chargeSubscriptionsNow(): Promise<ActionState> {
+export async function revokeCreatorPlan(creatorId: string): Promise<ActionState> {
   await requireAdmin();
-  const month = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit" }).format(new Date()).slice(0, 7);
-  const { data, error } = await createAdminClient().rpc("charge_subscriptions", { p_month: month });
+  const { error } = await createAdminClient().rpc("downgrade_to_free", { p_creator_id: creatorId, p_status: "cancelled" });
   if (error) return { error: error.message };
+  revalidatePath(`/admin/creators/${creatorId}`);
   revalidatePath("/admin");
-  return { ok: `Charged ${data} creator(s) for ${month} (already-charged creators are skipped)` };
+  return { ok: "Moved to Free. Pages beyond the oldest live one are now drafts." };
 }
 
 const refundSchema = z.object({

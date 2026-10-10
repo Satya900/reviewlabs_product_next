@@ -11,9 +11,17 @@ import { decrypt, encrypt } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import { sendMetaEvent } from "@/lib/meta";
 import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
+import { hasCreatorPlan } from "@/lib/plans";
 import { rupeesToPaise } from "@/lib/money";
 
 export type ActionState = { error?: string; ok?: string } | null;
+
+// Turns the database's plan-limit errors into something a creator can act on.
+function planLimitMessage(message: string): string | null {
+  if (message.includes("free_plan_page_limit")) return "The Free plan includes one product page. Upgrade to Creator in Plan and billing for unlimited pages.";
+  if (message.includes("free_plan_live_limit")) return "The Free plan can have one live page. Upgrade to Creator in Plan and billing to publish more.";
+  return null;
+}
 
 function slugify(input: string) {
   return input.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "page";
@@ -33,7 +41,7 @@ export async function createPage(_prev: ActionState, formData: FormData): Promis
     .insert({ creator_id: profile.id, title: title.slice(0, 200), slug, amount_paise: 9900 })
     .select("id")
     .single();
-  if (error) return { error: error.message };
+  if (error) return { error: planLimitMessage(error.message) ?? error.message };
   redirect(`/dashboard/pages/${data.id}`);
 }
 
@@ -73,7 +81,7 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
       cover_image_url: input.cover_image_url || null,
     })
     .eq("id", input.id);
-  if (error) return { error: error.code === "23505" ? "That slug is taken, try another" : error.message };
+  if (error) return { error: error.code === "23505" ? "That slug is taken, try another" : planLimitMessage(error.message) ?? error.message };
 
   revalidatePath(`/dashboard/pages/${input.id}`);
   revalidatePath("/dashboard/pages");
@@ -221,6 +229,7 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
 // connected creator gets browser and server events. Leaving both empty turns tracking off.
 export async function updatePixel(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const profile = await requireCreator();
+  if (!hasCreatorPlan(profile)) return { error: "Meta tracking is part of the Creator plan." };
   const parsed = pixelSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -263,6 +272,7 @@ export async function updatePixel(_prev: ActionState, formData: FormData): Promi
 
 export async function sendTestMetaEvent(): Promise<ActionState> {
   const profile = await requireCreator();
+  if (!hasCreatorPlan(profile)) return { error: "Meta tracking is part of the Creator plan." };
   // Without the creator's test code this would land in their real data.
   const { data: settings } = await createAdminClient().from("creator_pixel_settings").select("test_event_code").eq("creator_id", profile.id).maybeSingle();
   if (!settings?.test_event_code) return { error: "Add your test event code under Testing first, so the test doesn't count as a real visit." };

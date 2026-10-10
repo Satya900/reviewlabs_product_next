@@ -2,6 +2,7 @@ import { after, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
+import { syncSubscription, type RazorpaySubscription } from "@/lib/billing";
 
 type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string; notes?: Record<string, string> };
 
@@ -10,6 +11,7 @@ type WebhookBody = {
   payload: {
     payment?: { entity: RazorpayPayment };
     refund?: { entity: RazorpayRefund };
+    subscription?: { entity: RazorpaySubscription };
   };
 };
 
@@ -22,7 +24,9 @@ export async function POST(request: Request) {
   }
 
   const body = JSON.parse(rawBody) as WebhookBody;
-  const eventId = request.headers.get("x-razorpay-event-id") ?? `${body.event}:${body.payload.payment?.entity.id ?? body.payload.refund?.entity.id}`;
+  const eventId =
+    request.headers.get("x-razorpay-event-id") ??
+    `${body.event}:${body.payload.payment?.entity.id ?? body.payload.refund?.entity.id ?? body.payload.subscription?.entity.id}`;
   const admin = createAdminClient();
 
   // Razorpay retries deliveries; store each event once and skip processed ones.
@@ -83,6 +87,22 @@ async function handleEvent(body: WebhookBody) {
         p_reason: refund.notes?.reason ?? null,
       });
       if (error) throw new Error(error.message);
+      return;
+    }
+    // Creator plan billing. Subscription payments are platform revenue and
+    // never touch creator orders or ledgers.
+    case "subscription.authenticated":
+    case "subscription.activated":
+    case "subscription.charged":
+    case "subscription.resumed":
+    case "subscription.pending":
+    case "subscription.halted":
+    case "subscription.cancelled":
+    case "subscription.completed": {
+      const sub = body.payload.subscription?.entity;
+      if (!sub) return;
+      const pay = body.event === "subscription.charged" ? body.payload.payment?.entity : null;
+      await syncSubscription(sub, pay ? { id: pay.id, amount: pay.amount, status: pay.status } : null);
       return;
     }
     default:

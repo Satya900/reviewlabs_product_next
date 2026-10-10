@@ -35,7 +35,7 @@ export default function Terms() {
       </Clause>
       <Clause n={3} title="Creator accounts">
         <ul>
-          <li>Creator accounts are by invitation. You must be at least 18 and able to enter a contract under Indian law.</li>
+          <li>Anyone can create an account after verifying their email. You must be at least 18 and able to enter a contract under Indian law.</li>
           <li>You must own, or have permission to sell, everything you upload.</li>
           <li>Product titles, descriptions and prices must be accurate. Do not promise results you cannot back up.</li>
           <li>Keep your login email secure. You are responsible for activity on your account.</li>
@@ -43,9 +43,10 @@ export default function Terms() {
       </Clause>
       <Clause n={4} title="Fees and payouts for creators">
         <ul>
-          <li>The creator plan costs {formatPaise(site.creatorPlanPaise)} per month, deducted from your earnings balance.</li>
-          <li>Razorpay&apos;s gateway fee is deducted from each sale. We do not charge a commission.</li>
-          <li>Refunds and chargebacks are deducted from your balance. Razorpay does not return gateway fees on refunds.</li>
+          <li>Two plans: Free (one product page) and Creator ({formatPaise(site.creatorPlanPaise)} per month, billed through Razorpay as a recurring payment you can cancel any time).</li>
+          <li>Every sale, on either plan, carries a 2% platform fee and Razorpay&apos;s gateway fee. Both are shown as separate lines in your ledger.</li>
+          <li>If a Creator subscription ends or a renewal fails, your account moves to Free: your oldest live page stays live and other pages become drafts.</li>
+          <li>Refunds and chargebacks are deducted from your balance. We return the platform fee on the refunded amount; Razorpay does not return its gateway fee.</li>
           <li>We pay your balance to the UPI ID or bank account in your settings. You are responsible for any tax due on your income.</li>
           <li>We may hold a payout while we look into a dispute, a chargeback or a suspected breach of these terms.</li>
         </ul>

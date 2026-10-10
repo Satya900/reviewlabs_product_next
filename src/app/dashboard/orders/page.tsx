@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { OrdersTable } from "@/components/orders-table";
 import { PageTitle, buttonClass } from "@/components/ui";
 import type { Order } from "@/lib/types";
+import { hasCreatorPlan } from "@/lib/plans";
 
 const filters = [
   { key: "paid", label: "Paid", statuses: ["paid", "partially_refunded"] },
@@ -30,7 +31,11 @@ export default async function OrdersPage({ searchParams }: PageProps<"/dashboard
             {f.label}
           </Link>
         ))}
-        <a href={`/dashboard/orders/export?filter=${active.key}`} className={`${buttonClass.secondary} sm:ml-auto`}>Download CSV</a>
+        {hasCreatorPlan(profile) ? (
+          <a href={`/dashboard/orders/export?filter=${active.key}`} className={`${buttonClass.secondary} sm:ml-auto`}>Download CSV</a>
+        ) : (
+          <Link href="/dashboard/billing" className={`${buttonClass.secondary} sm:ml-auto`}>Download CSV (Creator)</Link>
+        )}
       </div>
       <OrdersTable orders={(orders ?? []) as Order[]} />
     </>

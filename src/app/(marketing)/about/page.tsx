@@ -22,8 +22,8 @@ export default function About() {
               and payouts, done carefully.
             </p>
             <p>
-              {site.name} is built by {site.legalName}, founded by {site.founder}. We are onboarding creators by invite so we
-              can help each one set up properly.
+              {site.name} is built by {site.legalName}, founded by {site.founder}. Anyone can start
+              for free, and we read every message that comes in.
             </p>
           </div>
         </div>
@@ -34,11 +34,11 @@ export default function About() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           <FeatureCard icon="bolt" title="Buyers get what they paid for">Within seconds, every time, with access that does not run out.</FeatureCard>
           <FeatureCard icon="ledger" title="Creators see every rupee">No black-box balance. Every sale, fee, refund and payout is a line you can read.</FeatureCard>
-          <FeatureCard icon="lock" title="We stay out of your sales">No commission, no selling buyer data, no holding your earnings longer than needed.</FeatureCard>
+          <FeatureCard icon="lock" title="We stay out of your sales">One flat fee per sale, no selling buyer data, no holding your earnings longer than needed.</FeatureCard>
         </div>
       </Section>
 
-      <CtaBand title="Sell digital products? Come try it." primary={{ href: "/contact", label: "Get an invite" }} />
+      <CtaBand title="Sell digital products? Come try it." primary={{ href: "/signup", label: "Start for free" }} />
     </>
   );
 }

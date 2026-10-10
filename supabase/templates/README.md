@@ -1,12 +1,17 @@
 # Supabase auth email templates
 
-Paste these into Supabase → Authentication → Emails → Templates.
+Paste each file into Supabase → Authentication → Emails → Templates.
 
-| Template | File | Subject line |
+| Supabase template | File | Subject line |
 |---|---|---|
-| Magic Link | `magic-link.html` | Your Reviewlabs sign-in link |
-| Confirm signup | `confirm-signup.html` | Confirm your Reviewlabs account |
+| Confirm signup | `confirm-signup.html` | Verify your Reviewlabs email |
+| Reset password | `reset-password.html` | Reset your Reviewlabs password |
+| Change email address | `change-email.html` | Confirm your new Reviewlabs email |
 
-Both use `{{ .ConfirmationURL }}`, which Supabase fills in. Emails go out through
-custom SMTP (Resend). Supabase can't set a Reply-To header, so the footer points
-people to the support inbox instead.
+The links go to `/auth/confirm` with a `token_hash`, so they work even when opened
+on a different device or browser from the one used to sign up. `{{ .SiteURL }}` is
+the Site URL in Supabase → Authentication → URL Configuration
+(`https://reviewlabs.space`).
+
+Emails go out through custom SMTP (Resend). Supabase can't set a Reply-To header,
+so the footer points people to the support inbox instead.

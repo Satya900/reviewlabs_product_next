@@ -2,6 +2,8 @@ import { requireCreator } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PageTitle, Panel } from "@/components/ui";
 import { ProfileForm, PixelForm } from "./forms";
+import { hasCreatorPlan } from "@/lib/plans";
+import { UpgradeCard } from "@/components/upgrade-card";
 
 export default async function SettingsPage() {
   const profile = await requireCreator();
@@ -25,7 +27,11 @@ export default async function SettingsPage() {
             browser and from our server with the same event ID, so Meta counts it once and still sees sales that ad
             blockers or closed tabs would hide.
           </p>
-          <PixelForm pixelId={pixel?.pixel_id ?? ""} testEventCode={pixel?.test_event_code ?? ""} hasToken={Boolean(pixel?.capi_token_encrypted)} />
+          {hasCreatorPlan(profile) ? (
+            <PixelForm pixelId={pixel?.pixel_id ?? ""} testEventCode={pixel?.test_event_code ?? ""} hasToken={Boolean(pixel?.capi_token_encrypted)} />
+          ) : (
+            <UpgradeCard feature="meta" compact />
+          )}
         </Panel>
       </div>
     </>

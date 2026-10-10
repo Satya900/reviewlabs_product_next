@@ -168,7 +168,7 @@ export default function Features() {
             ["ledger", "A ledger nobody can edit", "Corrections are new lines, never rewrites, so your history stays honest."],
             ["mail", "Receipts sent once", "Retries never send the same buyer two receipts or two Meta purchases."],
             ["bank", "Payout records with UTR", "Each payout is logged against the reference your bank shows."],
-            ["upi", "Invite-only accounts", "Creator signups are checked in the database, not just the login form."],
+            ["upi", "Verified accounts", "Every creator verifies their email before they can sell, and limits are enforced in the database."],
           ].map(([icon, title, body]) => (
             <div key={title} className="rounded-3xl border border-hairline p-6">
               <Icon name={icon as IconName} className="size-6 text-primary" />
@@ -179,7 +179,7 @@ export default function Features() {
         </div>
       </Section>
 
-      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/contact", label: "Get an invite" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/signup", label: "Start for free" }} secondary={{ href: "/pricing", label: "See pricing" }} />
     </>
   );
 }

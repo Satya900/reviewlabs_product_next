@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { decrypt, sha256 } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import type { Order, Tracking } from "@/lib/types";
+import { creatorHasPlan } from "@/lib/plans-server";
 
 export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase";
 
@@ -56,6 +57,8 @@ export type MetaTarget = { creatorId: string; pageId?: string | null };
 type PixelRow = { pixel_id: string | null; capi_token_encrypted: string | null; test_event_code: string | null };
 
 export async function resolvePixelRow(target: MetaTarget): Promise<PixelRow | null> {
+  // Meta tracking is a Creator plan feature.
+  if (!(await creatorHasPlan(target.creatorId))) return null;
   const admin = createAdminClient();
   if (target.pageId) {
     const { data } = await admin

@@ -8,8 +8,11 @@ export type Profile = {
   email: string;
   name: string | null;
   is_admin: boolean;
-  subscription_active: boolean;
-  plan_amount_paise: number;
+  plan: "free" | "creator";
+  plan_status: "none" | "created" | "active" | "past_due" | "cancelling" | "cancelled" | "halted" | "expired";
+  plan_current_period_end: string | null;
+  razorpay_subscription_id: string | null;
+  commission_bps: number;
   payout_upi: string | null;
   payout_account_name: string | null;
   payout_account_number: string | null;

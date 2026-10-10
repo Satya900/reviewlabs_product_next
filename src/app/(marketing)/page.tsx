@@ -3,6 +3,7 @@ import { CheckList, CtaBand, Faq, FeatureCard, Kicker, Section, SectionHead, Ste
 import { HeroMockups } from "@/components/hero-mockups";
 import { buttonClass, cx } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
+import { COMMISSION_PERCENT, CREATOR_PRICE_PAISE } from "@/lib/plans";
 import { site } from "@/lib/site";
 
 const sellables = [
@@ -20,7 +21,7 @@ const sellables = [
   "Workout plans",
 ];
 
-const plan = formatPaise(site.creatorPlanPaise).replace(".00", "");
+const plan = formatPaise(CREATOR_PRICE_PAISE).replace(".00", "");
 
 export default function Home() {
   return (
@@ -34,18 +35,18 @@ export default function Home() {
             <Kicker dark>For creators in India</Kicker>
             <h1 className="display text-[44px] sm:text-[64px] lg:text-[80px]">Sell your ebook from a single link.</h1>
             <p className="max-w-xl text-[18px] text-on-dark-soft sm:text-[20px]">
-              Make a payment page in about five minutes. Buyers pay with UPI or card, the file lands in their inbox, and
-              you keep every rupee except Razorpay&apos;s fee.
+              Make a payment page in about five minutes. Buyers pay with UPI or card and the file lands in their inbox.
+              Start free, with a simple {COMMISSION_PERCENT}% fee per sale.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/contact" className={buttonClass.hero}>Get an invite</Link>
+              <Link href="/signup" className={buttonClass.hero}>Start for free</Link>
               <Link href="/how-it-works" className={cx(buttonClass.outlineDark, "h-14 px-8")}>See how it works</Link>
             </div>
             <dl className="grid max-w-lg grid-cols-3 gap-4 border-t border-dark-line pt-6">
               {[
-                ["₹0", "commission on sales"],
+                ["₹0", "to start selling"],
                 ["Seconds", "from payment to file"],
-                [plan, "per month, flat"],
+                [`${COMMISSION_PERCENT}%`, "flat fee per sale"],
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt className="num text-[22px] text-white sm:text-[26px]">{value}</dt>
@@ -193,27 +194,27 @@ export default function Home() {
 
       {/* Pricing teaser */}
       <Section tone="soft">
-        <SectionHead center kicker="Pricing" title="One plan. No cut of your sales." />
+        <SectionHead center kicker="Pricing" title="Start free. Upgrade when you grow." />
         <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
           <div className="rounded-3xl bg-dark p-8 text-white">
-            <p className="text-[16px] font-semibold">Creator plan</p>
+            <p className="text-[16px] font-semibold">Free, then Creator</p>
             <p className="mt-4 flex items-baseline gap-2">
-              <span className="display text-[64px]">{plan}</span>
-              <span className="text-on-dark-soft">/ month</span>
+              <span className="display text-[64px]">₹0</span>
+              <span className="text-on-dark-soft">to start</span>
             </p>
-            <p className="mt-2 text-[15px] text-on-dark-soft">Taken from your earnings once a month. No card needed.</p>
+            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free. Creator is {plan}/month for unlimited pages and the growth tools.</p>
             <div className="mt-8">
-              <CheckList dark items={["Unlimited pages and sales", "Coupons, analytics and Meta tracking", "Lifetime access for your buyers"]} />
+              <CheckList dark items={["Free: one page, checkout, delivery, payouts", "Creator: unlimited pages, coupons, analytics", "Meta Pixel and CAPI, CSV export on Creator"]} />
             </div>
-            <Link href="/contact" className={cx(buttonClass.primary, "mt-8 w-full")}>Get an invite</Link>
+            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start for free</Link>
           </div>
           <div className="rounded-3xl border border-hairline bg-canvas p-8">
             <p className="text-[16px] font-semibold">A ₹499 sale, worked out</p>
             <dl className="mt-6 space-y-4 text-[15px]">
               <div className="flex justify-between"><dt className="text-body">Buyer pays</dt><dd className="num">₹499.00</dd></div>
               <div className="flex justify-between"><dt className="text-body">Razorpay fee (about 2% + GST)</dt><dd className="num">−₹11.78</dd></div>
-              <div className="flex justify-between"><dt className="text-body">{site.name} commission</dt><dd className="num">₹0.00</dd></div>
-              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep</dt><dd className="num text-up">₹487.22</dd></div>
+              <div className="flex justify-between"><dt className="text-body">Platform fee ({COMMISSION_PERCENT}%)</dt><dd className="num">−₹9.98</dd></div>
+              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep</dt><dd className="num text-up">₹477.24</dd></div>
             </dl>
             <p className="mt-6 text-[13px] text-muted">Gateway fees are set by Razorpay and vary by payment method.</p>
             <Link href="/pricing" className={cx(buttonClass.secondary, "mt-8 w-full")}>See full pricing</Link>
@@ -230,11 +231,11 @@ export default function Home() {
               { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
-              { q: "Do you take a commission?", a: `No. You pay ${plan} a month. The only cost per sale is Razorpay's gateway fee.` },
+              { q: "What does it cost?", a: `Starting is free. Every sale has a ${COMMISSION_PERCENT}% platform fee plus Razorpay's gateway fee. The Creator plan is ${plan} a month for unlimited pages and the growth tools.` },
               { q: "How do I get paid?", a: "We send your balance to the UPI ID or bank account in your settings. Each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I track sales in Meta Ads Manager?", a: "Yes. Add your Pixel ID and Conversions API token in settings. We send PageView, ViewContent, InitiateCheckout and Purchase with matching event IDs." },
-              { q: "Why is it invite-only?", a: "We are onboarding a small group of creators first so we can help each one set up properly. Write to us and we will usually reply within a day." },
+              { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your UPI ID or bank details for payouts, and publish your page." },
             ]}
           />
         </div>
@@ -242,8 +243,8 @@ export default function Home() {
 
       <CtaBand
         title="Put your first product online this week."
-        sub="Tell us what you sell and we will send you an invite."
-        primary={{ href: "/contact", label: "Get an invite" }}
+        sub="Free to start. Your first page can be live in minutes."
+        primary={{ href: "/signup", label: "Start for free" }}
         secondary={{ href: "/pricing", label: "See pricing" }}
       />
     </>

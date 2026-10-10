@@ -5,6 +5,7 @@ import type { LedgerEntry } from "@/lib/types";
 const labels: Record<LedgerEntry["entry_type"], string> = {
   sale: "Sale",
   gateway_fee: "Gateway fee",
+  platform_fee: "Platform fee",
   refund: "Refund",
   subscription_fee: "Plan fee",
   payout: "Payout",

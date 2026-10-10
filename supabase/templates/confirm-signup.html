@@ -17,19 +17,19 @@
             </tr>
             <tr>
               <td style="padding:24px 36px 0 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                <h1 style="margin:0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;color:#0a0b0d;">Welcome to Reviewlabs</h1>
-                <p style="margin:12px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">You've been invited to sell on Reviewlabs. Click the button to confirm your email and open your dashboard.</p>
+                <h1 style="margin:0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;color:#0a0b0d;">Verify your email</h1>
+                <p style="margin:12px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">Thanks for signing up for Reviewlabs. Confirm your email address to open your dashboard and start selling.</p>
               </td>
             </tr>
             <tr>
               <td style="padding:28px 36px 0 36px;">
-                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0052ff;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:100px;">Confirm and sign in</a>
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=/dashboard" style="display:inline-block;background:#0052ff;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:100px;">Verify email</a>
               </td>
             </tr>
             <tr>
               <td style="padding:28px 36px 36px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#7c828a;">
-                <p style="margin:0;">This link works once and expires in an hour. If you weren't expecting this invite, you can ignore this email.</p>
-                <p style="margin:12px 0 0 0;">If the button doesn't work, copy this link into your browser:<br><a href="{{ .ConfirmationURL }}" style="color:#0052ff;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+                <p style="margin:0;">This link works once and expires in 24 hours. If you didn't create an account, you can ignore this email.</p>
+                <p style="margin:12px 0 0 0;">If the button doesn't work, copy this link into your browser:<br><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=/dashboard" style="color:#0052ff;word-break:break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=/dashboard</a></p>
               </td>
             </tr>
           </table>

@@ -73,7 +73,7 @@ export type LedgerEntry = {
   creator_id: string;
   order_id: string | null;
   payout_id: string | null;
-  entry_type: "sale" | "gateway_fee" | "refund" | "subscription_fee" | "payout" | "adjustment";
+  entry_type: "sale" | "gateway_fee" | "platform_fee" | "refund" | "subscription_fee" | "payout" | "adjustment";
   amount_paise: number;
   description: string | null;
   created_at: string;

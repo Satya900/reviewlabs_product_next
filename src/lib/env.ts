@@ -14,6 +14,7 @@ export const env = {
   razorpayKeyId: () => required("NEXT_PUBLIC_RAZORPAY_KEY_ID"),
   razorpayKeySecret: () => required("RAZORPAY_KEY_SECRET"),
   razorpayWebhookSecret: () => required("RAZORPAY_WEBHOOK_SECRET"),
+  razorpayCreatorPlanId: () => required("RAZORPAY_CREATOR_PLAN_ID"),
   encryptionKey: () => required("ENCRYPTION_KEY"),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,
