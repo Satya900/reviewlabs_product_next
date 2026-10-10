@@ -79,3 +79,14 @@ export type LedgerEntry = {
   description: string | null;
   created_at: string;
 };
+
+export type Testimonial = {
+  id: string;
+  page_id: string;
+  name: string;
+  comment: string;
+  rating: number;
+  avatar_url: string | null;
+  avatar_face: string;
+  position: number;
+};

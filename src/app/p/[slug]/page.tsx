@@ -22,7 +22,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
   const { slug } = await params;
   const data = await getPublicPage(slug);
   if (!data) notFound();
-  const { page, fields, files, pixelId } = data;
+  const { page, fields, files, pixelId, testimonials } = data;
 
   return (
     <>
@@ -41,6 +41,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
           descriptionHtml: sanitizeDescription(page.description_html ?? ""),
           descriptionText: page.description,
           files,
+          testimonials,
         }}
         checkout={
           <CheckoutForm

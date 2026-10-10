@@ -9,7 +9,7 @@ import { ProductView } from "@/components/product-view";
 import { CheckoutForm } from "@/app/p/[slug]/checkout-form";
 import { rupeesToPaise } from "@/lib/money";
 import { sanitizeDescription } from "@/lib/rich-text";
-import type { PageField, PaymentPage } from "@/lib/types";
+import type { PageField, PaymentPage, Testimonial } from "@/lib/types";
 import { PreviewFrame } from "./preview-frame";
 
 type Props = {
@@ -18,6 +18,7 @@ type Props = {
   page: PaymentPage & { price: string };
   files: { file_name: string; size_bytes: number }[];
   fields: PageField[];
+  testimonials: Testimonial[];
   // The other editor panels (files, questions, tracking, delete).
   children: ReactNode;
 };
@@ -46,7 +47,7 @@ function draftFrom(page: Props["page"]): Draft {
   };
 }
 
-export function PageDetailsForm({ creatorId, appUrl, page, files, fields, children }: Props) {
+export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testimonials, children }: Props) {
   const [draft, setDraft] = useState<Draft>(() => draftFrom(page));
   const [saved, setSaved] = useState<string>(() => JSON.stringify(draftFrom(page)));
   // The draft as it was when Save was clicked; becomes the baseline if the save succeeds.
@@ -92,7 +93,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, childr
   const preview = (
     <PreviewFrame url={previewUrl}>
       <ProductView
-        data={{ title: draft.title, amountPaise, coverImageUrl: draft.cover_image_url || null, descriptionHtml: previewHtml, descriptionText: "", files }}
+        data={{ title: draft.title, amountPaise, coverImageUrl: draft.cover_image_url || null, descriptionHtml: previewHtml, descriptionText: "", files, testimonials }}
         checkout={
           <CheckoutForm
             preview
