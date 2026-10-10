@@ -41,20 +41,20 @@ function Card({ t }: { t: TestimonialCard }) {
   }, [open, t.comment]);
   return (
     <figure
-      className={cx("relative flex flex-col rounded-3xl border border-hairline bg-canvas p-6", (long || open) && "cursor-pointer")}
+      className={cx("relative flex flex-col rounded-2xl border border-hairline bg-canvas px-5 py-4", (long || open) && "cursor-pointer")}
       onClick={() => (long || open) && setOpen(!open)}
     >
-      <svg viewBox="0 0 48 40" className="absolute right-6 top-6 h-8 w-9 text-[#fdecef]" aria-hidden>
+      <svg viewBox="0 0 48 40" className="absolute right-5 top-4 h-6 w-7 text-[#fdecef]" aria-hidden>
         <path d="M0 22C0 10 7 2 18 0l2 5c-6 2-9 6-9 11h8v18H0zM28 22C28 10 35 2 46 0l2 5c-6 2-9 6-9 11h8v18H28z" fill="currentColor" />
       </svg>
-      <Stars rating={t.rating} />
-      <blockquote ref={textRef} className={cx("mt-4 whitespace-pre-line text-[16px] leading-relaxed text-ink", !open && "line-clamp-4")}>{t.comment}</blockquote>
-      {(long || open) && <span className="mt-1 text-[13px] font-semibold text-primary">{open ? "Show less" : "Read more"}</span>}
+      <Stars rating={t.rating} size={18} />
+      <blockquote ref={textRef} className={cx("mt-2.5 whitespace-pre-line text-[15px] leading-[1.55] text-ink", !open && "line-clamp-4")}>{t.comment}</blockquote>
+      {(long || open) && <span className="mt-0.5 text-[13px] font-semibold text-primary">{open ? "Show less" : "Read more"}</span>}
       {/* Spacer keeps names aligned at the bottom without stretching the text box. */}
       <span className="flex-1" />
-      <figcaption className="mt-5 flex items-center gap-3">
-        <FaceAvatar url={t.avatar_url} face={t.avatar_face} size={40} />
-        <span className="text-[16px] font-semibold">{t.name}</span>
+      <figcaption className="mt-3 flex items-center gap-2.5">
+        <FaceAvatar url={t.avatar_url} face={t.avatar_face} size={34} />
+        <span className="text-[15px] font-semibold">{t.name}</span>
       </figcaption>
     </figure>
   );
@@ -65,7 +65,7 @@ export function TestimonialsGrid({ items }: { items: TestimonialCard[] }) {
   return (
     <section className="rounded-3xl bg-canvas p-6 @lg:p-8">
       <h2 className="text-[20px] font-semibold">Testimonials</h2>
-      <div className="mt-5 grid gap-4 @xl:grid-cols-2">
+      <div className="mt-4 grid gap-3 @xl:grid-cols-2">
         {items.map((t) => <Card key={t.id} t={t} />)}
       </div>
     </section>
