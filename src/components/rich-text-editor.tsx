@@ -8,7 +8,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import { Placeholder } from "@tiptap/extensions";
 import { createClient } from "@/lib/supabase/client";
-import { FONT_SIZES, HIGHLIGHT_COLORS, TEXT_COLORS } from "@/lib/rich-text";
+import { FONT_SIZES, HIGHLIGHT_COLORS, TEXT_COLORS, isAllowedImageSrc } from "@/lib/rich-text";
 import { cx } from "@/components/ui";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -26,6 +26,22 @@ async function compressImage(file: File): Promise<{ blob: Blob; ext: string; typ
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
   return blob ? { blob, ext: "webp", type: "image/webp" } : { blob: file, ext: file.name.split(".").pop() ?? "jpg", type: file.type };
+}
+
+// Compresses and uploads an image to the creator's media folder; returns its public URL.
+async function uploadDescriptionImage(file: File, creatorId: string): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("Choose an image file (JPG, PNG, WebP or GIF).");
+  const { blob, ext, type } = await compressImage(file);
+  if (blob.size > MAX_UPLOAD_BYTES) throw new Error("That image is over 5 MB even after compressing. Try a smaller one.");
+  const path = `${creatorId}/media/${crypto.randomUUID()}.${ext}`;
+  const supabase = createClient();
+  const { error } = await supabase.storage.from("page-covers").upload(path, blob, { contentType: type, cacheControl: "31536000" });
+  if (error) throw new Error(error.message);
+  return supabase.storage.from("page-covers").getPublicUrl(path).data.publicUrl;
+}
+
+function imageFiles(list: FileList | null | undefined): File[] {
+  return Array.from(list ?? []).filter((f) => f.type.startsWith("image/"));
 }
 
 function ToolButton({ active, disabled, onClick, label, children }: { active?: boolean; disabled?: boolean; onClick: () => void; label: string; children: ReactNode }) {
@@ -71,9 +87,8 @@ function Swatches({ colors, onPick, onClear, clearLabel }: { colors: string[]; o
   );
 }
 
-function Toolbar({ editor, creatorId, onUploadError }: { editor: Editor; creatorId: string; onUploadError: (m: string | null) => void }) {
+function Toolbar({ editor, uploading, onPickImage }: { editor: Editor; uploading: boolean; onPickImage: (file: File) => void }) {
   const [menu, setMenu] = useState<"color" | "highlight" | null>(null);
-  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const s = useEditorState({
     editor,
@@ -115,26 +130,6 @@ function Toolbar({ editor, creatorId, onUploadError }: { editor: Editor; creator
     }
     const href = /^(https:\/\/|mailto:)/.test(url) ? url : `https://${url.replace(/^http:\/\//, "")}`;
     editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
-  }
-
-  async function uploadImage(file: File) {
-    onUploadError(null);
-    if (!file.type.startsWith("image/")) return onUploadError("Choose an image file (JPG, PNG, WebP or GIF).");
-    setUploading(true);
-    try {
-      const { blob, ext, type } = await compressImage(file);
-      if (blob.size > MAX_UPLOAD_BYTES) throw new Error("That image is over 5 MB even after compressing. Try a smaller one.");
-      const path = `${creatorId}/media/${crypto.randomUUID()}.${ext}`;
-      const supabase = createClient();
-      const { error } = await supabase.storage.from("page-covers").upload(path, blob, { contentType: type, cacheControl: "31536000" });
-      if (error) throw new Error(error.message);
-      const src = supabase.storage.from("page-covers").getPublicUrl(path).data.publicUrl;
-      editor.chain().focus().setImage({ src, alt: file.name.replace(/\.[^.]+$/, "") }).run();
-    } catch (e) {
-      onUploadError((e as Error).message);
-    } finally {
-      setUploading(false);
-    }
   }
 
   return (
@@ -215,7 +210,7 @@ function Toolbar({ editor, creatorId, onUploadError }: { editor: Editor; creator
         onChange={(e) => {
           const f = e.target.files?.[0];
           e.target.value = "";
-          if (f) uploadImage(f);
+          if (f) onPickImage(f);
         }}
       />
     </div>
@@ -224,6 +219,28 @@ function Toolbar({ editor, creatorId, onUploadError }: { editor: Editor; creator
 
 export function RichTextEditor({ value, onChange, creatorId, placeholder }: { value: string; onChange: (html: string) => void; creatorId: string; placeholder?: string }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(0);
+
+  // Uploads image files and inserts them (at the drop point, or at the cursor).
+  async function insertImages(files: File[], editorRef: Editor | null, at?: number) {
+    if (!editorRef || !files.length) return;
+    setUploadError(null);
+    setUploading((n) => n + files.length);
+    for (const file of files) {
+      try {
+        const src = await uploadDescriptionImage(file, creatorId);
+        const node = { type: "image", attrs: { src, alt: file.name.replace(/\.[^.]+$/, "") } };
+        if (typeof at === "number") editorRef.chain().focus().insertContentAt(at, node).run();
+        else editorRef.chain().focus().insertContent(node).run();
+      } catch (e) {
+        setUploadError((e as Error).message);
+      } finally {
+        setUploading((n) => n - 1);
+      }
+    }
+  }
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -246,9 +263,45 @@ export function RichTextEditor({ value, onChange, creatorId, placeholder }: { va
       attributes: {
         class: "rich-text min-h-[260px] px-4 py-4 outline-none",
       },
+      // Pasted image files are uploaded like the image button.
+      handlePaste: (_view, event) => {
+        const files = imageFiles(event.clipboardData?.files);
+        if (!files.length) return false;
+        event.preventDefault();
+        void insertImages(files, editorRef.current);
+        return true;
+      },
+      // Dropped image files are uploaded and placed where they were dropped.
+      handleDrop: (view, event, _slice, moved) => {
+        if (moved) return false;
+        const files = imageFiles(event.dataTransfer?.files);
+        if (!files.length) return false;
+        event.preventDefault();
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+        void insertImages(files, editorRef.current, pos);
+        return true;
+      },
+      // Images copied from other websites can't be shown live, so drop them on paste.
+      transformPastedHTML: (html) => {
+        let removed = 0;
+        const cleaned = html.replace(/<img\b[^>]*>/gi, (tag) => {
+          const src = /\ssrc=["']([^"']+)["']/i.exec(tag)?.[1];
+          if (isAllowedImageSrc(src)) return tag;
+          removed++;
+          return "";
+        });
+        setNotice(removed ? "Images copied from other websites can't be used. Add them with the image button, or paste or drop the image file itself." : null);
+        return cleaned;
+      },
     },
     onUpdate: ({ editor: e }) => onChange(e.isEmpty ? "" : e.getHTML()),
   });
+
+  // Lets the paste/drop handlers (created once) reach the live editor instance.
+  const editorRef = useRef<Editor | null>(null);
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Keep the editor in sync if the saved value changes from outside (e.g. after save).
   useEffect(() => {
@@ -259,9 +312,20 @@ export function RichTextEditor({ value, onChange, creatorId, placeholder }: { va
 
   return (
     <div className="rounded-2xl border border-hairline bg-canvas focus-within:border-primary">
-      {editor ? <Toolbar editor={editor} creatorId={creatorId} onUploadError={setUploadError} /> : <div className="h-12 rounded-t-2xl border-b border-hairline" />}
+      {editor ? (
+        <Toolbar editor={editor} uploading={uploading > 0} onPickImage={(f) => void insertImages([f], editor)} />
+      ) : (
+        <div className="h-12 rounded-t-2xl border-b border-hairline" />
+      )}
       <EditorContent editor={editor} />
+      {uploading > 0 && <p className="px-4 pb-3 text-[13px] text-muted">Uploading image…</p>}
       {uploadError && <p className="px-4 pb-3 text-[13px] text-down">{uploadError}</p>}
+      {notice && (
+        <p className="flex items-start justify-between gap-3 px-4 pb-3 text-[13px] text-body">
+          <span>{notice}</span>
+          <button type="button" onClick={() => setNotice(null)} className="link shrink-0 text-[13px]">Dismiss</button>
+        </p>
+      )}
     </div>
   );
 }

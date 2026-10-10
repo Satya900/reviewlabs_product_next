@@ -23,8 +23,13 @@ function storagePrefix() {
   return base ? `${base.replace(/\/$/, "")}/storage/v1/object/public/` : "";
 }
 
-export function sanitizeDescription(html: string): string {
+// Only images stored in this project's storage are allowed in descriptions.
+export function isAllowedImageSrc(src: string | null | undefined): boolean {
   const prefix = storagePrefix();
+  return Boolean(prefix && src && src.startsWith(prefix));
+}
+
+export function sanitizeDescription(html: string): string {
   return sanitizeHtml(html ?? "", {
     allowedTags: ["p", "br", "h2", "h3", "h4", "strong", "b", "em", "i", "u", "s", "a", "ul", "ol", "li", "blockquote", "hr", "span", "img"],
     allowedAttributes: {
@@ -57,7 +62,7 @@ export function sanitizeDescription(html: string): string {
         attribs: { ...attribs, target: "_blank", rel: "noopener noreferrer nofollow" },
       }),
     },
-    exclusiveFilter: (frame) => frame.tag === "img" && (!prefix || !(frame.attribs.src ?? "").startsWith(prefix)),
+    exclusiveFilter: (frame) => frame.tag === "img" && !isAllowedImageSrc(frame.attribs.src),
   }).trim();
 }
 
