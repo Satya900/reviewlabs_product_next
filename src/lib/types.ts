@@ -90,3 +90,11 @@ export type Testimonial = {
   avatar_face: string;
   position: number;
 };
+
+export type Faq = {
+  id: string;
+  page_id: string;
+  question: string;
+  answer: string;
+  position: number;
+};

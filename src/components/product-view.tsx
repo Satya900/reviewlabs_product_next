@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { formatPaise } from "@/lib/money";
 import { TestimonialsGrid, type TestimonialCard } from "@/components/testimonials-grid";
+import { FaqAccordion, type FaqItem } from "@/components/faq-accordion";
 
 export type ProductViewData = {
   title: string;
@@ -11,6 +12,7 @@ export type ProductViewData = {
   descriptionText: string;
   files: { file_name: string; size_bytes: number }[];
   testimonials?: TestimonialCard[];
+  faqs?: FaqItem[];
 };
 
 function formatSize(bytes: number) {
@@ -71,6 +73,7 @@ export function ProductView({ data, checkout }: { data: ProductViewData; checkou
             </div>
           )}
           <TestimonialsGrid items={data.testimonials ?? []} />
+          <FaqAccordion items={data.faqs ?? []} />
         </section>
         <aside className="@3xl:sticky @3xl:top-6 @3xl:self-start">
           {checkout}

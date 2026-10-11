@@ -5,6 +5,7 @@ import { MetaPixel } from "@/components/meta-pixel";
 import { PageViewBeacon } from "@/components/page-view-beacon";
 import { CheckoutForm } from "./checkout-form";
 import { ProductView } from "@/components/product-view";
+import { faqJsonLd } from "@/lib/faq";
 import { sanitizeDescription } from "@/lib/rich-text";
 
 export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Promise<Metadata> {
@@ -22,11 +23,12 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
   const { slug } = await params;
   const data = await getPublicPage(slug);
   if (!data) notFound();
-  const { page, fields, files, pixelId, testimonials } = data;
+  const { page, fields, files, pixelId, testimonials, faqs } = data;
 
   return (
     <>
       <PageViewBeacon pageId={page.id} />
+      {faqs.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJsonLd(faqs) }} />}
       <MetaPixel
         pixelId={pixelId}
         pageId={page.id}
@@ -42,6 +44,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
           descriptionText: page.description,
           files,
           testimonials,
+          faqs,
         }}
         checkout={
           <CheckoutForm

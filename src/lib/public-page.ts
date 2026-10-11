@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePixelRow } from "@/lib/meta";
-import type { PageField, PaymentPage, Testimonial } from "@/lib/types";
+import type { Faq, PageField, PaymentPage, Testimonial } from "@/lib/types";
 
 // Everything the public page needs, without exposing storage paths or secrets.
 export const getPublicPage = cache(async (slug: string) => {
@@ -15,11 +15,12 @@ export const getPublicPage = cache(async (slug: string) => {
     .maybeSingle<PaymentPage>();
   if (!page) return null;
 
-  const [{ data: fields }, { data: files }, pixel, { data: testimonials }] = await Promise.all([
+  const [{ data: fields }, { data: files }, pixel, { data: testimonials }, { data: faqs }] = await Promise.all([
     admin.from("page_fields").select("*").eq("page_id", page.id).order("position"),
     admin.from("page_files").select("id, file_name, size_bytes").eq("page_id", page.id).order("created_at"),
     resolvePixelRow({ creatorId: page.creator_id, pageId: page.id }),
     admin.from("page_testimonials").select("*").eq("page_id", page.id).order("position").order("created_at"),
+    admin.from("page_faqs").select("*").eq("page_id", page.id).order("position").order("created_at"),
   ]);
 
   return {
@@ -27,6 +28,7 @@ export const getPublicPage = cache(async (slug: string) => {
     fields: (fields ?? []) as PageField[],
     files: (files ?? []) as { id: string; file_name: string; size_bytes: number }[],
     testimonials: (testimonials ?? []) as Testimonial[],
+    faqs: (faqs ?? []) as Faq[],
     // The page's own pixel if set, else the account pixel; null when neither is fully connected.
     pixelId: pixel?.pixel_id ?? null,
   };
