@@ -39,7 +39,10 @@ export function OrdersTable({ orders, actions }: { orders: Order[]; actions?: (o
                   </details>
                 )}
               </td>
-              <td className={tableClass.td}>{o.page_title}</td>
+              <td className={tableClass.td}>
+                {o.page_title}
+                {o.offer_title && <p className="text-[12px] text-primary">+ {o.offer_title} (<span className="num">{formatPaise(o.offer_price_paise)}</span>)</p>}
+              </td>
               <td className={`${tableClass.td} whitespace-nowrap`}>
                 <span className="num">{formatPaise(o.amount_paise)}</span>
                 {o.coupon_code && <p className="text-[12px] text-muted">{o.coupon_code}, <span className="num">−{formatPaise(o.discount_paise)}</span></p>}

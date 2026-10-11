@@ -6,6 +6,7 @@ import { formatPaise } from "@/lib/money";
 import { sendPurchaseEvent } from "@/lib/meta";
 import type { RazorpayPayment } from "@/lib/razorpay";
 import type { Order } from "@/lib/types";
+import { orderFiles } from "@/lib/order-files";
 
 // Records a captured Razorpay payment. Idempotent; safe from verify, webhook and cron.
 export async function recordCapturedPayment(payment: RazorpayPayment) {
@@ -56,12 +57,11 @@ async function sendReceipt(order: Order) {
   if (!claimed?.length) return;
 
   try {
-    const [{ data: grant }, { data: files }, { data: page }] = await Promise.all([
+    const [{ data: grant }, list, { data: page }] = await Promise.all([
       admin.from("download_grants").select("token").eq("order_id", order.id).single(),
-      admin.from("page_files").select("id, file_name, size_bytes, storage_path").eq("page_id", order.page_id).order("created_at"),
+      orderFiles(order),
       admin.from("payment_pages").select("thank_you_message").eq("id", order.page_id).maybeSingle(),
     ]);
-    const list = (files ?? []) as DeliveryFile[];
     const attachments = await attachIfSmall(list);
     await sendEmail({
       ...deliveryEmail(order, list, grant?.token ?? null, attachments.length > 0, page?.thank_you_message ?? null),
@@ -129,7 +129,7 @@ function deliveryEmail(order: Order, files: DeliveryFile[], token: string | null
   <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #dee1e6;border-radius:24px;padding:32px;font-family:${font};color:#0a0b0d;">
     <p style="margin:0;font-size:14px;color:#7c828a;">Reviewlabs</p>
     <h1 style="margin:8px 0 0 0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;">${hasFiles ? "Here are your files" : "Thanks for your purchase"}</h1>
-    <p style="margin:10px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">${escapeHtml(order.buyer_name)}, thanks for buying <b style="color:#0a0b0d;">${title}</b>.${attached ? " The files are attached to this email too." : ""}</p>
+    <p style="margin:10px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">${escapeHtml(order.buyer_name)}, thanks for buying <b style="color:#0a0b0d;">${title}</b>${order.offer_title ? ` and <b style="color:#0a0b0d;">${escapeHtml(order.offer_title)}</b>` : ""}.${attached ? " The files are attached to this email too." : ""}</p>
     ${hasFiles ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border-top:1px solid #eef0f3;">${fileRows}</table>` : ""}
     ${downloadsPage && hasFiles ? `<p style="margin:16px 0 0 0;font-size:14px;"><a href="${downloadsPage}" style="color:#0052ff;font-weight:600;text-decoration:none;">Open your downloads page</a></p>` : ""}
     ${thankYou ? `<p style="margin:20px 0 0 0;padding:16px;background:#f7f7f7;border-radius:16px;font-size:15px;line-height:1.5;color:#0a0b0d;white-space:pre-wrap;">${escapeHtml(thankYou)}</p>` : ""}
@@ -140,7 +140,7 @@ function deliveryEmail(order: Order, files: DeliveryFile[], token: string | null
 
   const text = [
     hasFiles ? "Here are your files" : "Thanks for your purchase",
-    `${order.buyer_name}, thanks for buying "${order.page_title}".${attached ? " The files are attached to this email too." : ""}`,
+    `${order.buyer_name}, thanks for buying "${order.page_title}"${order.offer_title ? ` and "${order.offer_title}"` : ""}.${attached ? " The files are attached to this email too." : ""}`,
     ...(hasFiles ? files.map((f) => `${f.file_name} (${formatSize(f.size_bytes)}): ${fileUrl(f)}`) : []),
     downloadsPage && hasFiles ? `All your downloads: ${downloadsPage}` : "",
     thankYou ?? "",

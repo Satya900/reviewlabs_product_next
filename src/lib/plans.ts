@@ -23,7 +23,7 @@ export function hasCreatorPlan(p: PlanFields, now = Date.now()): boolean {
   return !p.plan_current_period_end || new Date(p.plan_current_period_end).getTime() > now - GRACE_MS;
 }
 
-export type PremiumFeature = "coupons" | "analytics" | "meta" | "csv" | "pages";
+export type PremiumFeature = "coupons" | "analytics" | "meta" | "csv" | "pages" | "offer";
 
 export const premiumCopy: Record<PremiumFeature, { title: string; body: string }> = {
   pages: { title: "More product pages", body: "The Free plan includes one product page. Creator gives you unlimited pages." },
@@ -31,6 +31,7 @@ export const premiumCopy: Record<PremiumFeature, { title: string; body: string }
   analytics: { title: "Analytics", body: "See views, checkouts, sales and conversion for every page." },
   meta: { title: "Meta Pixel and Conversions API", body: "Send every view, checkout and purchase to Meta so your ads optimise for real sales." },
   csv: { title: "CSV export", body: "Download all your orders as a spreadsheet for your accountant." },
+  offer: { title: "Additional offer", body: "Add a one-click bonus at checkout so buyers can add it to their order. A simple way to raise every order's value." },
 };
 
 export const creatorFeatures = [
@@ -39,6 +40,7 @@ export const creatorFeatures = [
   "Page analytics: views, checkouts, sales",
   "Meta Pixel and Conversions API, per account or per page",
   "CSV export of orders",
+  "Additional offer (order bump) at checkout",
 ];
 
 export const freeFeatures = [

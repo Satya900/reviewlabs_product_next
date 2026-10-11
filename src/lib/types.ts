@@ -59,6 +59,9 @@ export type Order = {
   list_price_paise: number | null;
   discount_paise: number;
   coupon_code: string | null;
+  offer_id: string | null;
+  offer_title: string | null;
+  offer_price_paise: number;
   currency: string;
   status: OrderStatus;
   razorpay_order_id: string | null;
@@ -97,4 +100,25 @@ export type Faq = {
   question: string;
   answer: string;
   position: number;
+};
+
+export type Offer = {
+  id: string;
+  page_id: string;
+  headline: string;
+  title: string;
+  description: string;
+  image_url: string | null;
+  price_paise: number;
+  compare_at_paise: number | null;
+  active: boolean;
+};
+
+export type OfferFile = {
+  id: string;
+  offer_id: string;
+  storage_path: string;
+  file_name: string;
+  size_bytes: number;
+  content_type: string | null;
 };

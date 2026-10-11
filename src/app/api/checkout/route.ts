@@ -7,6 +7,7 @@ import { eventIds, sendInitiateCheckoutEvent } from "@/lib/meta";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { applyCoupon } from "@/lib/coupons";
+import { creatorHasPlan } from "@/lib/plans-server";
 import type { Order, PageField, PaymentPage } from "@/lib/types";
 
 const schema = z.object({
@@ -19,6 +20,7 @@ const schema = z.object({
   fbc: z.string().max(400).optional(),
   sourceUrl: z.url().max(2000).optional(),
   couponCode: z.string().trim().max(40).optional(),
+  offerId: z.uuid().optional(),
 });
 
 export async function POST(request: Request) {
@@ -70,6 +72,23 @@ export async function POST(request: Request) {
     discount = { couponId: result.coupon.id, code: result.coupon.code, discountPaise: result.discountPaise };
   }
 
+  // Additional offer: price always comes from the database, never the browser.
+  let offer: { id: string; title: string; price_paise: number } | null = null;
+  if (input.offerId) {
+    const { data } = await admin
+      .from("page_offers")
+      .select("id, title, price_paise")
+      .eq("id", input.offerId)
+      .eq("page_id", page.id)
+      .eq("active", true)
+      .maybeSingle();
+    if (!data || !(await creatorHasPlan(page.creator_id))) {
+      return NextResponse.json({ error: "That add-on is no longer available. Please refresh the page." }, { status: 400 });
+    }
+    offer = data;
+    amountPaise += data.price_paise;
+  }
+
   const { data: order, error } = await admin
     .from("orders")
     .insert({
@@ -85,6 +104,9 @@ export async function POST(request: Request) {
       discount_paise: discount?.discountPaise ?? 0,
       coupon_id: discount?.couponId ?? null,
       coupon_code: discount?.code ?? null,
+      offer_id: offer?.id ?? null,
+      offer_title: offer?.title ?? null,
+      offer_price_paise: offer?.price_paise ?? 0,
       currency: page.currency,
       tracking: {
         fbp: input.fbp,
@@ -107,7 +129,7 @@ export async function POST(request: Request) {
       amount: amountPaise,
       currency: page.currency,
       receipt: order.id,
-      notes: { order_id: order.id, page_id: page.id },
+      notes: { order_id: order.id, page_id: page.id, ...(offer ? { offer_id: offer.id } : {}) },
     });
     razorpayOrderId = rzpOrder.id;
   } catch (e) {

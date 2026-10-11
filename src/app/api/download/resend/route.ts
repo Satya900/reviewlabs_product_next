@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { sendEmail } from "@/lib/email";
 import { downloadLinksEmail } from "@/lib/fulfilment";
+import { orderFiles } from "@/lib/order-files";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
   const { data: orders } = await admin
     .from("orders")
-    .select("id, page_id, page_title, download_grants(id, token, last_resent_at)")
+    .select("id, page_id, page_title, offer_id, download_grants(id, token, last_resent_at)")
     .eq("buyer_email", email)
     .in("status", ["paid", "partially_refunded"])
     .order("created_at", { ascending: false })
@@ -34,8 +35,7 @@ export async function POST(request: Request) {
     const grant = Array.isArray(order.download_grants) ? order.download_grants[0] : order.download_grants;
     if (!grant) continue;
     if (grant.last_resent_at && now - new Date(grant.last_resent_at).getTime() < RESEND_COOLDOWN_MS) continue;
-    const { count } = await admin.from("page_files").select("id", { count: "exact", head: true }).eq("page_id", order.page_id);
-    if (!count) continue;
+    if (!(await orderFiles(order)).length) continue;
 
     await admin
       .from("download_grants")

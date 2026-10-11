@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { paiseToRupeesString } from "@/lib/money";
 import { Badge, Notice, Panel, buttonClass } from "@/components/ui";
-import type { Faq, PageField, PageFile, PaymentPage, Testimonial } from "@/lib/types";
+import type { Faq, Offer, OfferFile, PageField, PageFile, PaymentPage, Testimonial } from "@/lib/types";
 import { PageDetailsForm } from "./page-details-form";
 import { FieldsEditor } from "./fields-editor";
 import { FilesManager } from "./files-manager";
@@ -13,6 +13,7 @@ import { DeletePageButton } from "./delete-page-button";
 import { TrackingPanel } from "./tracking-panel";
 import { TestimonialsPanel } from "./testimonials-panel";
 import { FaqsPanel } from "./faqs-panel";
+import { OfferPanel } from "./offer-panel";
 import { hasCreatorPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -25,7 +26,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
   const { data: page } = await supabase.from("payment_pages").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle<PaymentPage>();
   if (!page) notFound();
   const admin = createAdminClient();
-  const [{ data: fields }, { data: files }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }] = await Promise.all([
+  const [{ data: fields }, { data: files }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
     supabase.from("page_fields").select("*").eq("page_id", id).order("position"),
     supabase.from("page_files").select("*").eq("page_id", id).order("created_at"),
     // Tokens are never selected here; only whether tracking is set up.
@@ -33,7 +34,11 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
     admin.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle(),
     supabase.from("page_testimonials").select("*").eq("page_id", id).order("position").order("created_at"),
     supabase.from("page_faqs").select("*").eq("page_id", id).order("position").order("created_at"),
+    supabase.from("page_offers").select("*").eq("page_id", id).maybeSingle<Offer>(),
   ]);
+  const { data: offerFiles } = offer
+    ? await supabase.from("offer_files").select("*").eq("offer_id", offer.id).order("created_at")
+    : { data: [] as OfferFile[] };
   const accountPixelId = accountPixel?.pixel_id && accountPixel.capi_token_encrypted ? accountPixel.pixel_id : null;
   const publicUrl = `${env.appUrl()}/p/${page.slug}`;
 
@@ -62,10 +67,18 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         fields={(fields ?? []) as PageField[]}
         testimonials={(testimonials ?? []) as Testimonial[]}
         faqs={(faqs ?? []) as Faq[]}
+        offer={offer && offer.active && hasCreatorPlan(profile) ? offer : null}
       >
         <Panel title="Files buyers receive">
           <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment.</p>
           <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
+        </Panel>
+        <Panel title="Additional offer">
+          {hasCreatorPlan(profile) ? (
+            <OfferPanel creatorId={profile.id} pageId={page.id} offer={offer ?? null} files={(offerFiles ?? []) as OfferFile[]} />
+          ) : (
+            <UpgradeCard feature="offer" compact />
+          )}
         </Panel>
         <Panel title="Testimonials">
           <p className="mb-3 text-[13px]">Shown on your page under the description. Add real feedback from buyers.</p>

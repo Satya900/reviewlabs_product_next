@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Notice, buttonClass } from "@/components/ui";
+import { orderFiles } from "@/lib/order-files";
 import { ResendForm } from "./resend-form";
 
 export const metadata = { title: "Your downloads", robots: { index: false } };
@@ -18,7 +19,7 @@ export default async function DownloadPage({ params, searchParams }: PageProps<"
   const { data: grant } = /^[0-9a-f]{48}$/.test(token)
     ? await admin
         .from("download_grants")
-        .select("expires_at, max_downloads, download_count, orders(page_id, page_title, status)")
+        .select("expires_at, max_downloads, download_count, orders(page_id, page_title, status, offer_id, offer_title)")
         .eq("token", token)
         .maybeSingle()
     : { data: null };
@@ -32,7 +33,7 @@ export default async function DownloadPage({ params, searchParams }: PageProps<"
     grant.download_count < grant.max_downloads;
 
   const { data: files } = active
-    ? await admin.from("page_files").select("id, file_name, size_bytes").eq("page_id", order!.page_id).order("created_at")
+    ? { data: await orderFiles({ page_id: order!.page_id, offer_id: order!.offer_id ?? null }) }
     : { data: null };
 
   return (
@@ -43,6 +44,7 @@ export default async function DownloadPage({ params, searchParams }: PageProps<"
           <div className="bg-dark px-8 py-8 text-white">
             <p className="text-[13px] text-on-dark-soft">Your purchase</p>
             <h1 className="display mt-1 text-[30px]">{order!.page_title}</h1>
+            {order!.offer_title && <p className="mt-1 text-[14px] text-on-dark-soft">+ {order!.offer_title}</p>}
             <p className="mt-3 inline-flex rounded-full bg-dark-elevated px-3 py-1 text-[12px] font-semibold text-on-dark-soft">
               {grant!.expires_at
                 ? `Link valid until ${new Date(grant!.expires_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`

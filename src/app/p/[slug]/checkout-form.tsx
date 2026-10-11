@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, inputClass, textareaClass } from "@/components/ui";
+import { Button, Field, inputClass, textareaClass, cx } from "@/components/ui";
 import { getMetaCookies, trackPixel } from "@/components/meta-pixel";
 import { formatPaise } from "@/lib/money";
 
@@ -13,6 +13,8 @@ type Props = {
   pixelId: string | null;
   // Editor preview: looks identical but can't take payments.
   preview?: boolean;
+  // Optional add-on (order bump) the buyer can tick.
+  offer?: { id: string; headline: string; title: string; description: string; imageUrl: string | null; pricePaise: number; compareAtPaise: number | null } | null;
 };
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -35,7 +37,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function CheckoutForm({ page, fields, pixelId, preview }: Props) {
+export function CheckoutForm({ page, fields, pixelId, preview, offer }: Props) {
   const router = useRouter();
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -46,7 +48,9 @@ export function CheckoutForm({ page, fields, pixelId, preview }: Props) {
   const [coupon, setCoupon] = useState<{ code: string; discountPaise: number; finalPaise: number } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checkingCoupon, setCheckingCoupon] = useState(false);
-  const payable = coupon?.finalPaise ?? page.amountPaise;
+  const [offerSelected, setOfferSelected] = useState(false);
+  const mainPrice = coupon?.finalPaise ?? page.amountPaise;
+  const payable = mainPrice + (offer && offerSelected ? offer.pricePaise : 0);
 
   async function applyCouponCode() {
     if (!couponInput.trim()) return;
@@ -74,7 +78,7 @@ export function CheckoutForm({ page, fields, pixelId, preview }: Props) {
       fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, sourceUrl: window.location.href, ...getMetaCookies() }),
+        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href, ...getMetaCookies() }),
       }),
     ]);
     const data = await res.json().catch(() => ({}));
@@ -179,11 +183,58 @@ export function CheckoutForm({ page, fields, pixelId, preview }: Props) {
             <button type="button" onClick={() => setCouponOpen(true)} className="link text-[14px]">Have a coupon code?</button>
           )}
         </div>
-        {coupon && (
-          <p className="flex items-baseline justify-between text-[15px]">
-            <span className="text-body">Total</span>
-            <span><s className="num mr-2 text-muted">{formatPaise(page.amountPaise)}</s><b className="num text-[20px]">{formatPaise(payable)}</b></span>
-          </p>
+        {offer && (
+          <label
+            className={cx(
+              "block cursor-pointer rounded-2xl border-2 border-dashed p-4 transition",
+              offerSelected ? "border-primary bg-primary-soft" : "border-hairline bg-canvas hover:border-primary/60",
+            )}
+          >
+            <span className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={offerSelected}
+                onChange={(e) => setOfferSelected(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-primary"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="text-[13px] font-bold uppercase tracking-wide text-primary">{offer.headline}</span>
+                  <span className="num shrink-0 text-[15px] font-semibold">{formatPaise(offer.pricePaise)}</span>
+                </span>
+                <span className="mt-2 flex gap-3">
+                  {offer.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={offer.imageUrl} alt="" className="size-14 shrink-0 rounded-xl object-cover" />
+                  )}
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-semibold leading-snug">
+                      {offer.title}
+                      {offer.compareAtPaise && offer.compareAtPaise > offer.pricePaise && (
+                        <s className="num ml-2 text-[13px] font-normal text-muted">{formatPaise(offer.compareAtPaise)}</s>
+                      )}
+                    </span>
+                    {offer.description && <span className="mt-0.5 block text-[13px] leading-snug text-body">{offer.description}</span>}
+                  </span>
+                </span>
+              </span>
+            </span>
+          </label>
+        )}
+        {(coupon || (offer && offerSelected)) && (
+          <div className="space-y-1 text-[14px]">
+            <p className="flex justify-between text-body">
+              <span>{page.title}</span>
+              <span className="num">{coupon && <s className="mr-2 text-muted">{formatPaise(page.amountPaise)}</s>}{formatPaise(mainPrice)}</span>
+            </p>
+            {offer && offerSelected && (
+              <p className="flex justify-between text-body"><span>{offer.title}</span><span className="num">{formatPaise(offer.pricePaise)}</span></p>
+            )}
+            <p className="flex items-baseline justify-between border-t border-hairline pt-2 text-[15px]">
+              <span className="font-semibold">Total</span>
+              <b className="num text-[20px]">{formatPaise(payable)}</b>
+            </p>
+          </div>
         )}
         {error && <p className="text-[14px] font-medium text-down">{error}</p>}
         <Button type="submit" variant="hero" className="w-full" disabled={busy}>

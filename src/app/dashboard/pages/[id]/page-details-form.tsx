@@ -9,7 +9,7 @@ import { ProductView } from "@/components/product-view";
 import { CheckoutForm } from "@/app/p/[slug]/checkout-form";
 import { rupeesToPaise } from "@/lib/money";
 import { sanitizeDescription } from "@/lib/rich-text";
-import type { Faq, PageField, PaymentPage, Testimonial } from "@/lib/types";
+import type { Faq, Offer, PageField, PaymentPage, Testimonial } from "@/lib/types";
 import { PreviewFrame } from "./preview-frame";
 
 type Props = {
@@ -20,6 +20,7 @@ type Props = {
   fields: PageField[];
   testimonials: Testimonial[];
   faqs: Faq[];
+  offer: Offer | null;
   // The other editor panels (files, questions, tracking, delete).
   children: ReactNode;
 };
@@ -48,7 +49,7 @@ function draftFrom(page: Props["page"]): Draft {
   };
 }
 
-export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testimonials, faqs, children }: Props) {
+export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testimonials, faqs, offer, children }: Props) {
   const [draft, setDraft] = useState<Draft>(() => draftFrom(page));
   const [saved, setSaved] = useState<string>(() => JSON.stringify(draftFrom(page)));
   // The draft as it was when Save was clicked; becomes the baseline if the save succeeds.
@@ -101,6 +102,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
             page={{ id: page.id, slug: draft.slug, title: draft.title, amountPaise, currency: "INR", buttonLabel: draft.button_label || "Buy now" }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
             pixelId={null}
+            offer={offer ? { id: offer.id, headline: offer.headline, title: offer.title, description: offer.description, imageUrl: offer.image_url, pricePaise: offer.price_paise, compareAtPaise: offer.compare_at_paise } : null}
           />
         }
       />

@@ -38,11 +38,11 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
   const [{ data: pages }, { data: views }, { data: orders }] = await Promise.all([
     supabase.from("payment_pages").select("id, title, slug, status").eq("creator_id", profile.id).order("created_at"),
     supabase.from("page_views_daily").select("page_id, day, views").gte("day", fromDay),
-    supabase.from("orders").select("page_id, status, amount_paise, created_at, paid_at").eq("creator_id", profile.id).gte("created_at", fromIso),
+    supabase.from("orders").select("page_id, status, amount_paise, created_at, paid_at, offer_id").eq("creator_id", profile.id).gte("created_at", fromIso),
   ]);
 
   const paidStatuses = new Set(["paid", "partially_refunded"]);
-  const perPage = new Map((pages ?? []).map((p) => [p.id, { ...p, views: 0, checkouts: 0, sales: 0, revenue: 0 }]));
+  const perPage = new Map((pages ?? []).map((p) => [p.id, { ...p, views: 0, checkouts: 0, sales: 0, revenue: 0, withOffer: 0 }]));
   const viewsByDay = new Map(dayKeys.map((d) => [d, 0]));
   const salesByDay = new Map(dayKeys.map((d) => [d, 0]));
 
@@ -58,6 +58,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
     if (paidStatuses.has(o.status)) {
       row.sales += 1;
       row.revenue += o.amount_paise;
+      if (o.offer_id) row.withOffer += 1;
       const d = istDay.format(new Date(o.paid_at ?? o.created_at));
       if (salesByDay.has(d)) salesByDay.set(d, (salesByDay.get(d) ?? 0) + o.amount_paise);
     }
@@ -100,6 +101,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
               <th className={`${tableClass.th} text-right`}>Checkouts</th>
               <th className={`${tableClass.th} text-right`}>Sales</th>
               <th className={`${tableClass.th} text-right`}>Conversion</th>
+              <th className={`${tableClass.th} text-right`}>Add-on taken</th>
               <th className={`${tableClass.th} text-right`}>Revenue</th>
             </tr>
           </thead>
@@ -113,11 +115,12 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
                 <td className={`${tableClass.td} text-right`}>{r.checkouts.toLocaleString("en-IN")}</td>
                 <td className={`${tableClass.td} text-right`}>{r.sales.toLocaleString("en-IN")}</td>
                 <td className={`${tableClass.td} text-right`}>{pct(r.sales, r.views)}</td>
+                <td className={`${tableClass.td} text-right`}>{r.withOffer ? pct(r.withOffer, r.sales) : "-"}</td>
                 <td className={`${tableClass.td} text-right font-bold`}>{formatPaise(r.revenue)}</td>
               </tr>
             ))}
             {!rows.length && (
-              <tr><td colSpan={6} className={`${tableClass.td} text-center`}>No pages yet.</td></tr>
+              <tr><td colSpan={7} className={`${tableClass.td} text-center`}>No pages yet.</td></tr>
             )}
           </tbody>
         </table>

@@ -5,6 +5,7 @@ import { eventIds } from "@/lib/meta";
 import { formatPaise } from "@/lib/money";
 import { MetaPixel } from "@/components/meta-pixel";
 import { OrderStatusView } from "./order-status";
+import { orderFiles } from "@/lib/order-files";
 
 export const metadata = { title: "Payment status", robots: { index: false } };
 
@@ -16,7 +17,7 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
   const data = await getPublicPage(slug);
   const { data: order } = await createAdminClient()
     .from("orders")
-    .select("id, page_id, status, amount_paise, currency, page_title")
+    .select("id, page_id, status, amount_paise, currency, page_title, offer_id, offer_title")
     .eq("id", orderId)
     .maybeSingle();
   if (!data || !order || order.page_id !== data.page.id) notFound();
@@ -27,10 +28,10 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
       <OrderStatusView
         orderId={order.id}
         initialStatus={order.status}
-        title={order.page_title}
+        title={order.offer_title ? `${order.page_title} + ${order.offer_title}` : order.page_title}
         amountLabel={formatPaise(order.amount_paise)}
         thankYouMessage={data.page.thank_you_message}
-        files={data.files}
+        files={(await orderFiles({ page_id: order.page_id, offer_id: order.offer_id })).map(({ id, file_name, size_bytes }) => ({ id, file_name, size_bytes }))}
         pixel={{
           pixelId: data.pixelId,
           eventId: eventIds.purchase(order.id),

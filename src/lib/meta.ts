@@ -137,7 +137,8 @@ async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" 
     customData: {
       currency: order.currency,
       value: order.amount_paise / 100,
-      content_ids: [order.page_id],
+      content_ids: order.offer_id ? [order.page_id, order.offer_id] : [order.page_id],
+      num_items: order.offer_id ? 2 : 1,
       content_name: order.page_title,
       content_type: "product",
       ...(eventName === "Purchase" ? { order_id: order.id } : {}),
