@@ -31,8 +31,8 @@ export default function Features() {
       <PageHero
         dark
         kicker="Features"
-        title="Everything you need to sell a file. Nothing you don't."
-        sub="Pages, checkout, delivery, tracking and money, all in one place and set up in an afternoon."
+        title="Everything you need to sell a file and grow an audience."
+        sub="Payment pages, a link-in-bio storefront, lead magnets, delivery, tracking and payouts, all in one place and set up in an afternoon."
       />
 
       <Group
@@ -41,10 +41,11 @@ export default function Features() {
         title="A page for every product."
         sub="Each product gets its own link with a cover, description and buy button. It looks clean on a phone, which is where most of your buyers are."
         items={[
-          "Fixed price in rupees, from ₹1 upwards",
-          "Cover image and long description with line breaks",
+          "Rich description with headings, lists and images, with a live preview",
+          "Testimonials and an FAQ section to answer buyers before they ask",
           "Custom checkout questions: text, number or dropdown",
-          "Draft, live and archived states",
+          "Your own support email, refund policy and terms on each page",
+          "Coupons and a one-tick add-on offer at checkout (Creator)",
         ]}
         mock={
           <MockFrame>
@@ -67,11 +68,12 @@ export default function Features() {
         icon="bolt"
         kicker="Deliver"
         title="Files arrive while you sleep."
-        sub="The moment Razorpay confirms a payment, the buyer sees a download button and gets a receipt email with the same link. You do nothing."
+        sub="The moment Razorpay confirms a payment, the buyer sees a download button and gets an email with the same links. Files up to 10 MB are attached to the email too. You do nothing."
         items={[
           "Lifetime access. Links never expire",
           "Lost the email? Buyers request their links again by email",
           "Short-lived signed downloads, so the real file never leaks",
+          "Buyers can reply to the email to reach your support address",
           "A full refund switches access off automatically",
         ]}
         mock={
@@ -97,15 +99,76 @@ export default function Features() {
       />
 
       <Group
+        icon="store"
+        kicker="Storefront"
+        title="One link for your bio. Every plan."
+        sub="reviewlabs.space/@yourname shows your photo, bio, social links and every product and lead magnet you choose, in the order you want. Made for the link in your Instagram or YouTube bio."
+        items={[
+          "Pick your handle, upload a photo, add up to nine social links",
+          "Feature one product at the top, reorder or hide the rest",
+          "Live preview while you edit",
+          "Your Meta Pixel tracks storefront visits (Creator)",
+          "No Reviewlabs badge on the Creator plan",
+        ]}
+        mock={
+          <MockFrame className="mx-auto w-full max-w-sm">
+            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,#0052ff,#7aa5ff)] text-[24px] font-semibold text-white">R</div>
+            <p className="mt-3 text-center text-[17px] font-semibold">Rohan Fitness</p>
+            <p className="text-center text-[13px] text-muted">@rohanfit · Home workouts that fit a busy day</p>
+            <div className="mt-4 space-y-2">
+              {[["12-week home workout plan", "₹499"], ["Meal prep guide", "₹199"], ["Free 7-day starter plan", "Free"]].map(([t, p]) => (
+                <div key={t} className="flex items-center gap-3 rounded-2xl border border-hairline p-3">
+                  <span className="size-10 shrink-0 rounded-xl bg-[linear-gradient(135deg,#0052ff,#7aa5ff)]" />
+                  <span className="flex-1 text-[14px] font-medium">{t}</span>
+                  <span className={p === "Free" ? "rounded-full bg-[#e6f7ef] px-2 py-0.5 text-[12px] font-semibold text-up" : "num text-[14px]"}>{p}</span>
+                </div>
+              ))}
+            </div>
+          </MockFrame>
+        }
+      />
+
+      <Group
+        tone="soft"
+        flip
+        icon="magnet"
+        kicker="Lead magnets"
+        title="Grow a list, then sell to it."
+        sub="Give away a checklist, template or mini guide in exchange for a name and email. People who ask for your free stuff are the easiest people to sell to next."
+        items={[
+          "Your own questions, plus optional phone number",
+          "Email verification codes keep fake emails out",
+          "Free files delivered instantly and by email",
+          "Send people to your WhatsApp group or a paid product afterwards",
+          "Responses, conversion rate and CSV export on every plan",
+        ]}
+        mock={
+          <div className="rounded-3xl bg-[linear-gradient(160deg,#ff8a00_0%,#ff3d6e_55%,#8a1fa8_100%)] p-8">
+            <div className="mx-auto max-w-xs overflow-hidden rounded-3xl bg-canvas shadow-float">
+              <div className="h-24 bg-[linear-gradient(135deg,#ffd6e0,#c7d7ff)]" />
+              <div className="space-y-3 p-5">
+                <p className="text-[16px] font-semibold">Free 7-day starter plan</p>
+                {["What's your name?", "Your email", "Your fitness level"].map((f) => (
+                  <div key={f} className="flex h-10 items-center rounded-xl border border-hairline px-3 text-[13px] text-muted">{f}</div>
+                ))}
+                <div className="flex h-10 items-center justify-center rounded-full bg-ink text-[14px] font-semibold text-white">Get it now</div>
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      <Group
         icon="target"
         kicker="Grow"
         title="See what sells, then sell more of it."
-        sub="Track every page from first view to paid order, run discount codes for launches, and give your Meta ads the purchase data they need."
+        sub="On the Creator plan: track every page from first view to paid order, run discount codes for launches, and give your Meta ads the purchase data they need."
         items={[
           "Page views, checkouts, sales and conversion per page",
           "Coupons: percent or flat, with expiry dates and use limits",
-          "Meta Pixel plus Conversions API with deduplicated events",
-          "Test events mode to check your setup before you spend",
+          "Add-on offer at checkout, with its own files",
+          "Meta Pixel plus Conversions API, for your account or per page",
+          "Test events with your own test code before you spend",
         ]}
         mock={
           <MockFrame>
@@ -139,8 +202,8 @@ export default function Features() {
         sub="Every sale, fee, refund and payout is a separate line, and your balance is their total. When we pay you, the UTR number is right there."
         items={[
           "Payouts to your UPI ID or bank account",
-          "Gateway fees shown per sale, no hidden deductions",
-          "Download orders as CSV for your accountant",
+          "One all-inclusive fee per sale (6% Free, 4% Creator), gateway included",
+          "Download orders as CSV for your accountant (Creator)",
           "Refunds handled for you and recorded in the ledger",
         ]}
         mock={
@@ -148,7 +211,7 @@ export default function Features() {
             <p className="text-[14px] text-body">Balance owed to you</p>
             <p className="num mt-1 text-[32px]">₹8,940.50</p>
             <ul className="mt-5 divide-y divide-hairline-soft">
-              {[["Sale", "+₹349.00", true], ["Gateway fee", "−₹8.24", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
+              {[["Sale", "+₹349.00", true], ["Fees 4% (includes payment gateway)", "−₹13.96", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
                 <li key={String(k) + String(v)} className="flex justify-between py-3 text-[14px]">
                   <span>{k}</span>
                   <span className={cx("num", up ? "text-up" : "text-ink")}>{v}</span>
@@ -164,9 +227,9 @@ export default function Features() {
         <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             ["lock", "Payments verified by signature", "Every Razorpay payment is checked on our server before an order counts."],
-            ["spark", "Missed updates recovered", "A background check asks Razorpay about unfinished orders every 15 minutes."],
+            ["spark", "Missed updates recovered", "A background check asks Razorpay about unfinished orders, so a closed tab never loses a sale."],
             ["ledger", "A ledger nobody can edit", "Corrections are new lines, never rewrites, so your history stays honest."],
-            ["mail", "Receipts sent once", "Retries never send the same buyer two receipts or two Meta purchases."],
+            ["mail", "Emails sent once", "Retries never send the same buyer two emails or report two purchases to Meta."],
             ["bank", "Payout records with UTR", "Each payout is logged against the reference your bank shows."],
             ["upi", "Verified accounts", "Every creator verifies their email before they can sell, and limits are enforced in the database."],
           ].map(([icon, title, body]) => (

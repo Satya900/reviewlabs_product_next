@@ -2,7 +2,7 @@
 export const site = {
   name: "Reviewlabs",
   tagline: "Sell your ebooks. Online.",
-  description: "Payment pages for creators who sell ebooks, templates and other digital files in India.",
+  description: "Payment pages, a link-in-bio storefront and lead magnets for creators who sell ebooks, templates and other digital files in India.",
   legalName: "Veyrn Labs",
   founder: "Satyabrata Mohanty",
   supportEmail: "satyabrata@veyrnlabs.com",

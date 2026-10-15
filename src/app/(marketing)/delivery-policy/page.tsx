@@ -13,8 +13,9 @@ export default function DeliveryPolicy() {
     >
       <Clause n={1} title="How you receive your purchase">
         <p>
-          After Razorpay confirms your payment, the thank-you page shows a download button and we email a receipt with
-          the same download link to the address you entered at checkout. This usually takes less than a minute.
+          After Razorpay confirms your payment, the thank-you page shows a download button and we email the same download
+          links to the address you entered at checkout. If the files are small enough (up to 10 MB in total), they are
+          attached to the email as well. This usually takes less than a minute.
         </p>
       </Clause>
       <Clause n={2} title="How long you have access">
@@ -30,7 +31,13 @@ export default function DeliveryPolicy() {
           <li>Still nothing after an hour? Write to <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> with your payment ID.</li>
         </ul>
       </Clause>
-      <Clause n={4} title="Delivery problems">
+      <Clause n={4} title="Free downloads">
+        <p>
+          Free files from a creator&apos;s lead magnet are delivered the same way: a download button right after you submit the
+          form, and an email with the links. These links do not expire.
+        </p>
+      </Clause>
+      <Clause n={5} title="Delivery problems">
         <p>
           If we cannot deliver your file, you are covered by our <Link href="/refund-policy">refund policy</Link>.
         </p>

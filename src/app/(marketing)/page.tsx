@@ -36,7 +36,7 @@ export default function Home() {
             <h1 className="display text-[44px] sm:text-[64px] lg:text-[80px]">Sell your ebook from a single link.</h1>
             <p className="max-w-xl text-[18px] text-on-dark-soft sm:text-[20px]">
               Make a payment page in about five minutes. Buyers pay with UPI or card and the file lands in their inbox.
-              Start free. One all-inclusive fee per sale, payment gateway included.
+              Add a link-in-bio storefront and free lead magnets to grow your list. Start free, one all-inclusive fee per sale.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/signup" className={buttonClass.hero}>Start for free</Link>
@@ -97,19 +97,73 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* Storefront + lead magnets */}
+      <Section>
+        <div className="grid items-center gap-14 lg:grid-cols-2">
+          <div className="space-y-6">
+            <SectionHead
+              kicker="One link for everything"
+              title="Your storefront and your email list, on every plan."
+              sub="Put reviewlabs.space/@yourname in your Instagram bio. Visitors see your photo, your socials and every product. Give away a free guide to collect emails, then sell to the people who asked for it."
+            />
+            <CheckList
+              items={[
+                "Link-in-bio storefront with your photo, bio and social links",
+                "Lead magnets: a free file in exchange for a name and email",
+                "Email verification codes so your list stays real",
+                "Recommend a paid product on the thank-you screen",
+                "Export every lead as a CSV, on any plan",
+              ]}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-[28px] border-[6px] border-ink bg-[radial-gradient(ellipse_at_top,#eef3ff_0%,#f7f7f7_55%)] p-4">
+              <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#0052ff,#7aa5ff)] text-[22px] font-semibold text-white">A</div>
+              <p className="mt-2 text-center text-[14px] font-semibold">Ananya Designs</p>
+              <p className="text-center text-[11px] text-muted">@ananya.designs</p>
+              <div className="mt-3 space-y-2">
+                <div className="overflow-hidden rounded-2xl bg-canvas shadow-soft">
+                  <div className="h-16 bg-[linear-gradient(135deg,#0052ff,#7aa5ff)]" />
+                  <div className="flex items-center justify-between p-2.5 text-[11px]"><span className="font-semibold">Canva carousel pack</span><span className="num">₹399</span></div>
+                </div>
+                {[["Notion planner", "₹249"], ["Free brand checklist", "Free"]].map(([t, p]) => (
+                  <div key={t} className="flex items-center justify-between rounded-xl bg-canvas p-2.5 text-[11px] shadow-soft">
+                    <span className="font-medium">{t}</span>
+                    <span className={p === "Free" ? "rounded-full bg-[#e6f7ef] px-2 py-0.5 font-semibold text-up" : "num"}>{p}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center rounded-[28px] bg-[linear-gradient(160deg,#ff8a00_0%,#ff3d6e_55%,#8a1fa8_100%)] p-4">
+              <div className="w-full overflow-hidden rounded-2xl bg-canvas shadow-float">
+                <div className="h-14 bg-[linear-gradient(135deg,#ffd6e0,#c7d7ff)]" />
+                <div className="space-y-2 p-3">
+                  <p className="text-[12px] font-semibold leading-snug">Free brand checklist</p>
+                  {["Your name", "Your email"].map((f) => <div key={f} className="h-7 rounded-lg border border-hairline px-2 text-[10px] leading-7 text-muted">{f}</div>)}
+                  <div className="h-7 rounded-full bg-ink text-center text-[10px] font-semibold leading-7 text-white">Get it now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Features */}
       <Section>
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <SectionHead kicker="Everything included" title="Built for selling files, nothing else." />
+          <SectionHead kicker="Everything included" title="Everything you need to sell files and grow." />
           <Link href="/features" className="link text-[16px]">All features →</Link>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard icon="page" title="Payment pages">Your title, price, cover and description on a page that loads fast on any phone.</FeatureCard>
-          <FeatureCard icon="bolt" title="Instant delivery">The download link appears on the thank-you page and in the receipt email a few seconds after payment.</FeatureCard>
-          <FeatureCard icon="infinity" title="Lifetime access">Buyers pay once and can come back for the file whenever they need it.</FeatureCard>
-          <FeatureCard icon="tag" title="Coupons">Percent or flat discounts, limited by date or number of uses, for one page or all of them.</FeatureCard>
-          <FeatureCard icon="target" title="Meta Pixel and CAPI">Purchases reach Meta from the browser and the server, so your ads get credit even when ad blockers are on.</FeatureCard>
-          <FeatureCard icon="chart" title="Analytics">See page views, checkouts and sales per page, and which products actually convert.</FeatureCard>
+          <FeatureCard icon="page" title="Payment pages">A rich description with images, a cover and your own checkout questions, on a page that loads fast on any phone.</FeatureCard>
+          <FeatureCard icon="bolt" title="Instant delivery">The download appears on the thank-you page seconds after payment, and the files are attached to the email too.</FeatureCard>
+          <FeatureCard icon="infinity" title="Lifetime access">Buyers pay once and come back for the file whenever they need it. Lost the email? They get it again in one click.</FeatureCard>
+          <FeatureCard icon="store" title="Link-in-bio storefront">One link with your photo, socials and every product. Made for Instagram and YouTube bios.</FeatureCard>
+          <FeatureCard icon="magnet" title="Lead magnets">Give away a free guide for a name and email, with optional email verification. Build a list you own.</FeatureCard>
+          <FeatureCard icon="star" title="Testimonials and FAQ">Show reviews from happy buyers and answer common questions right on the page.</FeatureCard>
+          <FeatureCard icon="tag" title="Coupons" badge="Creator">Percent or flat discounts, limited by date or number of uses, for one page or all of them.</FeatureCard>
+          <FeatureCard icon="gift" title="Additional offer" badge="Creator">A one-tick add-on at checkout that raises the value of every order.</FeatureCard>
+          <FeatureCard icon="target" title="Meta Pixel and CAPI" badge="Creator">Purchases and leads reach Meta from the browser and the server, so your ads get credit even with ad blockers on.</FeatureCard>
         </div>
       </Section>
 
@@ -144,7 +198,7 @@ export default function Home() {
                   "The file goes out on its own, at 3 am too",
                   "Every sale, fee and refund is a line in your ledger",
                   "Meta receives the purchase with your ad attribution",
-                  "Analytics shows views, checkouts and sales per page",
+                  "Free lead magnets grow a list you can sell to later",
                 ]}
               />
             </div>
@@ -159,7 +213,7 @@ export default function Home() {
             <SectionHead kicker="Your money" title="Know where every rupee went." sub="Your balance is not a mystery number. It is the sum of a ledger you can read line by line." />
             <CheckList
               items={[
-                "Sales, gateway fees, refunds and payouts, each with a date",
+                "Sales, fees, refunds and payouts, each with a date",
                 "Payouts to your UPI ID or bank account, with the UTR number",
                 "Download every order as a CSV for your accountant",
               ]}
@@ -204,7 +258,7 @@ export default function Home() {
             </p>
             <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month or {priceLabels.yearly}/year, with fees down to {CREATOR_FEE_PERCENT}%.</p>
             <div className="mt-8">
-              <CheckList dark items={["Free: one page, checkout, delivery, payouts", "Creator: unlimited pages, coupons, analytics", "Meta Pixel and CAPI, CSV export on Creator"]} />
+              <CheckList dark items={["Free: one page, one lead magnet, your storefront", "Creator: unlimited pages and lead magnets, 4% fees", "Creator: coupons, add-on offers, analytics, Meta, CSV"]} />
             </div>
             <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start for free</Link>
           </div>
@@ -228,13 +282,14 @@ export default function Home() {
           <SectionHead kicker="Questions" title="Things creators ask us first." />
           <Faq
             items={[
-              { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, and a dashboard for orders, earnings and analytics.` },
+              { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, a link-in-bio storefront, free lead magnets to collect emails, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
               { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month or ${priceLabels.yearly} a year, with unlimited pages and the growth tools.` },
               { q: "How do I get paid?", a: "We send your balance to the UPI ID or bank account in your settings. Each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
-              { q: "Can I track sales in Meta Ads Manager?", a: "Yes. Add your Pixel ID and Conversions API token in settings. We send PageView, ViewContent, InitiateCheckout and Purchase with matching event IDs." },
+              { q: "Can I track sales in Meta Ads Manager?", a: "Yes, on the Creator plan. Add your Pixel ID and Conversions API token in settings, for your whole account or per page. We send PageView, ViewContent, InitiateCheckout, Purchase and Lead events from both the browser and the server, with matching event IDs." },
+              { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Free includes one lead magnet; Creator has unlimited." },
               { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your UPI ID or bank details for payouts, and publish your page." },
             ]}
           />

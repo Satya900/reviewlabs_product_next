@@ -1,10 +1,16 @@
 import Link from "next/link";
-import { CheckList, CtaBand, Faq, PageHero, Section, SectionHead } from "@/components/marketing";
+import { CheckList, CtaBand, Faq, Icon, PageHero, Section, SectionHead } from "@/components/marketing";
 import { buttonClass, cx, tableClass } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
-import { CREATOR_FEE_PERCENT, FREE_FEE_PERCENT, creatorFeatures, freeFeatures, priceLabels } from "@/lib/plans";
+import { CREATOR_FEE_PERCENT, FREE_FEE_PERCENT, creatorFeatures, freeFeatures, planMatrix, priceLabels, type PlanCell } from "@/lib/plans";
 
 export const metadata = { title: "Pricing" };
+
+function Cell({ value }: { value: PlanCell }) {
+  if (value === true) return <Icon name="check" className="mx-auto size-5 text-up" />;
+  if (value === false) return <span className="text-muted-soft" aria-label="Not included">–</span>;
+  return <span className="text-[14px] font-medium">{value}</span>;
+}
 
 function keep(pricePaise: number, percent: number) {
   const fee = Math.round((pricePaise * percent) / 100);
@@ -18,7 +24,7 @@ export default function Pricing() {
       <PageHero
         kicker="Pricing"
         title="Start free. Pay less per sale as you grow."
-        sub={`One all-inclusive fee per sale, with the payment gateway charge already covered: ${FREE_FEE_PERCENT}% on Free, ${CREATOR_FEE_PERCENT}% on Creator. No setup fees, no hidden charges.`}
+        sub={`Payment pages, a storefront and lead magnets on every plan. One all-inclusive fee per sale with the payment gateway covered: ${FREE_FEE_PERCENT}% on Free, ${CREATOR_FEE_PERCENT}% on Creator. No setup fees, no hidden charges.`}
       />
 
       <Section className="pt-4 md:pt-8">
@@ -85,6 +91,36 @@ export default function Pricing() {
         </div>
       </Section>
 
+      <Section>
+        <SectionHead center kicker="Compare plans" title="Everything in each plan." sub="Free has everything you need to start selling. Creator adds lower fees and the tools to grow." />
+        <div className="mx-auto mt-10 max-w-4xl overflow-x-auto rounded-3xl border border-hairline bg-canvas">
+          <table className="w-full min-w-[560px] text-left text-[15px]">
+            <thead>
+              <tr className="border-b border-hairline">
+                <th className="px-5 py-4 font-semibold">Feature</th>
+                <th className="w-36 px-4 py-4 text-center font-semibold">Free</th>
+                <th className="w-44 bg-primary-soft px-4 py-4 text-center font-semibold text-primary">Creator</th>
+              </tr>
+            </thead>
+            {planMatrix.map((g) => (
+              <tbody key={g.group}>
+                <tr>
+                  <th colSpan={3} className="bg-surface-soft px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-muted">{g.group}</th>
+                </tr>
+                {g.rows.map((r) => (
+                  <tr key={r.feature} className="border-b border-hairline-soft last:border-0">
+                    <td className="px-5 py-3.5 text-body">{r.feature}</td>
+                    <td className="px-4 py-3.5 text-center"><Cell value={r.free} /></td>
+                    <td className="bg-primary-soft/40 px-4 py-3.5 text-center"><Cell value={r.creator} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
+          </table>
+        </div>
+        <p className="mx-auto mt-4 max-w-4xl text-[13px] text-muted">Custom plans can include lower fees and set-up help. <Link href="/custom" className="link">Tell us what you need</Link>.</p>
+      </Section>
+
       <Section tone="soft">
         <SectionHead
           kicker="The maths"
@@ -125,7 +161,9 @@ export default function Pricing() {
             items={[
               { q: "Is the Free plan really free?", a: `Yes. There's no monthly charge. You pay a ${FREE_FEE_PERCENT}% fee only when you make a sale, and that already includes Razorpay's charge.` },
               { q: "What does \"gateway included\" mean?", a: "Razorpay charges a fee on every payment. We pay that out of our fee, so you see one simple percentage and nothing else is deducted." },
-              { q: "What's the difference between Free and Creator?", a: `Free gives you one product page with checkout, delivery, orders and payouts at ${FREE_FEE_PERCENT}%. Creator lowers the fee to ${CREATOR_FEE_PERCENT}% and adds unlimited pages, coupons, analytics, Meta Pixel and Conversions API, add-on offers and CSV export.` },
+              { q: "What's the difference between Free and Creator?", a: `Free gives you one product page, one lead magnet and your storefront, with checkout, delivery, testimonials, FAQ and payouts, at ${FREE_FEE_PERCENT}% per sale. Creator lowers the fee to ${CREATOR_FEE_PERCENT}% and adds unlimited pages and lead magnets, coupons, add-on offers, analytics, Meta Pixel and Conversions API, CSV export, and removes our branding.` },
+              { q: "Is the storefront free?", a: "Yes, on every plan. You get reviewlabs.space/@yourname with your photo, bio, social links and all your products and lead magnets. On Free it shows a small Made with Reviewlabs badge; Creator hides it." },
+              { q: "What are lead magnets and do they cost anything?", a: "A lead magnet is a free download, like a checklist or mini guide, that people get in exchange for their name and email. There's no fee because no money changes hands. Free includes one; Creator has unlimited. You can export the leads as CSV on any plan." },
               { q: "How does the first month work?", a: `If you've never had Creator, your first month is ${priceLabels.intro}. After that it's ${priceLabels.monthly} a month by autopay. You can cancel anytime before the month ends.` },
               { q: "Monthly or yearly?", a: `Yearly is ${priceLabels.yearly}, which saves ${priceLabels.saving} compared with paying monthly for 12 months. Both renew automatically and both can be cancelled from Plan and billing.` },
               { q: "What happens if I cancel?", a: "You keep Creator until the end of the period you paid for. Then you move to Free: your oldest live page stays live and the others become drafts. Nothing is deleted." },

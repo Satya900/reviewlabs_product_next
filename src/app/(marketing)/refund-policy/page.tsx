@@ -46,6 +46,7 @@ export default function RefundPolicy() {
           Creator plan payments ({formatPaise(site.creatorPlanPaise)} monthly or {formatPaise(site.creatorYearlyPaise)} yearly) are not
           refundable for a period that has started. Creators can cancel any time and won&apos;t be charged for the next period.
           Individual product pages may carry the seller&apos;s own refund policy, which applies to purchases on that page.
+          Free downloads from lead magnets involve no payment, so there is nothing to refund.
         </p>
       </Clause>
     </LegalPage>

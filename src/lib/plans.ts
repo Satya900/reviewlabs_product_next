@@ -54,21 +54,83 @@ export const premiumCopy: Record<PremiumFeature, { title: string; body: string }
 };
 
 export const creatorFeatures = [
-  "Unlimited product pages",
-  "Unlimited lead magnets",
+  "Unlimited product pages and lead magnets",
+  "Lower fees: 4% per sale instead of 6%",
   "Coupons and discount codes",
-  "Page analytics: views, checkouts, sales",
+  "Additional offer (order bump) at checkout",
+  "Analytics: views, checkouts, sales and conversion",
   "Meta Pixel and Conversions API, per account or per page",
   "CSV export of orders",
-  "Additional offer (order bump) at checkout",
-  "Lower fees: 4% per sale instead of 6%",
+  "Storefront without Reviewlabs branding",
 ];
 
 export const freeFeatures = [
-  "One product page",
+  "One product page and one lead magnet",
   "UPI, card and netbanking checkout",
-  "Instant file delivery with lifetime access",
-  "Orders, earnings ledger and payouts",
+  "Instant delivery, files attached to the email",
+  "Lifetime download links for buyers",
   "Link-in-bio storefront at reviewlabs.space/@you",
-  "One lead magnet to collect emails",
+  "Testimonials, FAQ and your own policies on pages",
+  "Earnings ledger and payouts to UPI or bank",
+];
+
+// Side-by-side comparison on the pricing page. true = included, false = not included.
+export type PlanCell = boolean | string;
+export const planMatrix: { group: string; rows: { feature: string; free: PlanCell; creator: PlanCell }[] }[] = [
+  {
+    group: "Fees",
+    rows: [
+      { feature: "Monthly price", free: "₹0", creator: `${priceLabels.monthly}/month or ${priceLabels.yearly}/year` },
+      { feature: "Fee per sale, payment gateway included", free: `${FREE_FEE_PERCENT}%`, creator: `${CREATOR_FEE_PERCENT}%` },
+      { feature: "Setup fees or hidden charges", free: "None", creator: "None" },
+    ],
+  },
+  {
+    group: "Sell",
+    rows: [
+      { feature: "Product pages", free: "1", creator: "Unlimited" },
+      { feature: "UPI, cards and netbanking via Razorpay", free: true, creator: true },
+      { feature: "Rich description with images, cover and live preview", free: true, creator: true },
+      { feature: "Custom checkout questions", free: true, creator: true },
+      { feature: "Testimonials and FAQ sections", free: true, creator: true },
+      { feature: "Your own support email, refund policy and terms per page", free: true, creator: true },
+      { feature: "Coupons and discount codes", free: false, creator: true },
+      { feature: "Additional offer (order bump) at checkout", free: false, creator: true },
+    ],
+  },
+  {
+    group: "Deliver",
+    rows: [
+      { feature: "Instant download after payment", free: true, creator: true },
+      { feature: "Files attached to the email (up to 10 MB)", free: true, creator: true },
+      { feature: "Lifetime access, links resent on request", free: true, creator: true },
+    ],
+  },
+  {
+    group: "Grow your audience",
+    rows: [
+      { feature: "Link-in-bio storefront at reviewlabs.space/@you", free: true, creator: true },
+      { feature: "Reviewlabs branding on storefront and lead magnets", free: "Shown", creator: "Hidden" },
+      { feature: "Lead magnets (free downloads for an email)", free: "1", creator: "Unlimited" },
+      { feature: "Email verification codes on lead magnets", free: true, creator: true },
+      { feature: "Lead responses with CSV export", free: true, creator: true },
+    ],
+  },
+  {
+    group: "Track",
+    rows: [
+      { feature: "Orders and earnings ledger", free: true, creator: true },
+      { feature: "Analytics: views, checkouts, sales, conversion", free: false, creator: true },
+      { feature: "Meta Pixel and Conversions API (Purchase and Lead events)", free: false, creator: true },
+      { feature: "Separate pixel per product page", free: false, creator: true },
+      { feature: "CSV export of orders", free: false, creator: true },
+    ],
+  },
+  {
+    group: "Get paid",
+    rows: [
+      { feature: "Payouts to your UPI ID or bank account, with UTR", free: true, creator: true },
+      { feature: "Refunds handled and recorded for you", free: true, creator: true },
+    ],
+  },
 ];

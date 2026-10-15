@@ -56,7 +56,7 @@ export function SectionHead({
   );
 }
 
-export function FeatureCard({ icon, title, children, dark }: { icon?: IconName; title: string; children: ReactNode; dark?: boolean }) {
+export function FeatureCard({ icon, title, children, dark, badge }: { icon?: IconName; title: string; children: ReactNode; dark?: boolean; badge?: string }) {
   return (
     <article className={cx("rounded-3xl p-8", dark ? "bg-dark-elevated" : "border border-hairline bg-canvas")}>
       {icon && (
@@ -64,7 +64,10 @@ export function FeatureCard({ icon, title, children, dark }: { icon?: IconName; 
           <Icon name={icon} className="size-6 text-primary" />
         </span>
       )}
-      <h3 className="text-[18px] font-semibold">{title}</h3>
+      <h3 className="flex flex-wrap items-center gap-2 text-[18px] font-semibold">
+        {title}
+        {badge && <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-[12px] font-semibold text-primary">{badge}</span>}
+      </h3>
       <div className={cx("mt-2 text-[16px]", dark ? "text-on-dark-soft" : "text-body")}>{children}</div>
     </article>
   );
@@ -84,7 +87,11 @@ export type IconName =
   | "mail"
   | "bank"
   | "spark"
-  | "check";
+  | "check"
+  | "store"
+  | "magnet"
+  | "star"
+  | "gift";
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   const p = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -103,6 +110,10 @@ export function Icon({ name, className }: { name: IconName; className?: string }
     bank: <><path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" {...p} /></>,
     spark: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" {...p} />,
     check: <path d="m5 12 4.5 4.5L19 7" {...p} />,
+    store: <><path d="M4 9 5.5 4h13L20 9" {...p} /><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9" {...p} /><path d="M5 11v9h14v-9M10 20v-5h4v5" {...p} /></>,
+    magnet: <><path d="M6 4v8a6 6 0 0 0 12 0V4" {...p} /><path d="M6 4h3v8a3 3 0 0 0 6 0V4h3M6 8h3M15 8h3" {...p} /></>,
+    star: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" {...p} />,
+    gift: <><rect x="3" y="8" width="18" height="5" rx="1" {...p} /><path d="M5 13v8h14v-8M12 8v13M12 8C10 4 6.5 4.5 7 7c.3 1.2 2.5 1 5 1M12 8c2-4 5.5-3.5 5-1-.3 1.2-2.5 1-5 1" {...p} /></>,
   };
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden>

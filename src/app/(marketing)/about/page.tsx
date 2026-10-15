@@ -18,8 +18,9 @@ export default function About() {
             </p>
             <p>
               {site.name} replaces that with one page per product. Razorpay takes the payment, the file goes out on its own,
-              and the sale lands in a ledger you can check. We keep the product small on purpose: pages, delivery, tracking
-              and payouts, done carefully.
+              and the sale lands in a ledger you can check. A link-in-bio storefront and free lead magnets help you find
+              buyers in the first place. We keep the product focused on purpose: pages, delivery, audience, tracking and
+              payouts, done carefully.
             </p>
             <p>
               {site.name} is built by {site.legalName}, founded by {site.founder}. Anyone can start

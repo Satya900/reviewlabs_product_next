@@ -15,7 +15,8 @@ export default function Terms() {
       <Clause n={1} title="Who we are">
         <p>
           {site.name} is a product of {site.legalName}, founded by {site.founder}. We provide software that lets independent creators sell
-          digital products, such as ebooks and templates, through payment pages.
+          digital products, such as ebooks and templates, through payment pages, and grow an audience with a link-in-bio storefront and
+          lead magnets.
         </p>
       </Clause>
       <Clause n={2} title="Buying a product">
@@ -43,7 +44,7 @@ export default function Terms() {
       </Clause>
       <Clause n={4} title="Fees and payouts for creators">
         <ul>
-          <li>Plans: Free (one product page), Creator ({formatPaise(site.creatorPlanPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year, billed through Razorpay as a recurring payment you can cancel any time) and custom plans agreed with us in writing. First-time monthly subscribers may be offered an introductory price for the first month, shown before payment.</li>
+          <li>Plans: Free (one product page and one lead magnet), Creator ({formatPaise(site.creatorPlanPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year, billed through Razorpay as a recurring payment you can cancel any time) and custom plans agreed with us in writing. First-time monthly subscribers may be offered an introductory price for the first month, shown before payment.</li>
           <li>Every sale carries one all-inclusive fee that covers the payment gateway charge: 6% on Free and 4% on Creator, unless a custom plan sets a different rate. The fee rate is the one in effect when the sale is made.</li>
           <li>If a Creator subscription ends or a renewal fails, your account moves to Free: your oldest live page stays live and other pages become drafts.</li>
           <li>Refunds and chargebacks are deducted from your balance. The fee on a refunded sale is not returned, because the payment gateway keeps its charge too.</li>
@@ -52,33 +53,41 @@ export default function Terms() {
           <li>We may hold a payout while we look into a dispute, a chargeback or a suspected breach of these terms.</li>
         </ul>
       </Clause>
-      <Clause n={5} title="Content you may not sell">
+      <Clause n={5} title="Storefronts and lead magnets">
+        <ul>
+          <li>Your storefront handle, photo, bio and social links are public. Do not use a handle or photo that impersonates another person or brand.</li>
+          <li>Lead magnets let you collect names, email addresses, phone numbers and answers from visitors. Visitors agree to receive updates from you. Use their details only for that, keep them secure, and stop contacting anyone who asks you to.</li>
+          <li>You are responsible for following Indian law, including the Digital Personal Data Protection Act, 2023, when you use the leads you collect.</li>
+          <li>Free files offered through lead magnets follow the same content rules as paid products.</li>
+        </ul>
+      </Clause>
+      <Clause n={6} title="Content you may not sell">
         <p>
           No pirated or copied material, adult content, content that promotes violence or hate, fake documents, malware,
           get-rich-quick or gambling schemes, or anything illegal in India. We may remove a page or close an account that
           breaks this rule, and refund affected buyers from the creator&apos;s balance.
         </p>
       </Clause>
-      <Clause n={6} title="Our liability">
+      <Clause n={7} title="Our liability">
         <p>
           We work to keep the service running and your data safe, but we provide it as is. To the extent the law allows,
           our total liability for any claim is limited to the amount you paid us in the three months before the claim.
           We are not liable for the content of creators&apos; products.
         </p>
       </Clause>
-      <Clause n={7} title="Ending your account">
+      <Clause n={8} title="Ending your account">
         <p>
           Creators can close their account at any time by writing to us. We pay out any remaining positive balance after
           the refund window for recent sales has passed. Buyers keep access to files they have already bought.
         </p>
       </Clause>
-      <Clause n={8} title="Changes and governing law">
+      <Clause n={9} title="Changes and governing law">
         <p>
           We may update these terms and will change the date at the top when we do. These terms are governed by the laws
           of India.
         </p>
       </Clause>
-      <Clause n={9} title="Contact">
+      <Clause n={10} title="Contact">
         <p>
           Questions about these terms: <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.
         </p>

@@ -17,8 +17,8 @@ export default function HowItWorks() {
           <Steps
             items={[
               { title: "Create your account", body: "Sign up with your email and a password, then click the link we email you to verify it. It's free." },
-              { title: "Make your page", body: "Add a title, price, description, cover and the file. Turn it live when it looks right." },
-              { title: "Share and get paid", body: "Post the link anywhere. Orders, analytics and your balance update on their own." },
+              { title: "Make your page", body: "Add a title, price, description, cover and the file. Add testimonials and an FAQ if you like. Turn it live when it looks right." },
+              { title: "Share and get paid", body: "Post the page link, or your storefront link with all your products. Orders and your balance update on their own." },
             ]}
           />
         </div>
@@ -42,11 +42,19 @@ export default function HowItWorks() {
             items={[
               "An order only counts as paid after Razorpay confirms it to our server",
               "If the buyer closes the tab mid-payment, they still get their file once the money arrives",
-              "Every 15 minutes we ask Razorpay about orders that haven't settled",
+              "A background check asks Razorpay about orders that haven't settled",
               "Receipts and Meta events are sent once, even when updates arrive twice",
               "Your earnings are a ledger: sales add a line, fees and refunds subtract one",
             ]}
           />
+        </div>
+      </Section>
+
+      <Section>
+        <SectionHead kicker="Grow while you sell" title="Two links that work for you." />
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <FeatureCard icon="store" title="Your storefront">reviewlabs.space/@yourname collects every product and free download on one page. Put it in your bio and forget about changing links.</FeatureCard>
+          <FeatureCard icon="magnet" title="Your lead magnets">Offer a free file for an email. Visitors get it instantly, you get a lead, and the thank-you screen can point them to a paid product.</FeatureCard>
         </div>
       </Section>
 
