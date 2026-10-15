@@ -5,7 +5,7 @@ import { NavTheme } from "@/components/nav-theme";
 import { Logo } from "@/components/top-nav";
 
 const footerColumns = [
-  { title: "Product", links: [{ href: "/features", label: "Features" }, { href: "/how-it-works", label: "How it works" }, { href: "/pricing", label: "Pricing" }, { href: "/custom", label: "Custom plan" }, { href: "/login", label: "Creator login" }] },
+  { title: "Product", links: [{ href: "/features", label: "Features" }, { href: "/how-it-works", label: "How it works" }, { href: "/pricing", label: "Pricing" }, { href: "/custom", label: "Custom plan" }, { href: "/compare/superprofile", label: "vs Superprofile" }, { href: "/login", label: "Creator login" }] },
   { title: "Company", links: [{ href: "/about", label: "About" }, { href: "/contact", label: "Contact" }, { href: "/signup", label: "Create account" }] },
   { title: "Legal", links: legalLinks.filter((l) => l.href !== "/contact") },
 ];
