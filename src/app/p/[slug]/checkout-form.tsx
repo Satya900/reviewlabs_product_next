@@ -8,7 +8,7 @@ import { formatPaise } from "@/lib/money";
 
 type CheckoutField = { id: string; label: string; type: "text" | "textarea" | "number" | "select"; required: boolean; options: string[] };
 type Props = {
-  page: { id: string; slug: string; title: string; amountPaise: number; currency: string; buttonLabel: string; isFree?: boolean };
+  page: { id: string; slug: string; title: string; amountPaise: number; currency: string; buttonLabel: string };
   fields: CheckoutField[];
   pixelId: string | null;
   // Editor preview: looks identical but can't take payments.
@@ -69,28 +69,11 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
     setCheckingCoupon(false);
   }
 
-  // Lead magnet: no payment, just name and email.
-  async function claimFree() {
-    const res = await fetch("/api/claim", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ pageId: page.id, name: buyer.name, email: buyer.email, responses, sourceUrl: window.location.href, ...getMetaCookies() }),
-    }).catch(() => null);
-    const data = res ? await res.json().catch(() => ({})) : {};
-    if (!res?.ok || !data.orderId) {
-      setError(data.error ?? "Something went wrong. Please try again.");
-      setBusy(false);
-      return;
-    }
-    router.push(`/p/${page.slug}/success?order=${data.orderId}`);
-  }
-
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (preview) return;
     setBusy(true);
     setError(null);
-    if (page.isFree) return claimFree();
 
     const [sdkReady, res] = await Promise.all([
       loadRazorpay(),
@@ -146,8 +129,8 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
 
   return (
     <div className="rounded-3xl bg-canvas p-6 shadow-soft ring-1 ring-hairline sm:p-8">
-      <p className="text-[20px] font-semibold">{page.isFree ? "Get it free" : "Checkout"}</p>
-      <p className="mt-1 text-[14px] text-muted">{page.isFree ? "Enter your name and email. The download link arrives right away." : "Your files arrive by email right after payment."}</p>
+      <p className="text-[20px] font-semibold">Checkout</p>
+      <p className="mt-1 text-[14px] text-muted">Your files arrive by email right after payment.</p>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <fieldset disabled={preview} className="contents">
         <Field label="Full name">
@@ -156,11 +139,9 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
         <Field label="Email" hint="Your files will be sent here">
           <input type="email" required value={buyer.email} onChange={(e) => setBuyer({ ...buyer, email: e.target.value })} className={inputClass} autoComplete="email" />
         </Field>
-        {!page.isFree && (
-          <Field label="Phone">
-            <input type="tel" required value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} className={inputClass} autoComplete="tel" placeholder="98765 43210" />
-          </Field>
-        )}
+        <Field label="Phone">
+          <input type="tel" required value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} className={inputClass} autoComplete="tel" placeholder="98765 43210" />
+        </Field>
         {fields.map((f) => (
           <Field key={f.id} label={f.required ? f.label : `${f.label} (optional)`}>
             {f.type === "textarea" ? (
@@ -175,7 +156,7 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
             )}
           </Field>
         ))}
-        {!page.isFree && <div className="rounded-2xl bg-surface-soft p-3">
+        <div className="rounded-2xl bg-surface-soft p-3">
           {coupon ? (
             <div className="flex items-center justify-between gap-2 text-[13px]">
               <span>
@@ -203,8 +184,8 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
           ) : (
             <button type="button" onClick={() => setCouponOpen(true)} className="link text-[14px]">Have a coupon code?</button>
           )}
-        </div>}
-        {offer && !page.isFree && (
+        </div>
+        {offer && (
           <label
             className={cx(
               "block cursor-pointer rounded-2xl border-2 border-dashed p-4 transition",
@@ -259,11 +240,11 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
         )}
         {error && <p className="text-[14px] font-medium text-down">{error}</p>}
         <Button type="submit" variant="hero" className="w-full" disabled={busy}>
-          {page.isFree ? (busy ? "Getting it ready" : page.buttonLabel === "Buy now" ? "Get it free" : page.buttonLabel) : busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
+          {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
         </Button>
         </fieldset>
         <p className="text-center text-[12px] leading-relaxed text-muted">
-          {page.isFree ? "By continuing" : "By paying"}, you agree to share the details above with {sellerName ?? "the seller"} (owner of this page) and Reviewlabs, and to the{" "}
+          By paying, you agree to share the details above with {sellerName ?? "the seller"} (owner of this page) and Reviewlabs, and to the{" "}
           <a href="/terms" target="_blank" className="underline">terms</a> and{" "}
           <a href="/refund-policy" target="_blank" className="underline">refund policy</a>.
         </p>

@@ -17,14 +17,21 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
     .maybeSingle();
   if (!profile) return null;
 
-  const [{ data: pages }, hasPlan, pixel] = await Promise.all([
+  const [{ data: pages }, { data: magnets }, hasPlan, pixel] = await Promise.all([
     admin
       .from("payment_pages")
-      .select("id, slug, title, amount_paise, is_free, cover_image_url")
+      .select("id, slug, title, amount_paise, cover_image_url")
       .eq("creator_id", profile.id)
       .eq("status", "live")
       .eq("storefront_visible", true)
       .order("storefront_position")
+      .order("created_at", { ascending: false }),
+    admin
+      .from("lead_magnets")
+      .select("id, slug, title, cover_image_url")
+      .eq("creator_id", profile.id)
+      .eq("status", "live")
+      .eq("storefront_visible", true)
       .order("created_at", { ascending: false }),
     creatorHasPlan(profile.id),
     resolvePixelRow({ creatorId: profile.id }),
@@ -40,6 +47,9 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
     featuredId: profile.featured_page_id,
     showBranding: !hasPlan,
     pixelId: pixel?.pixel_id ?? null,
-    products: (pages ?? []).map((p) => ({ id: p.id, slug: p.slug, title: p.title, amountPaise: p.amount_paise, isFree: p.is_free, cover: p.cover_image_url })),
+    products: [
+      ...(pages ?? []).map((p) => ({ id: p.id, href: `/p/${p.slug}`, title: p.title, amountPaise: p.amount_paise, isFree: false, cover: p.cover_image_url })),
+      ...(magnets ?? []).map((m) => ({ id: m.id, href: `/l/${m.slug}`, title: m.title, amountPaise: 0, isFree: true, cover: m.cover_image_url })),
+    ],
   };
 });

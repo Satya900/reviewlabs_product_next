@@ -49,7 +49,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
         }}
         checkout={
           <CheckoutForm
-            page={{ id: page.id, slug: page.slug, title: page.title, amountPaise: page.amount_paise, currency: page.currency, buttonLabel: page.button_label, isFree: page.is_free }}
+            page={{ id: page.id, slug: page.slug, title: page.title, amountPaise: page.amount_paise, currency: page.currency, buttonLabel: page.button_label }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
             pixelId={pixelId}
             sellerName={sellerName}

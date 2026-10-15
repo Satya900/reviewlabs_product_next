@@ -4,7 +4,8 @@ import { cx } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
 import { SOCIALS, socialHref, type SocialKey } from "@/lib/storefront";
 
-export type StorefrontProduct = { id: string; slug: string; title: string; amountPaise: number; isFree: boolean; cover: string | null };
+// A product page, or a lead magnet (isFree, links to /l/slug).
+export type StorefrontProduct = { id: string; href: string; title: string; amountPaise: number; isFree: boolean; cover: string | null };
 export type StorefrontData = {
   name: string;
   handle: string;
@@ -100,7 +101,7 @@ export function StorefrontView({ data, preview }: { data: StorefrontData; previe
       </header>
 
       {featured && (
-        <Link href={`/p/${featured.slug}`} className="mt-8 block overflow-hidden rounded-3xl bg-canvas shadow-soft ring-1 ring-hairline transition hover:ring-primary" {...linkProps}>
+        <Link href={featured.href} className="mt-8 block overflow-hidden rounded-3xl bg-canvas shadow-soft ring-1 ring-hairline transition hover:ring-primary" {...linkProps}>
           <Cover p={featured} className="aspect-[16/9] w-full" />
           <div className="flex items-center justify-between gap-4 p-5">
             <div className="min-w-0">
@@ -115,7 +116,7 @@ export function StorefrontView({ data, preview }: { data: StorefrontData; previe
       <ul className="mt-4 space-y-3">
         {rest.map((p) => (
           <li key={p.id}>
-            <Link href={`/p/${p.slug}`} className="flex items-center gap-4 rounded-2xl bg-canvas p-3 shadow-soft ring-1 ring-hairline transition hover:ring-primary" {...linkProps}>
+            <Link href={p.href} className="flex items-center gap-4 rounded-2xl bg-canvas p-3 shadow-soft ring-1 ring-hairline transition hover:ring-primary" {...linkProps}>
               <Cover p={p} className="size-16 shrink-0 rounded-xl" />
               <span className="min-w-0 flex-1 text-[16px] font-semibold leading-snug">{p.title}</span>
               <span className="shrink-0 pr-2"><Price p={p} /></span>

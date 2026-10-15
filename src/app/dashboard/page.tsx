@@ -20,7 +20,7 @@ export default async function DashboardHome({ searchParams }: PageProps<"/dashbo
   const [{ data: balance }, { data: recent }, { data: last30 }, { count: liveCount }] = await Promise.all([
     supabase.from("creator_balances").select("*").eq("creator_id", profile.id).maybeSingle(),
     supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(8),
-    supabase.from("orders").select("amount_paise").in("status", ["paid", "partially_refunded"]).gt("amount_paise", 0).gte("paid_at", since),
+    supabase.from("orders").select("amount_paise").in("status", ["paid", "partially_refunded"]).gte("paid_at", since),
     supabase.from("payment_pages").select("id", { count: "exact", head: true }).eq("status", "live"),
   ]);
 

@@ -42,7 +42,6 @@ export async function POST(request: Request) {
     .eq("status", "live")
     .maybeSingle<PaymentPage>();
   if (!page) return NextResponse.json({ error: "This page is not available" }, { status: 404 });
-  if (page.is_free) return NextResponse.json({ error: "This product is free. Refresh the page to claim it." }, { status: 400 });
 
   const { data: fields } = await admin.from("page_fields").select("*").eq("page_id", page.id).order("position");
 

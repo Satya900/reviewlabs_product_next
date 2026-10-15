@@ -44,12 +44,12 @@ export function ProductView({ data, checkout }: { data: ProductViewData; checkou
           )}
           <div className="rounded-3xl bg-canvas p-6 @lg:p-8">
             <div className="flex flex-wrap gap-2">
-              {(data.amountPaise > 0 ? ["Instant download", "Lifetime access"] : ["Free download", "Instant access"]).map((t) => (
+              {["Instant download", "Lifetime access"].map((t) => (
                 <span key={t} className="rounded-full bg-primary-soft px-3 py-1 text-[12px] font-semibold text-primary">{t}</span>
               ))}
             </div>
             <h1 className="display mt-4 text-[34px] @lg:text-[44px]">{data.title || "Untitled product"}</h1>
-            <p className="num mt-3 text-[28px]">{data.amountPaise > 0 ? formatPaise(data.amountPaise) : "Free"}</p>
+            <p className="num mt-3 text-[28px]">{formatPaise(data.amountPaise)}</p>
             {data.descriptionHtml ? (
               <div className="rich-text mt-6" dangerouslySetInnerHTML={{ __html: data.descriptionHtml }} />
             ) : data.descriptionText ? (

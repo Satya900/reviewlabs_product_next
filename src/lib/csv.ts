@@ -62,6 +62,10 @@ export function ordersToCsv(orders: (Order & { creator_email?: string })[], incl
   return "﻿" + [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n");
 }
 
+export function rowsToCsv(header: string[], rows: unknown[][]): string {
+  return [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n");
+}
+
 export function csvResponse(csv: string, filename: string) {
   return new Response(csv, {
     headers: {

@@ -119,8 +119,44 @@ export async function sendMetaEvent(target: MetaTarget, event: MetaEvent): Promi
   }
 }
 
+// Lead magnet responses: a Lead event, sent once and logged like order events.
+export async function sendLeadResponseEvent(response: {
+  id: string;
+  creator_id: string;
+  magnet_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  tracking: Tracking | null;
+}, title: string) {
+  const admin = createAdminClient();
+  const eventId = eventIds.lead(response.id);
+  const { data: existing } = await admin.from("meta_events").select("status, attempts").eq("event_name", "Lead").eq("event_id", eventId).maybeSingle();
+  if (existing && existing.status !== "failed") return;
+
+  const result = await sendMetaEvent({ creatorId: response.creator_id }, {
+    eventName: "Lead",
+    eventId,
+    tracking: response.tracking ?? {},
+    buyer: { email: response.email, phone: response.phone, name: response.name },
+    customData: { content_ids: [response.magnet_id], content_name: title, content_type: "product", value: 0, currency: "INR" },
+  });
+  await admin.from("meta_events").upsert(
+    {
+      creator_id: response.creator_id,
+      event_name: "Lead",
+      event_id: eventId,
+      status: result.status,
+      attempts: (existing?.attempts ?? 0) + 1,
+      last_error: result.error ?? null,
+      response: (result.response as object) ?? null,
+    },
+    { onConflict: "event_name,event_id" },
+  );
+}
+
 // Sends an order-level event once and records the outcome in meta_events.
-async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" | "Purchase" | "Lead", eventId: string) {
+async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" | "Purchase", eventId: string) {
   const admin = createAdminClient();
   const { data: existing } = await admin
     .from("meta_events")
@@ -163,10 +199,6 @@ async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" 
 
 export function sendInitiateCheckoutEvent(order: Order) {
   return sendLoggedOrderEvent(order, "InitiateCheckout", eventIds.initiateCheckout(order.id));
-}
-
-export function sendLeadEvent(order: Order) {
-  return sendLoggedOrderEvent(order, "Lead", eventIds.lead(order.id));
 }
 
 export function sendPurchaseEvent(order: Order) {

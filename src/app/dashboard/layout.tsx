@@ -7,6 +7,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   const nav = [
     { href: "/dashboard", label: "Overview", exact: true },
     { href: "/dashboard/pages", label: "Payment pages" },
+    { href: "/dashboard/lead-magnets", label: "Lead magnets" },
     { href: "/dashboard/storefront", label: "Storefront" },
     { href: "/dashboard/orders", label: "Orders" },
     { href: "/dashboard/analytics", label: "Analytics" },

@@ -42,7 +42,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
   ]);
 
   const paidStatuses = new Set(["paid", "partially_refunded"]);
-  const perPage = new Map((pages ?? []).map((p) => [p.id, { ...p, views: 0, checkouts: 0, sales: 0, revenue: 0, withOffer: 0, leads: 0 }]));
+  const perPage = new Map((pages ?? []).map((p) => [p.id, { ...p, views: 0, checkouts: 0, sales: 0, revenue: 0, withOffer: 0 }]));
   const viewsByDay = new Map(dayKeys.map((d) => [d, 0]));
   const salesByDay = new Map(dayKeys.map((d) => [d, 0]));
 
@@ -54,11 +54,6 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
   for (const o of orders ?? []) {
     const row = perPage.get(o.page_id);
     if (!row) continue;
-    // Free claims are leads, not sales.
-    if (o.amount_paise === 0) {
-      if (o.status === "paid") row.leads += 1;
-      continue;
-    }
     row.checkouts += 1;
     if (paidStatuses.has(o.status)) {
       row.sales += 1;
@@ -107,7 +102,6 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
               <th className={`${tableClass.th} text-right`}>Sales</th>
               <th className={`${tableClass.th} text-right`}>Conversion</th>
               <th className={`${tableClass.th} text-right`}>Add-on taken</th>
-              <th className={`${tableClass.th} text-right`}>Leads</th>
               <th className={`${tableClass.th} text-right`}>Revenue</th>
             </tr>
           </thead>
@@ -122,12 +116,11 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/dashbo
                 <td className={`${tableClass.td} text-right`}>{r.sales.toLocaleString("en-IN")}</td>
                 <td className={`${tableClass.td} text-right`}>{pct(r.sales, r.views)}</td>
                 <td className={`${tableClass.td} text-right`}>{r.withOffer ? pct(r.withOffer, r.sales) : "-"}</td>
-                <td className={`${tableClass.td} text-right`}>{r.leads ? r.leads.toLocaleString("en-IN") : "-"}</td>
                 <td className={`${tableClass.td} text-right font-bold`}>{formatPaise(r.revenue)}</td>
               </tr>
             ))}
             {!rows.length && (
-              <tr><td colSpan={8} className={`${tableClass.td} text-center`}>No pages yet.</td></tr>
+              <tr><td colSpan={7} className={`${tableClass.td} text-center`}>No pages yet.</td></tr>
             )}
           </tbody>
         </table>

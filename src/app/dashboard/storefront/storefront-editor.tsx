@@ -10,10 +10,11 @@ import { avatarBlob } from "@/lib/avatar-blob";
 import { formatPaise } from "@/lib/money";
 import { SOCIALS } from "@/lib/storefront";
 
-type PageRow = { id: string; slug: string; title: string; amountPaise: number; isFree: boolean; cover: string | null; live: boolean; visible: boolean };
+type PageRow = { id: string; slug: string; title: string; amountPaise: number; cover: string | null; live: boolean; visible: boolean };
+type MagnetRow = { id: string; slug: string; title: string; cover: string | null };
 type Initial = { handle: string; name: string; bio: string; avatarUrl: string; socials: Record<string, string>; featuredId: string };
 
-export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pages }: { appUrl: string; creatorId: string; showBranding: boolean; initial: Initial; pages: PageRow[] }) {
+export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pages, magnets }: { appUrl: string; creatorId: string; showBranding: boolean; initial: Initial; pages: PageRow[]; magnets: MagnetRow[] }) {
   const [state, action, saving] = useActionState(saveStorefront, null);
   const [draft, setDraft] = useState(initial);
   const [handleStatus, setHandleStatus] = useState<{ ok: boolean; message: string } | null>(null);
@@ -60,7 +61,10 @@ export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pag
     socials: draft.socials,
     featuredId: draft.featuredId || null,
     showBranding,
-    products: live.filter((p) => p.visible).map(({ id, slug, title, amountPaise, isFree, cover }) => ({ id, slug, title, amountPaise, isFree, cover })),
+    products: [
+      ...live.filter((p) => p.visible).map(({ id, slug, title, amountPaise, cover }) => ({ id, href: `/p/${slug}`, title, amountPaise, isFree: false, cover })),
+      ...magnets.map(({ id, slug, title, cover }) => ({ id, href: `/l/${slug}`, title, amountPaise: 0, isFree: true, cover })),
+    ],
   };
 
   return (
@@ -146,7 +150,7 @@ export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pag
         </Panel>
 
         <Panel title="Products on your storefront">
-          <p className="text-[14px] text-muted">Choose what shows and in what order. Only live pages appear publicly.</p>
+          <p className="text-[14px] text-muted">Choose what shows and in what order. Only live pages appear publicly. Live lead magnets are listed after your products; hide one from its own settings.</p>
           <ul className={cx("mt-4 divide-y divide-hairline", pending && "opacity-60")}>
             {pages.map((p, i) => (
               <li key={p.id} className="flex items-center gap-3 py-3">
@@ -157,7 +161,7 @@ export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pag
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-medium">{p.title}</p>
                   <p className="text-[13px] text-muted">
-                    {p.isFree ? "Free" : formatPaise(p.amountPaise)} · {p.live ? "Live" : "Draft (not shown)"}
+                    {formatPaise(p.amountPaise)} · {p.live ? "Live" : "Draft (not shown)"}
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-[13px]">

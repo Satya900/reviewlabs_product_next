@@ -55,6 +55,7 @@ export const premiumCopy: Record<PremiumFeature, { title: string; body: string }
 
 export const creatorFeatures = [
   "Unlimited product pages",
+  "Unlimited lead magnets",
   "Coupons and discount codes",
   "Page analytics: views, checkouts, sales",
   "Meta Pixel and Conversions API, per account or per page",
@@ -69,5 +70,5 @@ export const freeFeatures = [
   "Instant file delivery with lifetime access",
   "Orders, earnings ledger and payouts",
   "Link-in-bio storefront at reviewlabs.space/@you",
-  "Free lead magnets that collect emails",
+  "One lead magnet to collect emails",
 ];
