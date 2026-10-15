@@ -2,7 +2,7 @@ import { after, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
-import { syncSubscription, type RazorpaySubscription } from "@/lib/billing";
+import { grantLifetime, isLifetimePayment, syncSubscription, type RazorpaySubscription } from "@/lib/billing";
 
 type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string; notes?: Record<string, string> };
 
@@ -58,6 +58,11 @@ async function handleEvent(body: WebhookBody) {
     case "payment.captured":
     case "order.paid": {
       if (!payment?.order_id) return;
+      // Lifetime Creator plan: platform revenue, not a creator sale.
+      if (isLifetimePayment(payment)) {
+        if (payment.status === "captured") await grantLifetime(payment.order_id, payment.id, payment.amount);
+        return;
+      }
       const result = await recordCapturedPayment(payment);
       if (result?.newly_paid) after(() => runPostPaymentTasks(result.order_id));
       return;

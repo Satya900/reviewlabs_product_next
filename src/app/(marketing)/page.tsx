@@ -256,7 +256,7 @@ export default function Home() {
               <span className="display text-[64px]">₹0</span>
               <span className="text-on-dark-soft">to start</span>
             </p>
-            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month or {priceLabels.yearly}/year, with fees down to {CREATOR_FEE_PERCENT}%.</p>
+            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month, {priceLabels.yearly}/year or {priceLabels.lifetime} once for lifetime, with fees down to {CREATOR_FEE_PERCENT}%.</p>
             <div className="mt-8">
               <CheckList dark items={["Free: one page, one lead magnet, your storefront", "Creator: unlimited pages and lead magnets, 4% fees", "Creator: coupons, add-on offers, analytics, Meta, CSV"]} />
             </div>
@@ -285,7 +285,7 @@ export default function Home() {
               { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, a link-in-bio storefront, free lead magnets to collect emails, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
-              { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month or ${priceLabels.yearly} a year, with unlimited pages and the growth tools.` },
+              { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month, ${priceLabels.yearly} a year, or ${priceLabels.lifetime} once for lifetime access, with unlimited pages and the growth tools.` },
               { q: "How do I get paid?", a: "We send your balance to the UPI ID or bank account in your settings. Each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I track sales in Meta Ads Manager?", a: "Yes, on the Creator plan. Add your Pixel ID and Conversions API token in settings, for your whole account or per page. We send PageView, ViewContent, InitiateCheckout, Purchase and Lead events from both the browser and the server, with matching event IDs." },

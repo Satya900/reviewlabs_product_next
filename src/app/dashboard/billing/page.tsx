@@ -4,7 +4,7 @@ import { formatPaise } from "@/lib/money";
 import { CREATOR_FEE_PERCENT, FREE_FEE_PERCENT, creatorFeatures, feePercentFor, freeFeatures, hasCreatorPlan, priceLabels } from "@/lib/plans";
 import { Badge, Notice, PageTitle, Panel, tableClass } from "@/components/ui";
 import { CheckList } from "@/components/marketing";
-import { CancelButton, PlanPicker } from "./billing-client";
+import { CancelButton, LifetimeButton, PlanPicker } from "./billing-client";
 import Link from "next/link";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
@@ -17,7 +17,7 @@ export default async function BillingPage() {
   const supabase = await createClient();
   const { data: payments } = await supabase
     .from("subscription_payments")
-    .select("razorpay_payment_id, amount_paise, status, created_at, period_end")
+    .select("razorpay_payment_id, razorpay_subscription_id, amount_paise, status, created_at, period_end")
     .order("created_at", { ascending: false })
     .limit(24);
   const periodEnd = profile.plan_current_period_end ? dateFmt.format(new Date(profile.plan_current_period_end)) : null;
@@ -61,6 +61,7 @@ export default async function BillingPage() {
               <PlanPicker
                 monthly={priceLabels.monthly}
                 yearly={priceLabels.yearly}
+                lifetime={priceLabels.lifetime}
                 intro={introEligible ? priceLabels.intro : null}
                 saving={priceLabels.saving}
                 features={["Everything in Free", ...creatorFeatures]}
@@ -70,8 +71,12 @@ export default async function BillingPage() {
                 <CheckList dark items={["Everything in Free", ...creatorFeatures]} />
                 {!profile.is_admin && (
                   <p className="text-[14px] text-on-dark-soft">
-                    {profile.plan_interval === "year" ? "Yearly plan. " : "Monthly plan. "}
-                    {profile.plan_status === "cancelling" ? `Ends on ${periodEnd}.` : periodEnd ? `Next charge on ${periodEnd}.` : "Active."}
+                    {profile.plan_interval === "lifetime"
+                      ? "Lifetime plan. Paid once, no renewals, ever."
+                      : <>
+                          {profile.plan_interval === "year" ? "Yearly plan. " : "Monthly plan. "}
+                          {profile.plan_status === "cancelling" ? `Ends on ${periodEnd}.` : periodEnd ? `Next charge on ${periodEnd}.` : "Active."}
+                        </>}
                   </p>
                 )}
               </>
@@ -87,6 +92,16 @@ export default async function BillingPage() {
         </div>
         <Link href="/custom" className="inline-flex h-11 items-center rounded-full bg-surface-strong px-5 text-[15px] font-semibold">Talk to us</Link>
       </div>
+
+      {onCreator && !profile.is_admin && profile.plan_interval !== "lifetime" && (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border-2 border-primary bg-primary-soft/40 p-6">
+          <div className="max-w-xl">
+            <p className="text-[17px] font-semibold">Switch to lifetime for {priceLabels.lifetime}</p>
+            <p className="mt-1 text-[14px] text-body">Pay once and keep Creator for good. Your current subscription is cancelled automatically, so you&apos;re never charged again.</p>
+          </div>
+          <div className="w-full sm:w-64"><LifetimeButton label={`Pay ${priceLabels.lifetime} once`} variant="secondary" /></div>
+        </div>
+      )}
 
       {onCreator && !profile.is_admin && profile.plan_status !== "cancelling" && profile.razorpay_subscription_id && (
         <Panel title="Cancel">
@@ -111,7 +126,7 @@ export default async function BillingPage() {
                 <tr key={p.razorpay_payment_id}>
                   <td className={tableClass.td}>{dateFmt.format(new Date(p.created_at))}</td>
                   <td className={`${tableClass.td} num`}>{formatPaise(p.amount_paise)}</td>
-                  <td className={tableClass.td}>{p.period_end ? dateFmt.format(new Date(p.period_end)) : "-"}</td>
+                  <td className={tableClass.td}>{p.period_end ? dateFmt.format(new Date(p.period_end)) : p.razorpay_subscription_id.startsWith("lifetime:") ? "Lifetime" : "-"}</td>
                   <td className={`${tableClass.td} num text-[12px] text-muted`}>{p.razorpay_payment_id}</td>
                 </tr>
               ))}

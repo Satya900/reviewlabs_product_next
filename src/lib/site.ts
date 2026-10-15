@@ -9,6 +9,7 @@ export const site = {
   creatorPlanPaise: 29900,
   creatorYearlyPaise: 299900,
   creatorIntroPaise: 9900,
+  creatorLifetimePaise: 499900, // one-time payment, Creator for good
   refundWindowDays: 7,
   policiesUpdated: "9 October 2026",
 };

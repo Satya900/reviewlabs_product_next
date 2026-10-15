@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { cancelCreatorSubscription, startCreatorSubscription } from "./actions";
+import { cancelCreatorSubscription, startCreatorSubscription, startLifetimePurchase } from "./actions";
 import { Button, FormMessage, cx } from "@/components/ui";
 
 type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error: { description: string } }) => void) => void };
@@ -66,6 +66,56 @@ export function UpgradeButton({ interval, label }: { interval: "month" | "year";
   );
 }
 
+// One-time payment for lifetime Creator.
+export function LifetimeButton({ label, variant = "hero" }: { label: string; variant?: "hero" | "secondary" }) {
+  const router = useRouter();
+  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function buy() {
+    setBusy(true);
+    setState(null);
+    const [ready, res] = await Promise.all([loadRazorpay(), startLifetimePurchase()]);
+    if (res.error || !res.orderId) {
+      setState({ error: res.error ?? "Something went wrong" });
+      setBusy(false);
+      return;
+    }
+    const RZP = (window as unknown as { Razorpay?: new (o: Record<string, unknown>) => RazorpayInstance }).Razorpay;
+    if (!ready || !RZP) {
+      setState({ error: "Could not load the payment window. Check your connection and try again." });
+      setBusy(false);
+      return;
+    }
+    const rzp = new RZP({
+      key: res.keyId,
+      order_id: res.orderId,
+      amount: res.amount,
+      currency: "INR",
+      name: "Reviewlabs Creator",
+      description: "Lifetime plan, one-time payment",
+      prefill: { name: res.name, email: res.email },
+      theme: { color: "#0052ff" },
+      handler: async (response: Record<string, string>) => {
+        setState({ ok: "Payment received. Turning on lifetime Creator…" });
+        await fetch("/api/billing/lifetime", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => {});
+        router.refresh();
+        setBusy(false);
+      },
+      modal: { ondismiss: () => setBusy(false) },
+    });
+    rzp.on("payment.failed", (r) => setState({ error: r.error?.description ?? "Payment failed. You can try again." }));
+    rzp.open();
+  }
+
+  return (
+    <div className="space-y-3">
+      <Button loading={busy} variant={variant} onClick={buy} className="w-full">{busy ? "Opening payment" : label}</Button>
+      <FormMessage state={state} />
+    </div>
+  );
+}
+
 export function CancelButton() {
   const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
   const [pending, start] = useTransition();
@@ -88,32 +138,42 @@ export function CancelButton() {
   );
 }
 
-type PlanChoice = { monthly: string; yearly: string; intro: string | null; saving: string; features: string[] };
+type PlanChoice = { monthly: string; yearly: string; lifetime: string; intro: string | null; saving: string; features: string[] };
+type Choice = "month" | "year" | "lifetime";
 
-// Monthly / annual toggle with the matching price and upgrade button.
-export function PlanPicker({ monthly, yearly, intro, saving, features }: PlanChoice) {
-  const [interval, setInterval] = useState<"month" | "year">("year");
+// Monthly / yearly / lifetime choice with the matching price and button.
+export function PlanPicker({ monthly, yearly, lifetime, intro, saving, features }: PlanChoice) {
+  const [choice, setChoice] = useState<Choice>("year");
+  const options: { value: Choice; label: string; tag?: string }[] = [
+    { value: "month", label: "Monthly" },
+    { value: "year", label: "Yearly", tag: `Save ${saving}` },
+    { value: "lifetime", label: "Lifetime", tag: "Pay once" },
+  ];
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-center gap-4">
-        <span className={interval === "month" ? "font-semibold text-white" : "text-on-dark-soft"}>Monthly</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={interval === "year"}
-          aria-label="Bill yearly"
-          onClick={() => setInterval(interval === "year" ? "month" : "year")}
-          className={cx("relative h-8 w-14 rounded-full transition", interval === "year" ? "bg-primary" : "bg-dark-line")}
-        >
-          <span className={cx("absolute top-1 size-6 rounded-full bg-white shadow transition-all", interval === "year" ? "left-7" : "left-1")} />
-        </button>
-        <span className={interval === "year" ? "font-semibold text-white" : "text-on-dark-soft"}>
-          Annual <span className="ml-1 rounded-full bg-up/20 px-2 py-0.5 text-[11px] font-semibold text-up">Save {saving}</span>
-        </span>
+      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-dark-elevated p-1" role="radiogroup" aria-label="Billing">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={choice === o.value}
+            onClick={() => setChoice(o.value)}
+            className={cx("rounded-xl px-2 py-2.5 text-center transition", choice === o.value ? "bg-primary text-white" : "text-on-dark-soft hover:text-white")}
+          >
+            <span className="block text-[14px] font-semibold">{o.label}</span>
+            {o.tag && <span className={cx("block text-[11px]", choice === o.value ? "text-white/80" : "text-up")}>{o.tag}</span>}
+          </button>
+        ))}
       </div>
 
       <div className="text-center">
-        {interval === "year" ? (
+        {choice === "lifetime" ? (
+          <>
+            <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{lifetime}</span><span className="text-on-dark-soft">once</span></p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Pay once, Creator for good. No renewals, ever.</p>
+          </>
+        ) : choice === "year" ? (
           <>
             <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{yearly}</span><span className="text-on-dark-soft">/ year</span></p>
             <p className="mt-1 text-[14px] text-on-dark-soft">12 months for less than 10 months of monthly.</p>
@@ -140,12 +200,18 @@ export function PlanPicker({ monthly, yearly, intro, saving, features }: PlanCho
         ))}
       </ul>
 
-      <UpgradeButton
-        key={interval}
-        interval={interval}
-        label={interval === "year" ? `Upgrade for ${yearly}/year` : intro ? `Start for ${intro}` : `Upgrade for ${monthly}/month`}
-      />
-      <p className="text-center text-[12px] text-on-dark-soft">Secure autopay via Razorpay (UPI or card). You can cancel from this page anytime.</p>
+      {choice === "lifetime" ? (
+        <LifetimeButton label={`Get lifetime for ${lifetime}`} />
+      ) : (
+        <UpgradeButton
+          key={choice}
+          interval={choice}
+          label={choice === "year" ? `Upgrade for ${yearly}/year` : intro ? `Start for ${intro}` : `Upgrade for ${monthly}/month`}
+        />
+      )}
+      <p className="text-center text-[12px] text-on-dark-soft">
+        {choice === "lifetime" ? "One secure payment via Razorpay (UPI, card or netbanking)." : "Secure autopay via Razorpay (UPI or card). You can cancel from this page anytime."}
+      </p>
     </div>
   );
 }

@@ -52,4 +52,5 @@ export type RazorpayPayment = {
   tax?: number | null;
   email?: string;
   contact?: string;
+  notes?: Record<string, string> | unknown[];
 };

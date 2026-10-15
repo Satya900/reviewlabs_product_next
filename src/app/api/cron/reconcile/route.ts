@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { isAuthorizedCron } from "@/lib/cron";
-import { fetchSubscription, syncSubscription } from "@/lib/billing";
+import { fetchSubscription, grantLifetime, syncSubscription } from "@/lib/billing";
 
 export const maxDuration = 60;
 
@@ -125,7 +125,26 @@ export async function GET(request: Request) {
     }
   }
 
-  // 5. Housekeeping: rate-limit windows older than a day are useless.
+  // 5. Lifetime payments whose confirmation never arrived.
+  const { data: lifetime } = await admin
+    .from("lifetime_purchases")
+    .select("razorpay_order_id")
+    .eq("status", "created")
+    .lt("created_at", new Date(now - 10 * 60_000).toISOString())
+    .gt("created_at", new Date(now - 3 * 86_400_000).toISOString())
+    .limit(50);
+  for (const lp of lifetime ?? []) {
+    try {
+      const { items } = await razorpay().orders.fetchPayments(lp.razorpay_order_id);
+      const captured = (items as unknown as RazorpayPayment[]).find((p) => p.status === "captured");
+      if (captured && (await grantLifetime(lp.razorpay_order_id, captured.id, captured.amount))?.newly_granted) summary.recovered++;
+    } catch (e) {
+      summary.errors++;
+      console.error(`[reconcile] lifetime ${lp.razorpay_order_id}:`, e);
+    }
+  }
+
+  // 6. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return NextResponse.json(summary);

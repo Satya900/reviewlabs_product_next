@@ -5,7 +5,7 @@ import { requireCreator } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { razorpay } from "@/lib/razorpay";
-import { CREATOR_INTRO_PAISE, hasCreatorPlan } from "@/lib/plans";
+import { CREATOR_INTRO_PAISE, CREATOR_LIFETIME_PAISE, hasCreatorPlan } from "@/lib/plans";
 
 export type StartResult = { error?: string; subscriptionId?: string; keyId?: string; name?: string; email?: string; intro?: boolean };
 
@@ -19,6 +19,7 @@ export async function startCreatorSubscription(interval: "month" | "year"): Prom
   const profile = await requireCreator();
   if (profile.is_admin) return { error: "Admin accounts already have every feature." };
   // Includes "cancelling": a second subscription would charge twice for the overlap.
+  if (profile.plan_interval === "lifetime" && hasCreatorPlan(profile)) return { error: "You already have lifetime Creator." };
   if (hasCreatorPlan(profile)) return { error: "You're on the Creator plan until the end of this billing period." };
   if (interval !== "month" && interval !== "year") return { error: "Choose monthly or yearly billing." };
 
@@ -49,6 +50,33 @@ export async function startCreatorSubscription(interval: "month" | "year"): Prom
     const err = e as { error?: { description?: string }; message?: string };
     console.error("[billing] create subscription", err.error?.description ?? err.message);
     return { error: "We couldn't start the upgrade right now. Please try again." };
+  }
+}
+
+export type LifetimeStart = { error?: string; orderId?: string; amount?: number; keyId?: string; name?: string; email?: string };
+
+// One-time order for the lifetime plan. Allowed on Free or on a monthly/yearly
+// plan (the subscription is cancelled once the lifetime payment succeeds).
+export async function startLifetimePurchase(): Promise<LifetimeStart> {
+  const profile = await requireCreator();
+  if (profile.is_admin) return { error: "Admin accounts already have every feature." };
+  if (profile.plan_interval === "lifetime" && hasCreatorPlan(profile)) return { error: "You already have lifetime Creator." };
+  try {
+    const order = await razorpay().orders.create({
+      amount: CREATOR_LIFETIME_PAISE,
+      currency: "INR",
+      receipt: `lifetime_${profile.id.slice(0, 8)}_${Date.now()}`,
+      notes: { product: "reviewlabs_lifetime", creator_id: profile.id },
+    });
+    const { error } = await createAdminClient()
+      .from("lifetime_purchases")
+      .insert({ creator_id: profile.id, razorpay_order_id: order.id, amount_paise: CREATOR_LIFETIME_PAISE });
+    if (error) throw new Error(error.message);
+    return { orderId: order.id, amount: CREATOR_LIFETIME_PAISE, keyId: env.razorpayKeyId(), name: profile.name ?? "", email: profile.email };
+  } catch (e) {
+    const err = e as { error?: { description?: string }; message?: string };
+    console.error("[billing] lifetime order", err.error?.description ?? err.message);
+    return { error: "We couldn't start the payment right now. Please try again." };
   }
 }
 

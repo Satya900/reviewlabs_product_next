@@ -62,6 +62,13 @@ export default function Pricing() {
                   <p className="display mt-1 text-[32px]">{priceLabels.yearly}</p>
                   <p className="text-[12px] text-on-dark-soft">About 2 months free</p>
                 </div>
+                <div className="col-span-2 flex items-center justify-between rounded-2xl bg-dark-elevated p-4">
+                  <div>
+                    <p className="text-[13px] text-on-dark-soft">Lifetime</p>
+                    <p className="display mt-1 text-[32px]">{priceLabels.lifetime}</p>
+                  </div>
+                  <p className="max-w-[9rem] text-right text-[12px] text-on-dark-soft">Pay once. Creator for good, no renewals.</p>
+                </div>
               </div>
               <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">{CREATOR_FEE_PERCENT}%</b> per sale, gateway included</p>
               <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Start free, upgrade anytime</Link>
@@ -165,7 +172,8 @@ export default function Pricing() {
               { q: "Is the storefront free?", a: "Yes, on every plan. You get reviewlabs.space/@yourname with your photo, bio, social links and all your products and lead magnets. On Free it shows a small Made with Reviewlabs badge; Creator hides it." },
               { q: "What are lead magnets and do they cost anything?", a: "A lead magnet is a free download, like a checklist or mini guide, that people get in exchange for their name and email. There's no fee because no money changes hands. Free includes one; Creator has unlimited. You can export the leads as CSV on any plan." },
               { q: "How does the first month work?", a: `If you've never had Creator, your first month is ${priceLabels.intro}. After that it's ${priceLabels.monthly} a month by autopay. You can cancel anytime before the month ends.` },
-              { q: "Monthly or yearly?", a: `Yearly is ${priceLabels.yearly}, which saves ${priceLabels.saving} compared with paying monthly for 12 months. Both renew automatically and both can be cancelled from Plan and billing.` },
+              { q: "Monthly, yearly or lifetime?", a: `Yearly is ${priceLabels.yearly}, which saves ${priceLabels.saving} compared with paying monthly for 12 months. Both renew automatically and can be cancelled from Plan and billing. Lifetime is a single ${priceLabels.lifetime} payment: Creator for good, with no renewals.` },
+              { q: "What does lifetime include?", a: `Everything in Creator, including the ${CREATOR_FEE_PERCENT}% fee, for as long as Reviewlabs runs and your account is in good standing. Already on monthly or yearly? Switch from Plan and billing and your subscription is cancelled automatically.` },
               { q: "What happens if I cancel?", a: "You keep Creator until the end of the period you paid for. Then you move to Free: your oldest live page stays live and the others become drafts. Nothing is deleted." },
               { q: "Who pays for refunds?", a: "Refunds come out of your balance. The fee on a refunded sale isn't returned, because the payment gateway keeps its charge on refunds too." },
               { q: "Do you offer custom pricing?", a: "Yes. If you sell at high volume or need help setting up, tell us your requirements on the Custom plan page and we'll get back to you." },

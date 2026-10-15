@@ -119,3 +119,26 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
 export async function fetchSubscription(id: string): Promise<RazorpaySubscription> {
   return (await razorpay().subscriptions.fetch(id)) as unknown as RazorpaySubscription;
 }
+
+// Lifetime plan: a one-time order. Marks it paid, gives Creator for good and
+// cancels any subscription the creator had so they are never charged again.
+export async function grantLifetime(orderId: string, paymentId: string, amountPaise: number) {
+  const { data, error } = await createAdminClient()
+    .rpc("grant_lifetime", { p_razorpay_order_id: orderId, p_razorpay_payment_id: paymentId, p_amount_paise: amountPaise })
+    .maybeSingle<{ creator_id: string; newly_granted: boolean; old_subscription_id: string | null }>();
+  if (error) throw new Error(`grant_lifetime failed: ${error.message}`);
+  if (data?.newly_granted && data.old_subscription_id) {
+    try {
+      await razorpay().subscriptions.cancel(data.old_subscription_id, false);
+    } catch (e) {
+      // Already cancelled or completed is fine; anything else needs a look.
+      const err = e as { error?: { description?: string }; message?: string };
+      console.error(`[billing] cancel ${data.old_subscription_id} after lifetime:`, err.error?.description ?? err.message);
+    }
+  }
+  return data;
+}
+
+export function isLifetimePayment(payment: { notes?: Record<string, string> | unknown[] }) {
+  return !!payment.notes && !Array.isArray(payment.notes) && payment.notes.product === "reviewlabs_lifetime";
+}

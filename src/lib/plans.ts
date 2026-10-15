@@ -6,6 +6,7 @@ import { site } from "@/lib/site";
 export const CREATOR_PRICE_PAISE = site.creatorPlanPaise; // monthly
 export const CREATOR_YEARLY_PAISE = site.creatorYearlyPaise;
 export const CREATOR_INTRO_PAISE = site.creatorIntroPaise; // first month, first-time subscribers
+export const CREATOR_LIFETIME_PAISE = site.creatorLifetimePaise; // one-time
 // All-inclusive fee per sale (covers Razorpay's charge). Mirrors public.creator_fee_bps.
 export const FREE_FEE_PERCENT = 6;
 export const CREATOR_FEE_PERCENT = 4;
@@ -17,6 +18,7 @@ export const priceLabels = {
   yearly: rupees(CREATOR_YEARLY_PAISE),
   intro: rupees(CREATOR_INTRO_PAISE),
   saving: rupees(YEARLY_SAVING_PAISE),
+  lifetime: rupees(CREATOR_LIFETIME_PAISE),
 };
 
 // Fee rate a creator pays per sale right now.
@@ -80,7 +82,7 @@ export const planMatrix: { group: string; rows: { feature: string; free: PlanCel
   {
     group: "Fees",
     rows: [
-      { feature: "Monthly price", free: "₹0", creator: `${priceLabels.monthly}/month or ${priceLabels.yearly}/year` },
+      { feature: "Price", free: "₹0", creator: `${priceLabels.monthly}/month, ${priceLabels.yearly}/year or ${priceLabels.lifetime} once` },
       { feature: "Fee per sale, payment gateway included", free: `${FREE_FEE_PERCENT}%`, creator: `${CREATOR_FEE_PERCENT}%` },
       { feature: "Setup fees or hidden charges", free: "None", creator: "None" },
     ],
