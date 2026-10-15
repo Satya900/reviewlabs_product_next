@@ -1,10 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/components/ui";
 
 export type NavItem = { href: string; label: string; exact?: boolean };
+
+// Dot for the current page; a small spinner while a clicked item loads.
+function NavMarker({ active }: { active: boolean }) {
+  const { pending } = useLinkStatus();
+  if (pending) return <span className="spinner size-3 text-primary" aria-hidden />;
+  return <span className={cx("size-1.5 rounded-full", active ? "bg-primary" : "bg-transparent")} />;
+}
 
 export function AppNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
@@ -21,7 +28,7 @@ export function AppNav({ items }: { items: NavItem[] }) {
               active ? "bg-primary-soft text-primary" : "text-body",
             )}
           >
-            <span className={cx("size-1.5 rounded-full", active ? "bg-primary" : "bg-transparent")} />
+            <NavMarker active={active} />
             {item.label}
           </Link>
         );

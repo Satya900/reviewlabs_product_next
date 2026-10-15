@@ -175,7 +175,7 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
                   className={inputClass}
                   autoCapitalize="characters"
                 />
-                <Button type="button" variant="secondary" onClick={applyCouponCode} disabled={checkingCoupon}>
+                <Button type="button" variant="secondary" onClick={applyCouponCode} loading={checkingCoupon}>
                   {checkingCoupon ? "Checking" : "Apply"}
                 </Button>
               </div>
@@ -239,7 +239,7 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
           </div>
         )}
         {error && <p className="text-[14px] font-medium text-down">{error}</p>}
-        <Button type="submit" variant="hero" className="w-full" disabled={busy}>
+        <Button type="submit" variant="hero" className="w-full" loading={busy}>
           {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
         </Button>
         </fieldset>

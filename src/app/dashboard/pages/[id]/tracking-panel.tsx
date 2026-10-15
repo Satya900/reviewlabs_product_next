@@ -87,7 +87,7 @@ export function TrackingPanel({ pageId, own, accountPixelId }: Props) {
             <input name="test_event_code" defaultValue={own?.testEventCode ?? ""} placeholder="TEST12345" className={inputClass} />
           </Field>
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={pending}>{pending ? "Saving" : "Save pixel"}</Button>
+            <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save pixel"}</Button>
             {own?.testEventCode && (
               <Button
                 type="button"

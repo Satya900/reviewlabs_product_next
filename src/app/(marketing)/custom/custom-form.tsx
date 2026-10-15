@@ -52,7 +52,7 @@ export function CustomForm() {
       {/* Hidden from people; bots tend to fill it in. */}
       <input name="company" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -left-[9999px] h-0 w-0 opacity-0" />
       <FormMessage state={state} />
-      <Button type="submit" variant="hero" disabled={pending} className="w-full sm:w-auto">{pending ? "Sending" : "Send my requirements"}</Button>
+      <Button loading={pending} type="submit" variant="hero" disabled={pending} className="w-full sm:w-auto">{pending ? "Sending" : "Send my requirements"}</Button>
     </form>
   );
 }

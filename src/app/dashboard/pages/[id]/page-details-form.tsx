@@ -169,7 +169,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
             </Field>
 
             <div className="sticky bottom-0 -mx-6 flex flex-wrap items-center gap-3 border-t border-hairline bg-canvas/95 px-6 py-4 backdrop-blur">
-              <Button type="submit" disabled={pending || uploading || editorBusy || !dirty}>
+              <Button type="submit" loading={pending || editorBusy} disabled={pending || uploading || editorBusy || !dirty}>
                 {pending ? "Saving" : editorBusy ? "Uploading images" : dirty ? "Save changes" : "Saved"}
               </Button>
               {dirty && (

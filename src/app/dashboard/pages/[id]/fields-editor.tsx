@@ -44,7 +44,7 @@ export function FieldsEditor({ pageId, fields }: { pageId: string; fields: PageF
           <label className="flex shrink-0 items-center gap-2 text-[14px] font-medium"><input type="checkbox" name="required" className="size-4 accent-primary" /> Required</label>
         </div>
         {type === "select" && <input name="options" placeholder="Options, comma separated" className={inputClass} />}
-        <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Adding" : "Add question"}</Button>
+        <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Adding" : "Add question"}</Button>
         <FormMessage state={state} />
       </form>
     </div>

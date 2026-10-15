@@ -56,7 +56,7 @@ export function LoginForm({ next }: { next: string }) {
       </div>
       <FormMessage state={state} />
       {state?.unverifiedEmail && <ResendVerification email={state.unverifiedEmail} />}
-      <Button type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Signing in" : "Log in"}</Button>
+      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Signing in" : "Log in"}</Button>
     </form>
   );
 }
@@ -76,7 +76,7 @@ export function SignupForm() {
         <PasswordInput name="password" autoComplete="new-password" />
       </Field>
       <FormMessage state={state} />
-      <Button type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Creating account" : "Create free account"}</Button>
+      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Creating account" : "Create free account"}</Button>
       <p className="text-center text-[13px] text-muted">
         By creating an account you agree to our <Link href="/terms" className="link">terms</Link> and <Link href="/privacy" className="link">privacy policy</Link>.
       </p>
@@ -95,7 +95,7 @@ export function ForgotPasswordForm() {
         <input type="email" name="email" required autoFocus autoComplete="email" className={inputClass} />
       </Field>
       <FormMessage state={state} />
-      <Button type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Sending" : "Send reset link"}</Button>
+      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Sending" : "Send reset link"}</Button>
     </form>
   );
 }
@@ -111,7 +111,7 @@ export function ResetPasswordForm() {
         <PasswordInput name="confirm" autoComplete="new-password" />
       </Field>
       <FormMessage state={state} />
-      <Button type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Saving" : "Save new password"}</Button>
+      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Saving" : "Save new password"}</Button>
     </form>
   );
 }

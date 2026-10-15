@@ -23,7 +23,7 @@ export function PayoutForm({ creatorId, suggestedPaise }: { creatorId: string; s
       <Field label="UTR / reference"><input name="reference" required className={inputClass} /></Field>
       <Field label="Note"><input name="note" className={inputClass} /></Field>
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>{pending ? "Saving" : "Record payout"}</Button>
+        <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Record payout"}</Button>
         <FormMessage state={state} />
       </div>
     </form>
@@ -38,7 +38,7 @@ export function AdjustmentForm({ creatorId }: { creatorId: string }) {
       <Field label="Amount (₹)" hint="A positive number adds to the balance. A negative one deducts."><input name="amount" required className={inputClass} /></Field>
       <Field label="Reason"><input name="description" required className={inputClass} /></Field>
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Add adjustment"}</Button>
+        <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Add adjustment"}</Button>
         <FormMessage state={state} />
       </div>
     </form>
@@ -57,7 +57,7 @@ export function PlanForm({ creatorId, onPaidPlan, hasSubscription }: { creatorId
           <input name="days" defaultValue="30" inputMode="numeric" className={inputClass} />
         </Field>
         <div className="flex items-center gap-3">
-          <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Grant Creator"}</Button>
+          <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Grant Creator"}</Button>
           <FormMessage state={state} />
         </div>
       </form>
@@ -88,7 +88,7 @@ export function FeeForm({ creatorId, currentBps }: { creatorId: string; currentB
         <input name="fee" defaultValue={currentBps === null ? "" : String(currentBps / 100)} inputMode="decimal" placeholder="Standard" className={inputClass} />
       </Field>
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Save fee"}</Button>
+        <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Save fee"}</Button>
         <FormMessage state={state} />
       </div>
     </form>
@@ -111,7 +111,7 @@ export function RefundForm({ orderId }: { orderId: string }) {
       <input name="amount" placeholder="Amount, blank for full" className={inputClass} />
       <input name="reason" placeholder="Reason" className={inputClass} />
       <div className="flex gap-2">
-        <Button type="submit" variant="danger" disabled={pending} className="px-3 py-1">{pending ? "Wait" : "Refund"}</Button>
+        <Button loading={pending} type="submit" variant="danger" disabled={pending} className="px-3 py-1">{pending ? "Wait" : "Refund"}</Button>
         <Button type="button" variant="secondary" onClick={() => setOpen(false)} className="px-3 py-1">Cancel</Button>
       </div>
       <FormMessage state={state} />

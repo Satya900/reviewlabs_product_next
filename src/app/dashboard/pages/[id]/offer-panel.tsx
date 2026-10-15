@@ -173,7 +173,7 @@ export function OfferPanel({ creatorId, pageId, offer, files }: { creatorId: str
           {uploadError && <p className="text-[13px] text-down">{uploadError}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || uploading}>{pending ? "Saving" : offer ? "Save add-on" : "Create add-on"}</Button>
+          <Button loading={pending} type="submit" disabled={pending || uploading}>{pending ? "Saving" : offer ? "Save add-on" : "Create add-on"}</Button>
           {!offer && <button type="button" onClick={() => setCreating(false)} className="link text-[14px]">Cancel</button>}
           <FormMessage state={state} />
         </div>

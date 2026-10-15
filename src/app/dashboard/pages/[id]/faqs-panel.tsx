@@ -101,7 +101,7 @@ function FaqModal({ pageId, editing, onClose }: { pageId: string; editing: Pick<
           </label>
           <FormMessage state={state?.ok ? null : state} />
           <div className="-mx-6 flex justify-end border-t border-hairline px-6 pt-4">
-            <Button type="submit" variant="dark" disabled={pending || !question.trim() || !answer.trim()} className="bg-ink px-6">
+            <Button type="submit" variant="dark" loading={pending} disabled={pending || !question.trim() || !answer.trim()} className="bg-ink px-6">
               {pending ? "Saving" : editing.id ? "Save question" : "Add question"}
             </Button>
           </div>

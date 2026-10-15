@@ -193,6 +193,7 @@ export function LeadMagnetCard({ data, files = [], preview, previewDone, pixelId
 
             {error && <p className="text-[14px] font-medium text-down">{error}</p>}
             <button type="submit" disabled={busy} className="flex h-12 w-full items-center justify-center rounded-full bg-ink text-[15px] font-semibold text-white transition hover:bg-[#282b31] disabled:opacity-60">
+              {busy && <span className="spinner mr-2" aria-hidden />}
               {busy ? "Please wait" : step === "code" ? "Verify and continue" : data.buttonLabel || "Get it now"}
             </button>
             <p className="text-center text-[12px] text-muted">

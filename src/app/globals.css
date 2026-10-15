@@ -117,8 +117,51 @@
   pointer-events: none;
 }
 
+/* Loading states: shimmer skeletons, spinners and the top progress bar. */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eceef1;
+  border-radius: 12px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.3s infinite;
+}
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  height: 3px;
+  background: #0052ff;
+  box-shadow: 0 0 10px rgba(0, 82, 255, 0.6);
+  transition: width 0.25s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *:not(.spinner) {
     animation: none !important;
   }
 }

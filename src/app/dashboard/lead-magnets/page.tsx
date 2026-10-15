@@ -7,6 +7,7 @@ import { buttonClass } from "@/components/ui";
 import { CopyButton } from "@/components/copy-button";
 import { COVER_PRESETS, type CoverPreset } from "@/lib/lead-magnets";
 import { createLeadMagnet } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata = { title: "Lead magnets" };
 
@@ -89,7 +90,7 @@ export default async function LeadMagnetsPage({ searchParams }: PageProps<"/dash
             <Link href="/dashboard/billing" className="rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold">Upgrade for more</Link>
           ) : (
             <form action={createLeadMagnet}>
-              <button className="rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold transition hover:bg-[#282b31]">+ New lead magnet</button>
+              <SubmitButton pendingText="Creating" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold transition hover:bg-[#282b31] disabled:opacity-80">+ New lead magnet</SubmitButton>
             </form>
           )}
         </div>
@@ -146,7 +147,7 @@ export default async function LeadMagnetsPage({ searchParams }: PageProps<"/dash
           <p className="mx-auto mt-1 max-w-sm text-[14px] text-muted">Offer something useful for free, like a checklist, a template or a mini guide. Share the link in your bio, ads or posts.</p>
           {!atLimit && (
             <form action={createLeadMagnet} className="mt-5">
-              <button className={buttonClass.dark}>+ New lead magnet</button>
+              <SubmitButton pendingText="Creating" className={buttonClass.dark}>+ New lead magnet</SubmitButton>
             </form>
           )}
         </div>

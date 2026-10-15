@@ -25,9 +25,17 @@ export const buttonClass = {
 export function Button({
   variant = "primary",
   className,
+  loading,
+  disabled,
+  children,
   ...props
-}: ComponentProps<"button"> & { variant?: keyof typeof buttonClass }) {
-  return <button className={cx(buttonClass[variant], className)} {...props} />;
+}: ComponentProps<"button"> & { variant?: keyof typeof buttonClass; loading?: boolean }) {
+  return (
+    <button className={cx(buttonClass[variant], className)} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
+      {loading && <span className="spinner" aria-hidden />}
+      {children}
+    </button>
+  );
 }
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {

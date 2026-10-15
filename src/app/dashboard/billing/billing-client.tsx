@@ -60,7 +60,7 @@ export function UpgradeButton({ interval, label }: { interval: "month" | "year";
 
   return (
     <div className="space-y-3">
-      <Button variant="hero" onClick={upgrade} disabled={busy} className="w-full">{busy ? "Opening payment" : label}</Button>
+      <Button loading={busy} variant="hero" onClick={upgrade} disabled={busy} className="w-full">{busy ? "Opening payment" : label}</Button>
       <FormMessage state={state} />
     </div>
   );
@@ -80,6 +80,7 @@ export function CancelButton() {
           }
         }}
       >
+        {pending && <span className="spinner mr-2 align-[-2px]" aria-hidden />}
         {pending ? "Cancelling" : "Cancel plan"}
       </Button>
       <FormMessage state={state} />

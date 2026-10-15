@@ -52,7 +52,7 @@ export function PoliciesPanel({ pageId, supportEmail, refundPolicy, terms }: { p
         placeholder="For example: for personal use only, not for resale. This content is educational and not financial advice."
       />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending}>{pending ? "Saving" : "Save policies"}</Button>
+        <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save policies"}</Button>
         <FormMessage state={state} />
       </div>
     </form>

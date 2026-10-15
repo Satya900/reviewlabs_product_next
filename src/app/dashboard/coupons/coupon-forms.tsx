@@ -36,7 +36,7 @@ export function CouponForm({ pages }: { pages: { id: string; title: string }[] }
         </Field>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending}>{pending ? "Creating" : "Create coupon"}</Button>
+        <Button loading={pending} type="submit" disabled={pending}>{pending ? "Creating" : "Create coupon"}</Button>
         <FormMessage state={state} />
       </div>
     </form>

@@ -145,7 +145,7 @@ export function StorefrontEditor({ appUrl, creatorId, showBranding, initial, pag
             </Field>
 
             <FormMessage state={state} />
-            <Button type="submit" disabled={saving || uploading || status?.ok === false}>{saving ? "Saving" : "Save storefront"}</Button>
+            <Button loading={saving} type="submit" disabled={saving || uploading || status?.ok === false}>{saving ? "Saving" : "Save storefront"}</Button>
           </form>
         </Panel>
 

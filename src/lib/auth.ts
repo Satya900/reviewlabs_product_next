@@ -26,12 +26,14 @@ export type Profile = {
   payout_ifsc: string | null;
 };
 
-// Verified with the Supabase Auth server, deduplicated per request.
+// Session JWT is verified (locally with asymmetric signing keys, otherwise by
+// the Auth server), then the profile is loaded. Deduplicated per request.
 export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const { data: claims } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub;
+  if (!userId) return null;
+  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
   return (data as Profile | null) ?? null;
 });
 

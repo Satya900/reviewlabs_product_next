@@ -380,6 +380,7 @@ export function LeadMagnetBuilder({ appUrl, creatorId, creatorName, magnet, ques
           {message?.error && <p className="mr-auto text-[14px] font-medium text-down">{message.error}</p>}
           {step === 1 ? (
             <button type="button" disabled={pending || !!uploading} onClick={saveStep1} className="h-12 rounded-full bg-ink px-6 text-[15px] font-semibold text-white disabled:opacity-60">
+              {pending && <span className="spinner mr-2 align-[-2px]" aria-hidden />}
               {pending ? "Saving" : "Save and continue"}
             </button>
           ) : (
@@ -387,6 +388,7 @@ export function LeadMagnetBuilder({ appUrl, creatorId, creatorName, magnet, ques
               <button type="button" onClick={() => { setStep(1); setMessage(null); }} className="h-12 px-3 text-[15px] font-semibold text-body">Back</button>
               <button type="button" disabled={pending} onClick={() => saveStep2("draft")} className="h-12 rounded-full bg-surface-strong px-5 text-[15px] font-semibold disabled:opacity-60">Save as draft</button>
               <button type="button" disabled={pending} onClick={() => saveStep2("live")} className="h-12 rounded-full bg-ink px-6 text-[15px] font-semibold text-white disabled:opacity-60">
+                {pending && <span className="spinner mr-2 align-[-2px]" aria-hidden />}
                 {pending ? "Saving" : magnet.status === "live" ? "Save and publish" : "Publish"}
               </button>
             </>

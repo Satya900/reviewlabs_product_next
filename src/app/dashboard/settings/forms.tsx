@@ -17,7 +17,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <Field label="IFSC"><input name="payout_ifsc" defaultValue={profile.payout_ifsc ?? ""} className={inputClass} /></Field>
       </div>
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
+        <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
         <FormMessage state={state} />
       </div>
     </form>
@@ -69,7 +69,7 @@ export function PixelForm({ pixelId, testEventCode, hasToken }: { pixelId: strin
           </div>
         </details>
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
+          <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
           <FormMessage state={state} />
         </div>
         <p className="text-[13px] text-muted">To turn Meta tracking off, clear the Pixel ID and save.</p>
@@ -77,7 +77,7 @@ export function PixelForm({ pixelId, testEventCode, hasToken }: { pixelId: strin
 
       {connected && testEventCode && (
         <form action={testAction} className="flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
-          <Button type="submit" variant="secondary" disabled={testing}>{testing ? "Sending" : "Send test event"}</Button>
+          <Button loading={testing} type="submit" variant="secondary" disabled={testing}>{testing ? "Sending" : "Send test event"}</Button>
           <FormMessage state={testState} />
         </form>
       )}

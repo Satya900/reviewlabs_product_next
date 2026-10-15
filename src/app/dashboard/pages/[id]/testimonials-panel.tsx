@@ -109,7 +109,7 @@ function TestimonialModal({ pageId, creatorId, editing, onClose }: { pageId: str
             <div className="flex flex-wrap items-center gap-4">
               <FaceAvatar url={photo || null} face={face} size={88} />
               <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="secondary" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                <Button type="button" variant="secondary" loading={uploading} onClick={() => fileRef.current?.click()}>
                   {uploading ? "Uploading" : "Change"}
                 </Button>
                 <Button type="button" variant="secondary" onClick={() => { setPhoto(""); setFace(randomFace(face)); }}>
@@ -161,7 +161,7 @@ function TestimonialModal({ pageId, creatorId, editing, onClose }: { pageId: str
           <FormMessage state={state?.ok ? null : state} />
 
           <div className="-mx-6 flex justify-end border-t border-hairline px-6 pt-4">
-            <Button type="submit" variant="dark" disabled={pending || uploading || !rating} className="bg-ink px-6">
+            <Button type="submit" variant="dark" loading={pending} disabled={pending || uploading || !rating} className="bg-ink px-6">
               {pending ? "Saving" : editing ? "Save testimonial" : "Add Testimonial"}
             </Button>
           </div>
