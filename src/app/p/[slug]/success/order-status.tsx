@@ -12,7 +12,10 @@ type Props = {
   amountLabel: string;
   thankYouMessage: string;
   files: { id: string; file_name: string; size_bytes: number }[];
-  pixel: { pixelId: string | null; eventId: string; data: Record<string, unknown> };
+  pixel: { pixelId: string | null; eventId: string; event: "Purchase" | "Lead"; data: Record<string, unknown> };
+  free?: boolean;
+  // Paid products from the same creator, shown after a free claim.
+  more?: { slug: string; title: string; price: string; cover: string | null }[];
   retryHref: string;
 };
 
@@ -23,7 +26,7 @@ function formatSize(bytes: number) {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-export function OrderStatusView({ orderId, initialStatus, title, amountLabel, thankYouMessage, files, pixel, retryHref }: Props) {
+export function OrderStatusView({ orderId, initialStatus, title, amountLabel, thankYouMessage, files, pixel, retryHref, free, more }: Props) {
   const hasFiles = files.length > 0;
   const [status, setStatus] = useState(initialStatus);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
       sessionStorage.setItem(key, "1");
     } catch {}
     initPixel(pixel.pixelId);
-    trackPixel(pixel.pixelId, "Purchase", pixel.data, pixel.eventId);
+    trackPixel(pixel.pixelId, pixel.event, pixel.data, pixel.eventId);
   }, [isPaid, orderId, pixel]);
 
   if (isPaid) {
@@ -79,8 +82,8 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
           <span className="relative flex size-12 items-center justify-center rounded-full bg-up">
             <svg viewBox="0 0 24 24" className="size-6" aria-hidden><path d="m5 12 4.5 4.5L19 7" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </span>
-          <h1 className="display relative mt-5 text-[36px]">Payment received</h1>
-          <p className="relative mt-2 text-on-dark-soft">{title} · <span className="num text-white">{amountLabel}</span></p>
+          <h1 className="display relative mt-5 text-[36px]">{free ? "It's yours" : "Payment received"}</h1>
+          <p className="relative mt-2 text-on-dark-soft">{title} · <span className="num text-white">{free ? "Free" : amountLabel}</span></p>
         </div>
         <div className="space-y-6 p-8">
           {hasFiles && downloadToken && (
@@ -108,6 +111,27 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
               <> <Link href={`/d/${downloadToken}`} className="link">Open your downloads page</Link></>
             )}
           </p>
+          {free && more && more.length > 0 && (
+            <div className="border-t border-hairline pt-6">
+              <p className="text-[16px] font-semibold">More from this creator</p>
+              <ul className="mt-3 space-y-2">
+                {more.map((m) => (
+                  <li key={m.slug}>
+                    <Link href={`/p/${m.slug}`} className="flex items-center gap-3 rounded-2xl border border-hairline p-3 transition hover:border-primary">
+                      {m.cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.cover} alt="" className="size-12 shrink-0 rounded-xl object-cover" />
+                      ) : (
+                        <span className="size-12 shrink-0 rounded-xl bg-[linear-gradient(135deg,#0052ff,#7aa5ff)]" />
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{m.title}</span>
+                      <span className="num shrink-0 text-[14px]">{m.price}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     );

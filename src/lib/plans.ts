@@ -68,4 +68,6 @@ export const freeFeatures = [
   "UPI, card and netbanking checkout",
   "Instant file delivery with lifetime access",
   "Orders, earnings ledger and payouts",
+  "Link-in-bio storefront at reviewlabs.space/@you",
+  "Free lead magnets that collect emails",
 ];

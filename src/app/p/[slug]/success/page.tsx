@@ -21,6 +21,17 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
     .eq("id", orderId)
     .maybeSingle();
   if (!data || !order || order.page_id !== data.page.id) notFound();
+  const free = order.amount_paise === 0;
+  const { data: morePages } = free
+    ? await createAdminClient()
+        .from("payment_pages")
+        .select("slug, title, amount_paise, cover_image_url")
+        .eq("creator_id", data.page.creator_id)
+        .eq("status", "live")
+        .eq("is_free", false)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : { data: [] };
 
   return (
     <div className="mx-auto w-full max-w-lg py-4">
@@ -30,14 +41,17 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
         initialStatus={order.status}
         title={order.offer_title ? `${order.page_title} + ${order.offer_title}` : order.page_title}
         amountLabel={formatPaise(order.amount_paise)}
-        thankYouMessage={data.page.thank_you_message}
+        thankYouMessage={free && data.page.thank_you_message === "Thank you for your purchase!" ? "Enjoy your free download!" : data.page.thank_you_message}
         files={(await orderFiles({ page_id: order.page_id, offer_id: order.offer_id })).map(({ id, file_name, size_bytes }) => ({ id, file_name, size_bytes }))}
         pixel={{
           pixelId: data.pixelId,
-          eventId: eventIds.purchase(order.id),
+          eventId: free ? eventIds.lead(order.id) : eventIds.purchase(order.id),
+          event: free ? "Lead" : "Purchase",
           data: { content_ids: [data.page.id], content_name: order.page_title, content_type: "product", value: order.amount_paise / 100, currency: order.currency },
         }}
         retryHref={`/p/${slug}`}
+        free={free}
+        more={(morePages ?? []).map((m) => ({ slug: m.slug, title: m.title, price: formatPaise(m.amount_paise).replace(/\.00$/, ""), cover: m.cover_image_url }))}
       />
     </div>
   );

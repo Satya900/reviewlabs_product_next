@@ -38,7 +38,7 @@ export default async function PagesList() {
               <span className="block truncate text-[17px] font-semibold">{p.title}</span>
               <span className="block break-all text-[14px] text-muted">/p/{p.slug}</span>
             </span>
-            <span className="flex items-center gap-4"><Badge status={p.status} /><span className="num text-[16px]">{formatPaise(p.amount_paise)}</span></span>
+            <span className="flex items-center gap-4"><Badge status={p.status} /><span className="num text-[16px]">{p.is_free ? "Free" : formatPaise(p.amount_paise)}</span></span>
           </Link>
         ))}
         {!pages?.length && <EmptyState>No pages yet. Make your first one above.</EmptyState>}

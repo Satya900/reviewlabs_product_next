@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 import type { Order, Tracking } from "@/lib/types";
 import { creatorHasPlan } from "@/lib/plans-server";
 
-export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase";
+export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase" | "Lead";
 
 type Buyer = { email?: string; phone?: string; name?: string };
 
@@ -23,6 +23,7 @@ type SendResult = { status: "sent" | "failed" | "skipped"; response?: unknown; e
 export const eventIds = {
   initiateCheckout: (orderId: string) => `ic_${orderId}`,
   purchase: (orderId: string) => `purchase_${orderId}`,
+  lead: (orderId: string) => `lead_${orderId}`,
 };
 
 function normalizePhone(phone: string): string {
@@ -119,7 +120,7 @@ export async function sendMetaEvent(target: MetaTarget, event: MetaEvent): Promi
 }
 
 // Sends an order-level event once and records the outcome in meta_events.
-async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" | "Purchase", eventId: string) {
+async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" | "Purchase" | "Lead", eventId: string) {
   const admin = createAdminClient();
   const { data: existing } = await admin
     .from("meta_events")
@@ -162,6 +163,10 @@ async function sendLoggedOrderEvent(order: Order, eventName: "InitiateCheckout" 
 
 export function sendInitiateCheckoutEvent(order: Order) {
   return sendLoggedOrderEvent(order, "InitiateCheckout", eventIds.initiateCheckout(order.id));
+}
+
+export function sendLeadEvent(order: Order) {
+  return sendLoggedOrderEvent(order, "Lead", eventIds.lead(order.id));
 }
 
 export function sendPurchaseEvent(order: Order) {

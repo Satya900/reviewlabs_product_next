@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { escapeHtml, sendEmail } from "@/lib/email";
 import { formatPaise } from "@/lib/money";
-import { sendPurchaseEvent } from "@/lib/meta";
+import { sendLeadEvent, sendPurchaseEvent } from "@/lib/meta";
 import type { RazorpayPayment } from "@/lib/razorpay";
 import type { Order } from "@/lib/types";
 import { orderFiles } from "@/lib/order-files";
@@ -33,7 +33,8 @@ export async function runPostPaymentTasks(orderId: string) {
   const { data: order } = await admin.from("orders").select("*").eq("id", orderId).single<Order>();
   if (!order || order.status !== "paid") return;
 
-  const results = await Promise.allSettled([sendReceipt(order), sendPurchaseEvent(order)]);
+  // Free (lead magnet) claims report a Lead to Meta instead of a Purchase.
+  const results = await Promise.allSettled([sendReceipt(order), order.amount_paise > 0 ? sendPurchaseEvent(order) : sendLeadEvent(order)]);
   for (const r of results) {
     if (r.status === "rejected") console.error(`[post-payment] order ${orderId}:`, r.reason);
   }
@@ -125,29 +126,29 @@ function deliveryEmail(order: Order, files: DeliveryFile[], token: string | null
         .join("")
     : "";
 
-  const paid = `${formatPaise(order.amount_paise)}${order.coupon_code ? `, coupon ${escapeHtml(order.coupon_code)}` : ""}`;
+  const paid = order.amount_paise > 0 ? `Paid ${formatPaise(order.amount_paise)}${order.coupon_code ? `, coupon ${escapeHtml(order.coupon_code)}` : ""}` : "Free download";
 
   const html = `<div style="background:#f7f7f7;padding:32px 12px;">
   <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #dee1e6;border-radius:24px;padding:32px;font-family:${font};color:#0a0b0d;">
     <p style="margin:0;font-size:14px;color:#7c828a;">Reviewlabs</p>
     <h1 style="margin:8px 0 0 0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;">${hasFiles ? "Here are your files" : "Thanks for your purchase"}</h1>
-    <p style="margin:10px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">${escapeHtml(order.buyer_name)}, thanks for buying <b style="color:#0a0b0d;">${title}</b>${order.offer_title ? ` and <b style="color:#0a0b0d;">${escapeHtml(order.offer_title)}</b>` : ""}.${attached ? " The files are attached to this email too." : ""}</p>
+    <p style="margin:10px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">${escapeHtml(order.buyer_name)}, ${order.amount_paise > 0 ? "thanks for buying" : "here's your free copy of"} <b style="color:#0a0b0d;">${title}</b>${order.offer_title ? ` and <b style="color:#0a0b0d;">${escapeHtml(order.offer_title)}</b>` : ""}.${attached ? " The files are attached to this email too." : ""}</p>
     ${hasFiles ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border-top:1px solid #eef0f3;">${fileRows}</table>` : ""}
     ${downloadsPage && hasFiles ? `<p style="margin:16px 0 0 0;font-size:14px;"><a href="${downloadsPage}" style="color:#0052ff;font-weight:600;text-decoration:none;">Open your downloads page</a></p>` : ""}
     ${thankYou ? `<p style="margin:20px 0 0 0;padding:16px;background:#f7f7f7;border-radius:16px;font-size:15px;line-height:1.5;color:#0a0b0d;white-space:pre-wrap;">${escapeHtml(thankYou)}</p>` : ""}
     ${hasFiles ? `<p style="margin:20px 0 0 0;font-size:13px;line-height:1.5;color:#7c828a;">${accessNote()}</p>` : ""}
-    <p style="margin:20px 0 0 0;padding-top:16px;border-top:1px solid #eef0f3;font-size:12px;line-height:1.6;color:#a8acb3;">Paid ${paid} · Order ${order.id}<br>Need help? Just reply to this email.</p>
+    <p style="margin:20px 0 0 0;padding-top:16px;border-top:1px solid #eef0f3;font-size:12px;line-height:1.6;color:#a8acb3;">${paid} · Order ${order.id}<br>Need help? Just reply to this email.</p>
   </div>
 </div>`;
 
   const text = [
     hasFiles ? "Here are your files" : "Thanks for your purchase",
-    `${order.buyer_name}, thanks for buying "${order.page_title}"${order.offer_title ? ` and "${order.offer_title}"` : ""}.${attached ? " The files are attached to this email too." : ""}`,
+    `${order.buyer_name}, ${order.amount_paise > 0 ? "thanks for buying" : "here's your free copy of"} "${order.page_title}"${order.offer_title ? ` and "${order.offer_title}"` : ""}.${attached ? " The files are attached to this email too." : ""}`,
     ...(hasFiles ? files.map((f) => `${f.file_name} (${formatSize(f.size_bytes)}): ${fileUrl(f)}`) : []),
     downloadsPage && hasFiles ? `All your downloads: ${downloadsPage}` : "",
     thankYou ?? "",
     hasFiles ? accessNote() : "",
-    `Paid ${formatPaise(order.amount_paise)} · Order ${order.id}`,
+    `${order.amount_paise > 0 ? `Paid ${formatPaise(order.amount_paise)}` : "Free download"} · Order ${order.id}`,
     "Need help? Just reply to this email.",
   ].filter(Boolean).join("\n\n");
 

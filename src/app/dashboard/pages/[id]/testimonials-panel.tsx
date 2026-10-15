@@ -6,21 +6,10 @@ import { FaceAvatar, randomFace, type Face } from "@/components/face-avatar";
 import { Stars } from "@/components/testimonials-grid";
 import { Button, Field, FormMessage, inputClass, textareaClass, cx } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
+import { avatarBlob } from "@/lib/avatar-blob";
 import type { Testimonial } from "@/lib/types";
 
 const MAX_COMMENT = 300;
-
-// Square-crops and shrinks a photo to a small avatar before upload.
-async function avatarBlob(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const side = Math.min(bitmap.width, bitmap.height);
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 256;
-  canvas.getContext("2d")!.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, 256, 256);
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.85));
-  if (!blob) throw new Error("Couldn't process that image");
-  return blob;
-}
 
 function StarInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const [hover, setHover] = useState(0);

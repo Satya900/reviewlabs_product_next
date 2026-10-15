@@ -9,6 +9,9 @@ export type PaymentPage = {
   title: string;
   description: string;
   description_html: string;
+  is_free: boolean;
+  storefront_visible: boolean;
+  storefront_position: number;
   support_email: string | null;
   refund_policy: string;
   terms: string;

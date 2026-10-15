@@ -51,7 +51,8 @@ const pageSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])$/, "Slug: 3-60 chars, lowercase letters, numbers and hyphens"),
   description_html: z.string().max(200000, "The description is too long"),
-  price: z.string(),
+  price: z.string().default(""),
+  is_free: z.literal("on").optional(),
   button_label: z.string().trim().min(1).max(40),
   thank_you_message: z.string().trim().max(2000),
   status: z.enum(["draft", "live", "archived"]),
@@ -64,9 +65,10 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
 
-  const amount = rupeesToPaise(input.price);
-  if (amount === null || amount < 100) return { error: "Price must be at least ₹1" };
-  if (amount > 50_000_000) return { error: "Price is too high" };
+  const isFree = input.is_free === "on";
+  const amount = isFree ? 0 : rupeesToPaise(input.price);
+  if (!isFree && (amount === null || amount < 100)) return { error: "Price must be at least ₹1, or make it a free lead magnet" };
+  if (amount !== null && amount > 50_000_000) return { error: "Price is too high" };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -77,7 +79,8 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
       // Clean the editor HTML before storing; keep a plain-text copy for SEO and emails.
       description_html: sanitizeDescription(input.description_html),
       description: htmlToText(input.description_html).slice(0, 10000),
-      amount_paise: amount,
+      amount_paise: amount ?? 0,
+      is_free: isFree,
       button_label: input.button_label,
       thank_you_message: input.thank_you_message || "Thank you for your purchase!",
       status: input.status,

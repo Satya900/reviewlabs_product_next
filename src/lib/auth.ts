@@ -15,6 +15,11 @@ export type Profile = {
   commission_bps: number | null;
   plan_interval: "month" | "year" | null;
   intro_used: boolean;
+  handle: string | null;
+  avatar_url: string | null;
+  bio: string;
+  social_links: Record<string, string>;
+  featured_page_id: string | null;
   payout_upi: string | null;
   payout_account_name: string | null;
   payout_account_number: string | null;

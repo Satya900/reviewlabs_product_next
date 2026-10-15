@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   // Lets the dev server answer through a Cloudflare quick tunnel (HTTPS testing). Ignored in production.
   allowedDevOrigins: ["*.trycloudflare.com"],
   poweredByHeader: false,
+  // Creator storefronts live at /@handle; the page itself is /s/[handle].
+  async rewrites() {
+    return [{ source: "/@:handle", destination: "/s/:handle" }];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

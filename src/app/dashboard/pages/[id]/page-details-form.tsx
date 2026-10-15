@@ -29,6 +29,7 @@ type Draft = {
   title: string;
   slug: string;
   price: string;
+  is_free: boolean;
   description_html: string;
   cover_image_url: string;
   button_label: string;
@@ -40,7 +41,8 @@ function draftFrom(page: Props["page"]): Draft {
   return {
     title: page.title,
     slug: page.slug,
-    price: page.price,
+    price: page.is_free ? "" : page.price,
+    is_free: page.is_free,
     description_html: page.description_html ?? "",
     cover_image_url: page.cover_image_url ?? "",
     button_label: page.button_label,
@@ -88,7 +90,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
     setUploading(false);
   }
 
-  const amountPaise = rupeesToPaise(draft.price) ?? 0;
+  const amountPaise = draft.is_free ? 0 : rupeesToPaise(draft.price) ?? 0;
   const previewHtml = useMemo(() => sanitizeDescription(draft.description_html), [draft.description_html]);
   const previewUrl = `${appUrl.replace(/^https?:\/\//, "")}/p/${draft.slug || "your-link"}`;
 
@@ -100,7 +102,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
         checkout={
           <CheckoutForm
             preview
-            page={{ id: page.id, slug: draft.slug, title: draft.title, amountPaise, currency: "INR", buttonLabel: draft.button_label || "Buy now" }}
+            page={{ id: page.id, slug: draft.slug, title: draft.title, amountPaise, currency: "INR", buttonLabel: draft.button_label || "Buy now", isFree: draft.is_free }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
             pixelId={null}
             offer={offer ? { id: offer.id, headline: offer.headline, title: offer.title, description: offer.description, imageUrl: offer.image_url, pricePaise: offer.price_paise, compareAtPaise: offer.compare_at_paise } : null}
@@ -125,9 +127,29 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
               <input name="title" value={draft.title} onChange={(e) => set("title", e.target.value)} required className={inputClass} />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Price (₹)">
-                <input name="price" value={draft.price} onChange={(e) => set("price", e.target.value)} inputMode="decimal" required className={inputClass} />
-              </Field>
+              <div className="space-y-1.5">
+                <span className="block text-[14px] font-semibold">Price</span>
+                <div className="flex rounded-full bg-surface-strong p-1" role="radiogroup" aria-label="Pricing">
+                  {([false, true] as const).map((free) => (
+                    <button
+                      key={String(free)}
+                      type="button"
+                      role="radio"
+                      aria-checked={draft.is_free === free}
+                      onClick={() => set("is_free", free)}
+                      className={cx("flex-1 rounded-full px-3 py-1.5 text-[13px] font-semibold", draft.is_free === free ? "bg-canvas shadow-soft" : "text-body")}
+                    >
+                      {free ? "Free (lead magnet)" : "Paid"}
+                    </button>
+                  ))}
+                </div>
+                {draft.is_free && <input type="hidden" name="is_free" value="on" />}
+                {draft.is_free ? (
+                  <p className="text-[13px] text-muted">Buyers get it for their name and email. You collect leads, no payment needed.</p>
+                ) : (
+                  <input name="price" value={draft.price} onChange={(e) => set("price", e.target.value)} inputMode="decimal" required placeholder="₹ amount" className={inputClass} />
+                )}
+              </div>
               <Field label="Status">
                 <select name="status" value={draft.status} onChange={(e) => set("status", e.target.value as Draft["status"])} className={inputClass}>
                   <option value="draft">Draft (hidden)</option>
