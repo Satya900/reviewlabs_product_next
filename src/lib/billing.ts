@@ -7,15 +7,38 @@ export type RazorpaySubscription = {
   id: string;
   status: "created" | "authenticated" | "active" | "pending" | "halted" | "cancelled" | "completed" | "expired" | "paused";
   current_end?: number | null;
+  start_at?: number | null;
   ended_at?: number | null;
   notes?: Record<string, string> | unknown[];
 };
 
 const toIso = (unix?: number | null) => (unix ? new Date(unix * 1000).toISOString() : null);
 
+function noteValue(sub: RazorpaySubscription, key: string): string | undefined {
+  return sub.notes && !Array.isArray(sub.notes) ? sub.notes[key] : undefined;
+}
+
+// Records a plan payment (e.g. the intro charge, which arrives through Checkout).
+export async function recordSubscriptionPayment(sub: RazorpaySubscription, payment: { id: string; amount: number; status: string }) {
+  const owner = await creatorForSubscription(sub);
+  if (!owner || (payment.status !== "captured" && payment.status !== "authorized")) return;
+  await createAdminClient().from("subscription_payments").upsert(
+    {
+      creator_id: owner.id,
+      razorpay_subscription_id: sub.id,
+      razorpay_payment_id: payment.id,
+      amount_paise: payment.amount,
+      status: payment.status,
+      period_end: toIso(sub.current_end ?? sub.start_at),
+      raw: payment,
+    },
+    { onConflict: "razorpay_payment_id" },
+  );
+}
+
 async function creatorForSubscription(sub: RazorpaySubscription) {
   const admin = createAdminClient();
-  const { data } = await admin.from("profiles").select("id, razorpay_subscription_id, plan_status").eq("razorpay_subscription_id", sub.id).maybeSingle();
+  const { data } = await admin.from("profiles").select("id, razorpay_subscription_id, plan_status, plan_current_period_end").eq("razorpay_subscription_id", sub.id).maybeSingle();
   return data;
 }
 
@@ -57,8 +80,31 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
       // Razorpay is retrying the renewal; access continues during the grace period.
       await admin.from("profiles").update({ plan_status: "past_due" }).eq("id", owner.id);
       return;
+    case "authenticated": {
+      // Intro offer: the first-month price was charged when autopay was set up,
+      // and regular billing starts at start_at. Creator runs until then.
+      const startsLater = sub.start_at && sub.start_at * 1000 > Date.now();
+      if (!startsLater || noteValue(sub, "intro") !== "yes") return;
+      await admin
+        .from("profiles")
+        .update({
+          plan: "creator",
+          plan_status: owner.plan_status === "cancelling" ? "cancelling" : "active",
+          plan_current_period_end: toIso(sub.start_at),
+          intro_used: true,
+        })
+        .eq("id", owner.id);
+      return;
+    }
+    case "cancelled": {
+      // Cancelled before the paid time ran out (e.g. during the intro month):
+      // keep Creator until then; the reconcile job moves them to Free afterwards.
+      const paidUntil = owner.plan_current_period_end ? new Date(owner.plan_current_period_end).getTime() : 0;
+      if (owner.plan_status === "cancelling" && paidUntil > Date.now()) return;
+      await admin.rpc("downgrade_to_free", { p_creator_id: owner.id, p_status: "cancelled" });
+      return;
+    }
     case "halted":
-    case "cancelled":
     case "completed":
     case "expired": {
       const status = sub.status === "completed" ? "expired" : sub.status;
@@ -66,7 +112,7 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
       return;
     }
     default:
-      return; // created / authenticated: waiting for the first charge
+      return; // created: waiting for the first charge
   }
 }
 

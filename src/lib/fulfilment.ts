@@ -60,12 +60,14 @@ async function sendReceipt(order: Order) {
     const [{ data: grant }, list, { data: page }] = await Promise.all([
       admin.from("download_grants").select("token").eq("order_id", order.id).single(),
       orderFiles(order),
-      admin.from("payment_pages").select("thank_you_message").eq("id", order.page_id).maybeSingle(),
+      admin.from("payment_pages").select("thank_you_message, support_email").eq("id", order.page_id).maybeSingle(),
     ]);
     const attachments = await attachIfSmall(list);
     await sendEmail({
       ...deliveryEmail(order, list, grant?.token ?? null, attachments.length > 0, page?.thank_you_message ?? null),
       attachments,
+      // Buyer replies reach the seller when the page has its own support email.
+      replyTo: page?.support_email ?? undefined,
     });
   } catch (e) {
     await admin.from("orders").update({ receipt_sent_at: null }).eq("id", order.id);

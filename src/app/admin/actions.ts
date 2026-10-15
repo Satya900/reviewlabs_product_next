@@ -84,6 +84,25 @@ export async function grantCreatorPlan(_prev: ActionState, formData: FormData): 
   return { ok: `Creator plan active until ${until.slice(0, 10)}` };
 }
 
+const feeSchema = z.object({ creator_id: z.uuid(), fee: z.string().trim() });
+
+// Custom plan deals: a fixed fee rate for one creator. Empty = standard 6% / 4%.
+export async function setCreatorFee(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const parsed = feeSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Invalid input" };
+  let bps: number | null = null;
+  if (parsed.data.fee) {
+    const pct = Number(parsed.data.fee);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 50) return { error: "Enter a fee between 0 and 50" };
+    bps = Math.round(pct * 100);
+  }
+  const { error } = await createAdminClient().from("profiles").update({ commission_bps: bps }).eq("id", parsed.data.creator_id);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
+  return { ok: bps === null ? "Back to standard fees (6% Free / 4% Creator)" : `Custom fee set to ${bps / 100}% per sale` };
+}
+
 export async function revokeCreatorPlan(creatorId: string): Promise<ActionState> {
   await requireAdmin();
   const { error } = await createAdminClient().rpc("downgrade_to_free", { p_creator_id: creatorId, p_status: "cancelled" });

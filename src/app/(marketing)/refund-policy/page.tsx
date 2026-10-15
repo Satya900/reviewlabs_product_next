@@ -43,8 +43,9 @@ export default function RefundPolicy() {
       </Clause>
       <Clause n={6} title="Creator subscription">
         <p>
-          The {formatPaise(site.creatorPlanPaise)} monthly creator plan is not refundable for a month that has started.
-          Creators can cancel any time and will not be charged for the following month.
+          Creator plan payments ({formatPaise(site.creatorPlanPaise)} monthly or {formatPaise(site.creatorYearlyPaise)} yearly) are not
+          refundable for a period that has started. Creators can cancel any time and won&apos;t be charged for the next period.
+          Individual product pages may carry the seller&apos;s own refund policy, which applies to purchases on that page.
         </p>
       </Clause>
     </LegalPage>

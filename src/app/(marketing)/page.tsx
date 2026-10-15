@@ -3,7 +3,7 @@ import { CheckList, CtaBand, Faq, FeatureCard, Kicker, Section, SectionHead, Ste
 import { HeroMockups } from "@/components/hero-mockups";
 import { buttonClass, cx } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
-import { COMMISSION_PERCENT, CREATOR_PRICE_PAISE } from "@/lib/plans";
+import { CREATOR_FEE_PERCENT, CREATOR_PRICE_PAISE, FREE_FEE_PERCENT, priceLabels } from "@/lib/plans";
 import { site } from "@/lib/site";
 
 const sellables = [
@@ -36,7 +36,7 @@ export default function Home() {
             <h1 className="display text-[44px] sm:text-[64px] lg:text-[80px]">Sell your ebook from a single link.</h1>
             <p className="max-w-xl text-[18px] text-on-dark-soft sm:text-[20px]">
               Make a payment page in about five minutes. Buyers pay with UPI or card and the file lands in their inbox.
-              Start free, with a simple {COMMISSION_PERCENT}% fee per sale.
+              Start free. One all-inclusive fee per sale, payment gateway included.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/signup" className={buttonClass.hero}>Start for free</Link>
@@ -46,7 +46,7 @@ export default function Home() {
               {[
                 ["₹0", "to start selling"],
                 ["Seconds", "from payment to file"],
-                [`${COMMISSION_PERCENT}%`, "flat fee per sale"],
+                [`${FREE_FEE_PERCENT}%→${CREATOR_FEE_PERCENT}%`, "all-in fee per sale"],
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt className="num text-[22px] text-white sm:text-[26px]">{value}</dt>
@@ -170,13 +170,13 @@ export default function Home() {
               <p className="text-[14px] text-body">Balance</p>
               <Kicker>Ledger</Kicker>
             </div>
-            <p className="num mt-2 text-[36px] tracking-tight">₹1,412.66</p>
+            <p className="num mt-2 text-[36px] tracking-tight">₹1,398.61</p>
             <ul className="mt-6 divide-y divide-hairline-soft">
               {[
                 { label: "Sale: Notion budget template", meta: "Today, 9:42 pm", amount: "+₹299.00", up: true },
-                { label: "Razorpay fee", meta: "Today, 9:42 pm", amount: "−₹7.06", up: false },
+                { label: "Fees 4% (includes payment gateway)", meta: "Today, 9:42 pm", amount: "−₹11.96", up: false },
                 { label: "Sale: 30-day content calendar (coupon DIWALI20)", meta: "Today, 6:10 pm", amount: "+₹399.20", up: true },
-                { label: "Razorpay fee", meta: "Today, 6:10 pm", amount: "−₹9.42", up: false },
+                { label: "Fees 4% (includes payment gateway)", meta: "Today, 6:10 pm", amount: "−₹15.97", up: false },
                 { label: "Payout to UPI · UTR 4521…", meta: "Yesterday", amount: "−₹2,000.00", up: false },
               ].map((row) => (
                 <li key={row.label + row.meta + row.amount} className="flex items-center justify-between gap-4 py-3.5">
@@ -202,7 +202,7 @@ export default function Home() {
               <span className="display text-[64px]">₹0</span>
               <span className="text-on-dark-soft">to start</span>
             </p>
-            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free. Creator is {plan}/month for unlimited pages and the growth tools.</p>
+            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month or {priceLabels.yearly}/year, with fees down to {CREATOR_FEE_PERCENT}%.</p>
             <div className="mt-8">
               <CheckList dark items={["Free: one page, checkout, delivery, payouts", "Creator: unlimited pages, coupons, analytics", "Meta Pixel and CAPI, CSV export on Creator"]} />
             </div>
@@ -212,11 +212,11 @@ export default function Home() {
             <p className="text-[16px] font-semibold">A ₹499 sale, worked out</p>
             <dl className="mt-6 space-y-4 text-[15px]">
               <div className="flex justify-between"><dt className="text-body">Buyer pays</dt><dd className="num">₹499.00</dd></div>
-              <div className="flex justify-between"><dt className="text-body">Razorpay fee (about 2% + GST)</dt><dd className="num">−₹11.78</dd></div>
-              <div className="flex justify-between"><dt className="text-body">Platform fee ({COMMISSION_PERCENT}%)</dt><dd className="num">−₹9.98</dd></div>
-              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep</dt><dd className="num text-up">₹477.24</dd></div>
+              <div className="flex justify-between"><dt className="text-body">Free plan fee ({FREE_FEE_PERCENT}%)</dt><dd className="num">−₹29.94</dd></div>
+              <div className="flex justify-between"><dt className="text-body">Creator plan fee ({CREATOR_FEE_PERCENT}%)</dt><dd className="num">−₹19.96</dd></div>
+              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep on Creator</dt><dd className="num text-up">₹479.04</dd></div>
             </dl>
-            <p className="mt-6 text-[13px] text-muted">Gateway fees are set by Razorpay and vary by payment method.</p>
+            <p className="mt-6 text-[13px] text-muted">One fee, nothing else. Razorpay&apos;s payment gateway charge is included.</p>
             <Link href="/pricing" className={cx(buttonClass.secondary, "mt-8 w-full")}>See full pricing</Link>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function Home() {
               { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
-              { q: "What does it cost?", a: `Starting is free. Every sale has a ${COMMISSION_PERCENT}% platform fee plus Razorpay's gateway fee. The Creator plan is ${plan} a month for unlimited pages and the growth tools.` },
+              { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month or ${priceLabels.yearly} a year, with unlimited pages and the growth tools.` },
               { q: "How do I get paid?", a: "We send your balance to the UPI ID or bank account in your settings. Each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I track sales in Meta Ads Manager?", a: "Yes. Add your Pixel ID and Conversions API token in settings. We send PageView, ViewContent, InitiateCheckout and Purchase with matching event IDs." },

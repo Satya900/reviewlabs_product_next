@@ -43,10 +43,11 @@ export default function Terms() {
       </Clause>
       <Clause n={4} title="Fees and payouts for creators">
         <ul>
-          <li>Two plans: Free (one product page) and Creator ({formatPaise(site.creatorPlanPaise)} per month, billed through Razorpay as a recurring payment you can cancel any time).</li>
-          <li>Every sale, on either plan, carries a 2% platform fee and Razorpay&apos;s gateway fee. Both are shown as separate lines in your ledger.</li>
+          <li>Plans: Free (one product page), Creator ({formatPaise(site.creatorPlanPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year, billed through Razorpay as a recurring payment you can cancel any time) and custom plans agreed with us in writing. First-time monthly subscribers may be offered an introductory price for the first month, shown before payment.</li>
+          <li>Every sale carries one all-inclusive fee that covers the payment gateway charge: 6% on Free and 4% on Creator, unless a custom plan sets a different rate. The fee rate is the one in effect when the sale is made.</li>
           <li>If a Creator subscription ends or a renewal fails, your account moves to Free: your oldest live page stays live and other pages become drafts.</li>
-          <li>Refunds and chargebacks are deducted from your balance. We return the platform fee on the refunded amount; Razorpay does not return its gateway fee.</li>
+          <li>Refunds and chargebacks are deducted from your balance. The fee on a refunded sale is not returned, because the payment gateway keeps its charge too.</li>
+          <li>You may add your own support email, refund policy and terms to your product pages. They apply between you and your buyers, alongside these terms.</li>
           <li>We pay your balance to the UPI ID or bank account in your settings. You are responsible for any tax due on your income.</li>
           <li>We may hold a payout while we look into a dispute, a chargeback or a suspected breach of these terms.</li>
         </ul>

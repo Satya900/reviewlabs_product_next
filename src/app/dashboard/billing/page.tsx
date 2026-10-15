@@ -1,10 +1,11 @@
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
-import { COMMISSION_PERCENT, CREATOR_PRICE_PAISE, creatorFeatures, freeFeatures, hasCreatorPlan } from "@/lib/plans";
+import { CREATOR_FEE_PERCENT, FREE_FEE_PERCENT, creatorFeatures, feePercentFor, freeFeatures, hasCreatorPlan, priceLabels } from "@/lib/plans";
 import { Badge, Notice, PageTitle, Panel, tableClass } from "@/components/ui";
 import { CheckList } from "@/components/marketing";
-import { CancelButton, UpgradeButton } from "./billing-client";
+import { CancelButton, PlanPicker } from "./billing-client";
+import Link from "next/link";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
 
@@ -20,11 +21,12 @@ export default async function BillingPage() {
     .order("created_at", { ascending: false })
     .limit(24);
   const periodEnd = profile.plan_current_period_end ? dateFmt.format(new Date(profile.plan_current_period_end)) : null;
-  const price = formatPaise(CREATOR_PRICE_PAISE).replace(".00", "");
+  const introEligible = !profile.intro_used && !payments?.length;
+  const fee = feePercentFor(profile);
 
   return (
     <>
-      <PageTitle sub={`Every sale has a ${COMMISSION_PERCENT}% platform fee on both plans, plus Razorpay's gateway fee.`}>Plan and billing</PageTitle>
+      <PageTitle sub={`Your fee per sale is ${fee}%, all-inclusive (Razorpay's charge is covered). Free is ${FREE_FEE_PERCENT}%, Creator is ${CREATOR_FEE_PERCENT}%.`}>Plan and billing</PageTitle>
 
       {profile.is_admin && <Notice>Admin accounts have every Creator feature without a subscription.</Notice>}
       {profile.plan_status === "past_due" && (
@@ -37,37 +39,53 @@ export default async function BillingPage() {
         <Notice tone="bad">Your Creator plan has ended. Pages beyond your first were moved to draft; upgrade again to publish them.</Notice>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <section className={onCreator ? "rounded-3xl border border-hairline bg-canvas p-8" : "rounded-3xl border-2 border-primary bg-canvas p-8"}>
           <div className="flex items-center justify-between">
             <p className="text-[18px] font-semibold">Free</p>
             {!onCreator && <Badge status="live" label="Current plan" />}
           </div>
           <p className="mt-3 flex items-baseline gap-2"><span className="display text-[44px]">₹0</span><span className="text-body">/ month</span></p>
-          <p className="mt-1 text-[14px] text-muted">{COMMISSION_PERCENT}% platform fee per sale</p>
+          <p className="mt-1 text-[14px] text-muted">{FREE_FEE_PERCENT}% per sale, Razorpay fees included</p>
           <div className="mt-6"><CheckList items={freeFeatures} /></div>
         </section>
 
         <section className="relative overflow-hidden rounded-3xl bg-dark p-8 text-white">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-60 rounded-full bg-primary/40 blur-[90px]" />
-          <div className="relative">
+          <div className="relative space-y-6">
             <div className="flex items-center justify-between">
-              <p className="text-[18px] font-semibold">Creator</p>
+              <p className="text-[22px] font-semibold">Creator</p>
               {onCreator && !profile.is_admin && <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Current plan</span>}
             </div>
-            <p className="mt-3 flex items-baseline gap-2"><span className="display text-[44px]">{price}</span><span className="text-on-dark-soft">/ month</span></p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">{COMMISSION_PERCENT}% platform fee per sale · UPI autopay or card</p>
-            <div className="mt-6"><CheckList dark items={["Everything in Free", ...creatorFeatures]} /></div>
-            <div className="mt-8">
-              {!onCreator && <UpgradeButton />}
-              {onCreator && !profile.is_admin && (
-                <p className="text-[14px] text-on-dark-soft">
-                  {profile.plan_status === "cancelling" ? `Ends on ${periodEnd}.` : periodEnd ? `Renews on ${periodEnd}.` : "Active."}
-                </p>
-              )}
-            </div>
+            {!onCreator ? (
+              <PlanPicker
+                monthly={priceLabels.monthly}
+                yearly={priceLabels.yearly}
+                intro={introEligible ? priceLabels.intro : null}
+                saving={priceLabels.saving}
+                features={["Everything in Free", ...creatorFeatures]}
+              />
+            ) : (
+              <>
+                <CheckList dark items={["Everything in Free", ...creatorFeatures]} />
+                {!profile.is_admin && (
+                  <p className="text-[14px] text-on-dark-soft">
+                    {profile.plan_interval === "year" ? "Yearly plan. " : "Monthly plan. "}
+                    {profile.plan_status === "cancelling" ? `Ends on ${periodEnd}.` : periodEnd ? `Next charge on ${periodEnd}.` : "Active."}
+                  </p>
+                )}
+              </>
+            )}
           </div>
         </section>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-hairline bg-canvas p-6">
+        <div>
+          <p className="text-[17px] font-semibold">Need something bigger?</p>
+          <p className="mt-1 text-[14px] text-body">Custom plans for high-volume sellers and businesses: lower fees, setup help and custom features.</p>
+        </div>
+        <Link href="/custom" className="inline-flex h-11 items-center rounded-full bg-surface-strong px-5 text-[15px] font-semibold">Talk to us</Link>
       </div>
 
       {onCreator && !profile.is_admin && profile.plan_status !== "cancelling" && profile.razorpay_subscription_id && (

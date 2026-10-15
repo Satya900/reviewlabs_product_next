@@ -25,6 +25,7 @@ export const getPublicPage = cache(async (slug: string) => {
     admin.from("page_offers").select("id, page_id, headline, title, description, image_url, price_paise, compare_at_paise, active").eq("page_id", page.id).eq("active", true).maybeSingle<Offer>(),
     creatorHasPlan(page.creator_id),
   ]);
+  const { data: seller } = await admin.from("profiles").select("name").eq("id", page.creator_id).maybeSingle();
 
   return {
     page,
@@ -34,6 +35,7 @@ export const getPublicPage = cache(async (slug: string) => {
     faqs: (faqs ?? []) as Faq[],
     // Additional offers are a Creator plan feature.
     offer: hasPlan ? offer ?? null : null,
+    sellerName: (seller?.name as string | null) || "the seller",
     // The page's own pixel if set, else the account pixel; null when neither is fully connected.
     pixelId: pixel?.pixel_id ?? null,
   };

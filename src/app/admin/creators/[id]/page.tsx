@@ -5,7 +5,8 @@ import { formatPaise } from "@/lib/money";
 import { PageTitle, Panel, Stat } from "@/components/ui";
 import { LedgerTable } from "@/components/ledger-table";
 import type { LedgerEntry } from "@/lib/types";
-import { AdjustmentForm, PayoutForm, PlanForm } from "../../forms";
+import { AdjustmentForm, FeeForm, PayoutForm, PlanForm } from "../../forms";
+import { feePercentFor } from "@/lib/plans";
 import { hasCreatorPlan } from "@/lib/plans";
 import { Badge } from "@/components/ui";
 
@@ -48,6 +49,10 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
             {p.razorpay_subscription_id ? ` · ${p.razorpay_subscription_id}` : ""}
           </p>
           {!p.is_admin && <PlanForm creatorId={p.id} onPaidPlan={hasCreatorPlan(p)} hasSubscription={Boolean(p.razorpay_subscription_id)} />}
+          <div className="mt-5 border-t border-hairline pt-5">
+            <p className="mb-3 text-[14px] text-body">Current fee: <b className="text-ink">{feePercentFor(p)}%</b> per sale{p.plan_interval ? ` · billed ${p.plan_interval}ly` : ""}</p>
+            <FeeForm creatorId={p.id} currentBps={p.commission_bps ?? null} />
+          </div>
         </Panel>
         <Panel title="Manual adjustment">
           <AdjustmentForm creatorId={p.id} />

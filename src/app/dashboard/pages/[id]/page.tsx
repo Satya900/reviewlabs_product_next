@@ -14,6 +14,7 @@ import { TrackingPanel } from "./tracking-panel";
 import { TestimonialsPanel } from "./testimonials-panel";
 import { FaqsPanel } from "./faqs-panel";
 import { OfferPanel } from "./offer-panel";
+import { PoliciesPanel } from "./policies-panel";
 import { hasCreatorPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -87,6 +88,10 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         <Panel title="FAQ">
           <p className="mb-3 text-[13px]">Answer common questions before buyers have to ask. Shown on this page only.</p>
           <FaqsPanel pageId={page.id} items={(faqs ?? []) as Faq[]} />
+        </Panel>
+        <Panel title="Policies and support">
+          <p className="mb-4 text-[13px]">Your own contact, refund policy and terms, shown at the bottom of this page.</p>
+          <PoliciesPanel pageId={page.id} supportEmail={page.support_email ?? ""} refundPolicy={page.refund_policy ?? ""} terms={page.terms ?? ""} />
         </Panel>
         <Panel title="Checkout questions">
           <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>

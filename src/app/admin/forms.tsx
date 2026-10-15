@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { addAdjustment, grantCreatorPlan, recordPayout, refundOrder, revokeCreatorPlan } from "./actions";
+import { addAdjustment, grantCreatorPlan, recordPayout, refundOrder, revokeCreatorPlan, setCreatorFee } from "./actions";
 import { Button, Field, FormMessage, inputClass } from "@/components/ui";
 import { paiseToRupeesString } from "@/lib/money";
 
@@ -76,6 +76,22 @@ export function PlanForm({ creatorId, onPaidPlan, hasSubscription }: { creatorId
         </div>
       )}
     </div>
+  );
+}
+
+export function FeeForm({ creatorId, currentBps }: { creatorId: string; currentBps: number | null }) {
+  const [state, action, pending] = useActionState(setCreatorFee, null);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="creator_id" value={creatorId} />
+      <Field label="Custom fee per sale (%)" hint="For custom plan deals. Leave empty for the standard 6% Free / 4% Creator.">
+        <input name="fee" defaultValue={currentBps === null ? "" : String(currentBps / 100)} inputMode="decimal" placeholder="Standard" className={inputClass} />
+      </Field>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Save fee"}</Button>
+        <FormMessage state={state} />
+      </div>
+    </form>
   );
 }
 

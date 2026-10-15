@@ -6,7 +6,9 @@ export const site = {
   legalName: "Veyrn Labs",
   founder: "Satyabrata Mohanty",
   supportEmail: "satyabrata@veyrnlabs.com",
-  creatorPlanPaise: 9900,
+  creatorPlanPaise: 29900,
+  creatorYearlyPaise: 299900,
+  creatorIntroPaise: 9900,
   refundWindowDays: 7,
   policiesUpdated: "9 October 2026",
 };

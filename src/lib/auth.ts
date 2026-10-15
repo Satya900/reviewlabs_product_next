@@ -12,7 +12,9 @@ export type Profile = {
   plan_status: "none" | "created" | "active" | "past_due" | "cancelling" | "cancelled" | "halted" | "expired";
   plan_current_period_end: string | null;
   razorpay_subscription_id: string | null;
-  commission_bps: number;
+  commission_bps: number | null;
+  plan_interval: "month" | "year" | null;
+  intro_used: boolean;
   payout_upi: string | null;
   payout_account_name: string | null;
   payout_account_number: string | null;

@@ -9,6 +9,9 @@ export type PaymentPage = {
   title: string;
   description: string;
   description_html: string;
+  support_email: string | null;
+  refund_policy: string;
+  terms: string;
   cover_image_url: string | null;
   amount_paise: number;
   currency: "INR";

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/auth";
 import { verifySubscriptionSignature } from "@/lib/razorpay";
-import { fetchSubscription, syncSubscription } from "@/lib/billing";
+import { fetchSubscription, recordSubscriptionPayment, syncSubscription } from "@/lib/billing";
+import { razorpay } from "@/lib/razorpay";
 
 const schema = z.object({
   razorpay_payment_id: z.string().min(1),
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
 
   try {
     const sub = await fetchSubscription(razorpay_subscription_id);
+    // The first charge (regular or intro price) comes back through Checkout; record it.
+    const payment = (await razorpay().payments.fetch(razorpay_payment_id)) as unknown as { id: string; amount: number; status: string };
+    await recordSubscriptionPayment(sub, payment);
     await syncSubscription(sub);
     return NextResponse.json({ status: sub.status });
   } catch (e) {

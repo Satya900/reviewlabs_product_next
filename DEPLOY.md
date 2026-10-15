@@ -32,7 +32,7 @@ Follow these in order. Each step says where to do it and what to check.
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | **Live** key id (`rzp_live_…`), see step 5. Use the test key until Razorpay activates live mode. |
 | `RAZORPAY_KEY_SECRET` | **Live** key secret |
 | `RAZORPAY_WEBHOOK_SECRET` | A new random value, also entered in Razorpay's live webhook (step 5) |
-| `RAZORPAY_CREATOR_PLAN_ID` | The monthly Creator plan id from `node scripts/create-razorpay-plan.mjs`. Test and live mode each need their own plan. |
+| `RAZORPAY_PLAN_MONTHLY_ID` / `RAZORPAY_PLAN_YEARLY_ID` | Creator plan ids (₹299 monthly, ₹2,999 yearly) from `node scripts/create-razorpay-plan.mjs`. Test and live mode each need their own pair. |
 | `RESEND_API_KEY` | A **new** Resend key (the old one was shared in chat, so rotate it) |
 | `EMAIL_FROM` | `Reviewlabs <no-reply@reviewlabs.space>` |
 | `META_GRAPH_VERSION` | `v24.0` |
@@ -85,7 +85,7 @@ Custom SMTP through Resend and the email rate limit were set up earlier.
    - **Settings → API Keys →** generate live keys and put them in Vercel (`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
    - **Settings → Payment capture →** Automatic.
    - **Settings → Webhooks → Add:** URL `https://reviewlabs.space/api/webhooks/razorpay`, the secret = `RAZORPAY_WEBHOOK_SECRET` from Vercel, and the events `payment.captured`, `payment.authorized`, `payment.failed`, `order.paid`, `refund.created`, `refund.processed`, `refund.failed`, plus the subscription events `subscription.authenticated`, `subscription.activated`, `subscription.charged`, `subscription.pending`, `subscription.halted`, `subscription.cancelled`, `subscription.completed`, `subscription.resumed`.
-   - **Creator plan:** with the live keys in your local `.env`, run `node scripts/create-razorpay-plan.mjs` and put the printed id in Vercel as `RAZORPAY_CREATOR_PLAN_ID`.
+   - **Creator plan:** with the live keys in your local `.env`, run `node scripts/create-razorpay-plan.mjs` and put the two printed ids in Vercel as `RAZORPAY_PLAN_MONTHLY_ID` and `RAZORPAY_PLAN_YEARLY_ID`.
    - **Subscriptions** must be enabled on your Razorpay account (Dashboard → Subscriptions). Ask Razorpay support if the menu isn't there.
    - Optional: **Settings → Branding →** upload `src/assets/logo-mark.svg` (as a PNG if it asks) so buyers see the logo in the payment popup.
 3. Vercel → **Deployments → Redeploy** so the new keys take effect.

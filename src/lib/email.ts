@@ -4,7 +4,7 @@ import { site } from "@/lib/site";
 
 export type EmailAttachment = { filename: string; content: string }; // content is base64
 
-type Email = { to: string; subject: string; html: string; text: string; attachments?: EmailAttachment[] };
+type Email = { to: string; subject: string; html: string; text: string; attachments?: EmailAttachment[]; replyTo?: string };
 
 export async function sendEmail(email: Email): Promise<void> {
   const apiKey = env.resendApiKey();
@@ -19,7 +19,7 @@ export async function sendEmail(email: Email): Promise<void> {
     // Mail goes out from the no-reply sender; buyer replies land in the support inbox.
     body: JSON.stringify({
       from: env.emailFrom(),
-      reply_to: site.supportEmail,
+      reply_to: email.replyTo ?? site.supportEmail,
       to: [email.to],
       subject: email.subject,
       html: email.html,

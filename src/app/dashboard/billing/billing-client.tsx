@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cancelCreatorSubscription, startCreatorSubscription } from "./actions";
-import { Button, FormMessage } from "@/components/ui";
+import { Button, FormMessage, cx } from "@/components/ui";
 
 type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error: { description: string } }) => void) => void };
 
@@ -19,7 +19,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function UpgradeButton({ label = "Upgrade to Creator" }: { label?: string }) {
+export function UpgradeButton({ interval, label }: { interval: "month" | "year"; label: string }) {
   const router = useRouter();
   const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,7 @@ export function UpgradeButton({ label = "Upgrade to Creator" }: { label?: string
   async function upgrade() {
     setBusy(true);
     setState(null);
-    const [ready, res] = await Promise.all([loadRazorpay(), startCreatorSubscription()]);
+    const [ready, res] = await Promise.all([loadRazorpay(), startCreatorSubscription(interval)]);
     if (res.error || !res.subscriptionId) {
       setState({ error: res.error ?? "Something went wrong" });
       setBusy(false);
@@ -43,7 +43,7 @@ export function UpgradeButton({ label = "Upgrade to Creator" }: { label?: string
       key: res.keyId,
       subscription_id: res.subscriptionId,
       name: "Reviewlabs Creator",
-      description: "Monthly plan, cancel any time",
+      description: interval === "year" ? "Yearly plan, cancel any time" : res.intro ? "First month at the intro price, then monthly" : "Monthly plan, cancel any time",
       prefill: { name: res.name, email: res.email },
       theme: { color: "#0052ff" },
       handler: async (response: Record<string, string>) => {
@@ -60,7 +60,7 @@ export function UpgradeButton({ label = "Upgrade to Creator" }: { label?: string
 
   return (
     <div className="space-y-3">
-      <Button variant="hero" onClick={upgrade} disabled={busy} className="w-full sm:w-auto">{busy ? "Opening payment" : label}</Button>
+      <Button variant="hero" onClick={upgrade} disabled={busy} className="w-full">{busy ? "Opening payment" : label}</Button>
       <FormMessage state={state} />
     </div>
   );
@@ -83,6 +83,68 @@ export function CancelButton() {
         {pending ? "Cancelling" : "Cancel plan"}
       </Button>
       <FormMessage state={state} />
+    </div>
+  );
+}
+
+type PlanChoice = { monthly: string; yearly: string; intro: string | null; saving: string; features: string[] };
+
+// Monthly / annual toggle with the matching price and upgrade button.
+export function PlanPicker({ monthly, yearly, intro, saving, features }: PlanChoice) {
+  const [interval, setInterval] = useState<"month" | "year">("year");
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-center gap-4">
+        <span className={interval === "month" ? "font-semibold text-white" : "text-on-dark-soft"}>Monthly</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={interval === "year"}
+          aria-label="Bill yearly"
+          onClick={() => setInterval(interval === "year" ? "month" : "year")}
+          className={cx("relative h-8 w-14 rounded-full transition", interval === "year" ? "bg-primary" : "bg-dark-line")}
+        >
+          <span className={cx("absolute top-1 size-6 rounded-full bg-white shadow transition-all", interval === "year" ? "left-7" : "left-1")} />
+        </button>
+        <span className={interval === "year" ? "font-semibold text-white" : "text-on-dark-soft"}>
+          Annual <span className="ml-1 rounded-full bg-up/20 px-2 py-0.5 text-[11px] font-semibold text-up">Save {saving}</span>
+        </span>
+      </div>
+
+      <div className="text-center">
+        {interval === "year" ? (
+          <>
+            <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{yearly}</span><span className="text-on-dark-soft">/ year</span></p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">12 months for less than 10 months of monthly.</p>
+          </>
+        ) : intro ? (
+          <>
+            <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{intro}</span><span className="text-on-dark-soft">first month</span></p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Then {monthly}/month. Cancel anytime.</p>
+          </>
+        ) : (
+          <>
+            <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{monthly}</span><span className="text-on-dark-soft">/ month</span></p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Billed monthly. Cancel anytime.</p>
+          </>
+        )}
+      </div>
+
+      <ul className="space-y-2.5">
+        {features.map((f) => (
+          <li key={f} className="flex gap-3 text-[15px] text-on-dark-soft">
+            <span className="mt-0.5 text-primary">✓</span>
+            {f}
+          </li>
+        ))}
+      </ul>
+
+      <UpgradeButton
+        key={interval}
+        interval={interval}
+        label={interval === "year" ? `Upgrade for ${yearly}/year` : intro ? `Start for ${intro}` : `Upgrade for ${monthly}/month`}
+      />
+      <p className="text-center text-[12px] text-on-dark-soft">Secure autopay via Razorpay (UPI or card). You can cancel from this page anytime.</p>
     </div>
   );
 }

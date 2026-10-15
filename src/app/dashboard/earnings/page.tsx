@@ -2,6 +2,7 @@ import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat } from "@/components/ui";
+import { feePercentFor } from "@/lib/plans";
 import { LedgerTable } from "@/components/ledger-table";
 import type { LedgerEntry } from "@/lib/types";
 
@@ -15,7 +16,7 @@ export default async function EarningsPage() {
 
   return (
     <>
-      <PageTitle sub={`Balance = sales, minus Razorpay's gateway fee, the ${profile.commission_bps / 100}% platform fee, refunds and payouts already sent.`}>
+      <PageTitle sub={`Balance = sales, minus the ${feePercentFor(profile)}% all-inclusive fee (payment gateway included), refunds and payouts already sent.`}>
         Earnings
       </PageTitle>
       <div className="grid gap-4 sm:grid-cols-3">

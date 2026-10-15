@@ -13,6 +13,8 @@ type Props = {
   pixelId: string | null;
   // Editor preview: looks identical but can't take payments.
   preview?: boolean;
+  // Shown in the consent line under the pay button.
+  sellerName?: string;
   // Optional add-on (order bump) the buyer can tick.
   offer?: { id: string; headline: string; title: string; description: string; imageUrl: string | null; pricePaise: number; compareAtPaise: number | null } | null;
 };
@@ -37,7 +39,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function CheckoutForm({ page, fields, pixelId, preview, offer }: Props) {
+export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName }: Props) {
   const router = useRouter();
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -241,6 +243,11 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer }: Props) {
           {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
         </Button>
         </fieldset>
+        <p className="text-center text-[12px] leading-relaxed text-muted">
+          By paying, you agree to share the details above with {sellerName ?? "the seller"} (owner of this page) and Reviewlabs, and to the{" "}
+          <a href="/terms" target="_blank" className="underline">terms</a> and{" "}
+          <a href="/refund-policy" target="_blank" className="underline">refund policy</a>.
+        </p>
         {preview && <p className="text-center text-[12px] text-muted">Preview only. Checkout works on your live page.</p>}
       </form>
     </div>

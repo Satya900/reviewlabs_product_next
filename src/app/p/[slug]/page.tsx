@@ -23,7 +23,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
   const { slug } = await params;
   const data = await getPublicPage(slug);
   if (!data) notFound();
-  const { page, fields, files, pixelId, testimonials, faqs, offer } = data;
+  const { page, fields, files, pixelId, testimonials, faqs, offer, sellerName } = data;
 
   return (
     <>
@@ -45,12 +45,14 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
           files,
           testimonials,
           faqs,
+          policies: { sellerName, supportEmail: page.support_email, refundPolicy: page.refund_policy, terms: page.terms },
         }}
         checkout={
           <CheckoutForm
             page={{ id: page.id, slug: page.slug, title: page.title, amountPaise: page.amount_paise, currency: page.currency, buttonLabel: page.button_label }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
             pixelId={pixelId}
+            sellerName={sellerName}
             offer={offer ? { id: offer.id, headline: offer.headline, title: offer.title, description: offer.description, imageUrl: offer.image_url, pricePaise: offer.price_paise, compareAtPaise: offer.compare_at_paise } : null}
           />
         }
