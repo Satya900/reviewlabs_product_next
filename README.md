@@ -2,7 +2,7 @@
 
 Creators sell digital files from a payment page. Buyers pay once with Razorpay and get lifetime access to their files by email. Anyone can sign up (email and password, verified) and starts on the Free plan (one page); the Creator plan (₹299/month with a ₹99 first month, or ₹2,999/year, via Razorpay Subscriptions) unlocks unlimited pages, coupons, analytics, Meta tracking, add-on offers and CSV export. Fees are all-inclusive (payment gateway covered): 6% per sale on Free, 4% on Creator, or a custom rate. Money lands in the platform's Razorpay account, an append-only ledger tracks what each creator is owed, and the admin pays creators manually.
 
-## DATE -> 16 Oct 2026
+## DATE -> 16/10/2026
 
 **Stack:** Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Razorpay · Meta Pixel + Conversions API · Resend
 
