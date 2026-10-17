@@ -6,7 +6,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay } from "@/lib/razorpay";
-import { rupeesToPaise } from "@/lib/money";
+import { formatPaise, rupeesToPaise } from "@/lib/money";
+import { payCreator, recordManualPayout, runDailyPayouts, syncOpenPayouts } from "@/lib/payouts";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -38,6 +39,72 @@ export async function recordPayout(_prev: ActionState, formData: FormData): Prom
   revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
   revalidatePath("/admin");
   return { ok: "Payout recorded" };
+}
+
+// Sends the creator's available balance (or a smaller amount) through RazorpayX now.
+export async function payCreatorNow(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const creatorId = z.uuid().safeParse(formData.get("creator_id"));
+  if (!creatorId.success) return { error: "Invalid creator" };
+  const raw = String(formData.get("amount") ?? "").trim();
+  const max = raw ? rupeesToPaise(raw) : undefined;
+  if (raw && (!max || max < 100)) return { error: "Enter at least ₹1, or leave it empty to pay the full available balance" };
+  try {
+    const result = await payCreator(creatorId.data, { createdBy: admin.id, maxPaise: max ?? undefined, minPaise: 100 });
+    revalidatePath(`/admin/creators/${creatorId.data}`);
+    revalidatePath("/admin/payouts");
+    if (!result.ok) return { error: result.reason };
+    if (result.status === "failed" || result.status === "cancelled") return { error: "RazorpayX refused this payout. The reason is in the payouts list and the money is back on the balance." };
+    return { ok: `${formatPaise(result.amountPaise)} ${result.status === "processed" ? "sent" : `payout created (${result.status})`}` };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+const manualPaidSchema = z.object({
+  creator_id: z.uuid(),
+  amount: z.string(),
+  utr: z.string().trim().min(6, "Paste the UTR / transaction reference from your bank or UPI app").max(40),
+});
+
+// Manual mode: the admin already sent the money from their bank or UPI app.
+export async function markPaidManually(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const parsed = manualPaidSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const amount = rupeesToPaise(parsed.data.amount);
+  if (!amount || amount < 100) return { error: "Enter the amount you sent" };
+  try {
+    const result = await recordManualPayout(parsed.data.creator_id, amount, parsed.data.utr, admin.id);
+    if (!result.ok) return { error: result.reason };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  revalidatePath("/admin/payouts");
+  revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
+  return { ok: `Recorded ${formatPaise(amount)}. The creator has been emailed.` };
+}
+
+export async function setPayoutsPaused(creatorId: string, paused: boolean): Promise<ActionState> {
+  await requireAdmin();
+  const { error } = await createAdminClient().from("profiles").update({ payouts_paused: paused }).eq("id", creatorId);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/creators/${creatorId}`);
+  return { ok: paused ? "Automatic payouts paused for this creator" : "Automatic payouts resumed" };
+}
+
+// Runs the daily payout job on demand.
+export async function runPayoutsNow(): Promise<ActionState> {
+  await requireAdmin();
+  try {
+    const synced = await syncOpenPayouts();
+    const daily = await runDailyPayouts();
+    revalidatePath("/admin/payouts");
+    if ("disabled" in daily) return { error: "Automatic payouts are off (a RAZORPAYX_* key is missing or AUTO_PAYOUTS=off)." };
+    return { ok: `Paid ${daily.paid} creator${daily.paid === 1 ? "" : "s"} (${formatPaise(daily.totalPaise)}), skipped ${daily.skipped}, ${daily.errors + synced.errors} error(s), ${synced.synced} open payout(s) updated.` };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
 }
 
 const adjustmentSchema = z.object({

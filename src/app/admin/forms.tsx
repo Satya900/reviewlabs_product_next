@@ -1,9 +1,77 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { addAdjustment, grantCreatorPlan, recordPayout, refundOrder, revokeCreatorPlan, setCreatorFee } from "./actions";
+import { addAdjustment, grantCreatorPlan, markPaidManually, payCreatorNow, recordPayout, refundOrder, revokeCreatorPlan, runPayoutsNow, setCreatorFee, setPayoutsPaused } from "./actions";
 import { Button, Field, FormMessage, inputClass } from "@/components/ui";
-import { paiseToRupeesString } from "@/lib/money";
+import { formatPaise, paiseToRupeesString } from "@/lib/money";
+
+export function PayNowForm({ creatorId, availablePaise, ready }: { creatorId: string; availablePaise: number; ready: boolean }) {
+  const [state, action, pending] = useActionState(payCreatorNow, null);
+  return (
+    <form
+      action={action}
+      onSubmit={(e) => { if (!confirm("Send this payout through RazorpayX now?")) e.preventDefault(); }}
+      className="space-y-3"
+    >
+      <input type="hidden" name="creator_id" value={creatorId} />
+      <Field label="Amount (₹)" hint={`Leave empty to pay everything available (${formatPaise(availablePaise)}).`}>
+        <input name="amount" inputMode="decimal" placeholder={paiseToRupeesString(Math.max(availablePaise, 0))} className={inputClass} />
+      </Field>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button loading={pending} type="submit" disabled={pending || !ready}>{pending ? "Sending" : "Pay now via RazorpayX"}</Button>
+        <FormMessage state={state} />
+      </div>
+    </form>
+  );
+}
+
+export function PausePayoutsButton({ creatorId, paused }: { creatorId: string; paused: boolean }) {
+  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <div className="space-y-2">
+      <Button type="button" variant="secondary" disabled={pending} onClick={() => start(async () => setState(await setPayoutsPaused(creatorId, !paused)))}>
+        {pending ? "Saving" : paused ? "Resume automatic payouts" : "Pause automatic payouts"}
+      </Button>
+      <FormMessage state={state} />
+    </div>
+  );
+}
+
+export function MarkPaidForm({ creatorId, amountPaise }: { creatorId: string; amountPaise: number }) {
+  const [state, action, pending] = useActionState(markPaidManually, null);
+  // Controlled, so a failed attempt doesn't wipe what the admin typed.
+  const [amount, setAmount] = useState(paiseToRupeesString(amountPaise));
+  const [utr, setUtr] = useState("");
+  if (state?.ok) return <FormMessage state={state} />;
+  return (
+    <form action={action} className="flex flex-wrap items-start gap-2">
+      <input type="hidden" name="creator_id" value={creatorId} />
+      <input name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" aria-label="Amount sent (₹)" className={`${inputClass} w-28`} />
+      <input name="utr" value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference" required aria-label="UTR" className={`${inputClass} w-44`} />
+      <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Mark paid"}</Button>
+      <div className="basis-full"><FormMessage state={state} /></div>
+    </form>
+  );
+}
+
+export function RunPayoutsButton({ disabled }: { disabled: boolean }) {
+  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <div className="space-y-2">
+      <Button
+        type="button"
+        loading={pending}
+        disabled={pending || disabled}
+        onClick={() => { if (confirm("Pay every creator their available balance now?")) start(async () => setState(await runPayoutsNow())); }}
+      >
+        {pending ? "Running" : "Run payouts now"}
+      </Button>
+      <FormMessage state={state} />
+    </div>
+  );
+}
 
 export function PayoutForm({ creatorId, suggestedPaise }: { creatorId: string; suggestedPaise: number }) {
   const [state, action, pending] = useActionState(recordPayout, null);

@@ -40,6 +40,12 @@ export function verifyWebhookSignature(rawBody: string, signature: string): bool
   return safeEqualHex(expected, signature);
 }
 
+// RazorpayX webhooks are signed the same way, with the secret set in RazorpayX.
+export function verifyPayoutWebhookSignature(rawBody: string, signature: string): boolean {
+  const expected = crypto.createHmac("sha256", env.razorpayxWebhookSecret()).update(rawBody).digest("hex");
+  return safeEqualHex(expected, signature);
+}
+
 // The subset of Razorpay's payment entity we rely on.
 export type RazorpayPayment = {
   id: string;

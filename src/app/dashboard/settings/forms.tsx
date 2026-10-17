@@ -10,7 +10,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <form action={action} className="space-y-4">
       <Field label="Display name"><input name="name" defaultValue={profile.name ?? ""} className={inputClass} /></Field>
-      <Field label="UPI ID" hint="For example: yourname@okhdfcbank"><input name="payout_upi" defaultValue={profile.payout_upi ?? ""} className={inputClass} /></Field>
+      <Field label="UPI ID" hint="For example: yourname@okhdfcbank. We pay to UPI when it's set, otherwise to your bank account."><input name="payout_upi" defaultValue={profile.payout_upi ?? ""} className={inputClass} /></Field>
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Account holder"><input name="payout_account_name" defaultValue={profile.payout_account_name ?? ""} className={inputClass} /></Field>
         <Field label="Account number"><input name="payout_account_number" defaultValue={profile.payout_account_number ?? ""} inputMode="numeric" className={inputClass} /></Field>

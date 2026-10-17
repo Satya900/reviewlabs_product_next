@@ -16,6 +16,13 @@ export const env = {
   razorpayWebhookSecret: () => required("RAZORPAY_WEBHOOK_SECRET"),
   razorpayPlanMonthlyId: () => required("RAZORPAY_PLAN_MONTHLY_ID"),
   razorpayPlanYearlyId: () => required("RAZORPAY_PLAN_YEARLY_ID"),
+  // RazorpayX (payouts) has its own API keys. Payouts are off until the account number is set.
+  razorpayxAccountNumber: () => process.env.RAZORPAYX_ACCOUNT_NUMBER || null,
+  razorpayxKeyId: () => required("RAZORPAYX_KEY_ID"),
+  razorpayxKeySecret: () => required("RAZORPAYX_KEY_SECRET"),
+  razorpayxWebhookSecret: () => required("RAZORPAYX_WEBHOOK_SECRET"),
+  // "off" stops the daily automatic run; admins can still pay from the creator page.
+  autoPayouts: () => process.env.AUTO_PAYOUTS !== "off",
   encryptionKey: () => required("ENCRYPTION_KEY"),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,

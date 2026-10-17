@@ -44,13 +44,13 @@ export default function Terms() {
       </Clause>
       <Clause n={4} title="Fees and payouts for creators">
         <ul>
-          <li>Plans: Free (one product page and one lead magnet), Creator ({formatPaise(site.creatorPlanPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year, billed through Razorpay as a recurring payment you can cancel any time, or {formatPaise(site.creatorLifetimePaise)} once for lifetime access) and custom plans agreed with us in writing. First-time monthly subscribers may be offered an introductory price for the first month, shown before payment.</li>
-          <li>Every sale carries one all-inclusive fee that covers the payment gateway charge: 6% on Free and 4% on Creator, unless a custom plan sets a different rate. The fee rate is the one in effect when the sale is made.</li>
+          <li>Plans: Free (one product page and one lead magnet), Creator ({formatPaise(site.creatorPlanPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year, billed through Razorpay as a recurring payment you can cancel any time, or {formatPaise(site.creatorLifetimePaise)} once for lifetime access) and custom plans agreed with us in writing. All plan prices include GST. First-time monthly subscribers may be offered an introductory price for the first month, shown before payment.</li>
+          <li>Every sale carries one all-inclusive fee that covers the payment gateway charge and GST on our fee: 6% on Free and 4% on Creator, unless a custom plan sets a different rate. The fee rate is the one in effect when the sale is made.</li>
           <li>Lifetime access means Creator features for as long as {site.name} operates and your account is in good standing, with no renewal charges. If we ever stop offering the service, we will give at least 90 days&apos; notice. Buying lifetime cancels any monthly or yearly subscription on your account.</li>
           <li>If a Creator subscription ends or a renewal fails, your account moves to Free: your oldest live page stays live and other pages become drafts.</li>
           <li>Refunds and chargebacks are deducted from your balance. The fee on a refunded sale is not returned, because the payment gateway keeps its charge too.</li>
           <li>You may add your own support email, refund policy and terms to your product pages. They apply between you and your buyers, alongside these terms.</li>
-          <li>We pay your balance to the UPI ID or bank account in your settings. You are responsible for any tax due on your income.</li>
+          <li>We pay your balance every day to the UPI ID or bank account in your settings. A sale can be paid out 24 hours after it is made, and we send a payout once at least ₹100 is ready. If a payout fails, for example because of wrong bank details, the amount goes back to your balance and is sent again after you update your details. You are responsible for the accuracy of your payout details and for any tax due on your income.</li>
           <li>We may hold a payout while we look into a dispute, a chargeback or a suspected breach of these terms.</li>
         </ul>
       </Clause>

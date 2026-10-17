@@ -7,7 +7,7 @@ export const CREATOR_PRICE_PAISE = site.creatorPlanPaise; // monthly
 export const CREATOR_YEARLY_PAISE = site.creatorYearlyPaise;
 export const CREATOR_INTRO_PAISE = site.creatorIntroPaise; // first month, first-time subscribers
 export const CREATOR_LIFETIME_PAISE = site.creatorLifetimePaise; // one-time
-// All-inclusive fee per sale (covers Razorpay's charge). Mirrors public.creator_fee_bps.
+// All-inclusive fee per sale (covers Razorpay's charge and GST). Mirrors public.creator_fee_bps.
 export const FREE_FEE_PERCENT = 6;
 export const CREATOR_FEE_PERCENT = 4;
 export const YEARLY_SAVING_PAISE = CREATOR_PRICE_PAISE * 12 - CREATOR_YEARLY_PAISE;
@@ -73,7 +73,7 @@ export const freeFeatures = [
   "Lifetime download links for buyers",
   "Link-in-bio storefront at reviewlabs.space/@you",
   "Testimonials, FAQ and your own policies on pages",
-  "Earnings ledger and payouts to UPI or bank",
+  "Daily payouts to UPI or bank",
 ];
 
 // Side-by-side comparison on the pricing page. true = included, false = not included.
@@ -82,8 +82,8 @@ export const planMatrix: { group: string; rows: { feature: string; free: PlanCel
   {
     group: "Fees",
     rows: [
-      { feature: "Price", free: "₹0", creator: `${priceLabels.monthly}/month, ${priceLabels.yearly}/year or ${priceLabels.lifetime} once` },
-      { feature: "Fee per sale, payment gateway included", free: `${FREE_FEE_PERCENT}%`, creator: `${CREATOR_FEE_PERCENT}%` },
+      { feature: "Price (GST included)", free: "₹0", creator: `${priceLabels.monthly}/month, ${priceLabels.yearly}/year or ${priceLabels.lifetime} once` },
+      { feature: "Fee per sale, payment gateway and GST included", free: `${FREE_FEE_PERCENT}%`, creator: `${CREATOR_FEE_PERCENT}%` },
       { feature: "Setup fees or hidden charges", free: "None", creator: "None" },
     ],
   },
@@ -131,7 +131,7 @@ export const planMatrix: { group: string; rows: { feature: string; free: PlanCel
   {
     group: "Get paid",
     rows: [
-      { feature: "Payouts to your UPI ID or bank account, with UTR", free: true, creator: true },
+      { feature: "Daily payouts to your UPI ID or bank account, with UTR", free: true, creator: true },
       { feature: "Refunds handled and recorded for you", free: true, creator: true },
     ],
   },

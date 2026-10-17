@@ -4,8 +4,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Panel, Stat } from "@/components/ui";
 import { LedgerTable } from "@/components/ledger-table";
-import type { LedgerEntry } from "@/lib/types";
-import { AdjustmentForm, FeeForm, PayoutForm, PlanForm } from "../../forms";
+import type { LedgerEntry, Payout } from "@/lib/types";
+import { AdjustmentForm, FeeForm, PausePayoutsButton, PayNowForm, PayoutForm, PlanForm } from "../../forms";
+import { PayoutsTable } from "@/components/payouts-table";
+import { destinationFor, payoutsEnabled } from "@/lib/payouts";
 import { feePercentFor } from "@/lib/plans";
 import { hasCreatorPlan } from "@/lib/plans";
 import { Badge } from "@/components/ui";
@@ -13,13 +15,16 @@ import { Badge } from "@/components/ui";
 export default async function AdminCreator({ params }: PageProps<"/admin/creators/[id]">) {
   const { id } = await params;
   const db = createAdminClient();
-  const [{ data: p }, { data: balance }, { data: entries }] = await Promise.all([
+  const [{ data: p }, { data: balance }, { data: entries }, { data: payouts }] = await Promise.all([
     db.from("profiles").select("*").eq("id", id).maybeSingle(),
     db.from("creator_balances").select("*").eq("creator_id", id).maybeSingle(),
     db.from("ledger_entries").select("*").eq("creator_id", id).order("created_at", { ascending: false }).limit(300),
+    db.from("payouts").select("*").eq("creator_id", id).order("created_at", { ascending: false }).limit(50),
   ]);
   if (!p) notFound();
   const owed = Number(balance?.balance_paise ?? 0);
+  const available = Number(balance?.available_paise ?? 0);
+  const destination = destinationFor(p);
 
   return (
     <>
@@ -27,20 +32,32 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
         <Link href="/admin" className="link text-[14px]">← Back to creators</Link>
         <PageTitle sub={p.email}>{p.name || p.email}</PageTitle>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Balance owed" value={formatPaise(owed)} />
+        <Stat label="Available now" value={formatPaise(available)} sub="Sales older than 24 hours" />
         <Stat label="Gross sales" value={formatPaise(Number(balance?.gross_sales_paise ?? 0))} />
         <Stat label="Paid out" value={formatPaise(Number(balance?.paid_out_paise ?? 0))} />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <Panel title="Record a payout">
+        <Panel title="Payouts" aside={p.payouts_paused ? <Badge status="failed" label="Paused" /> : <Badge status="live" label="Automatic" />}>
           <dl className="mb-4 space-y-1 rounded-2xl bg-surface-soft p-4 text-[14px]">
+            <div>Pays to: <b>{destination?.label ?? "no valid UPI ID or bank account"}</b></div>
             <div>UPI: <span className="select-all font-mono">{p.payout_upi ?? "not set"}</span></div>
-            <div>A/c: <span className="select-all font-mono">{p.payout_account_number ?? "not set"}</span></div>
-            <div>IFSC: <span className="select-all font-mono">{p.payout_ifsc ?? "not set"}</span></div>
+            <div>A/c: <span className="select-all font-mono">{p.payout_account_number ?? "not set"}</span> · IFSC: <span className="select-all font-mono">{p.payout_ifsc ?? "not set"}</span></div>
             <div>Name: {p.payout_account_name ?? "not set"}</div>
           </dl>
-          <PayoutForm creatorId={p.id} suggestedPaise={owed} />
+          {payoutsEnabled() ? (
+            <PayNowForm creatorId={p.id} availablePaise={available} ready={Boolean(destination)} />
+          ) : (
+            <p className="text-[14px] text-body">RazorpayX isn&apos;t connected. Set the RAZORPAYX_* keys to send payouts from here.</p>
+          )}
+          <div className="mt-4 border-t border-hairline pt-4">
+            <PausePayoutsButton creatorId={p.id} paused={p.payouts_paused} />
+          </div>
+          <details className="mt-4 border-t border-hairline pt-4">
+            <summary className="link cursor-pointer text-[14px]">Record a payout made outside RazorpayX</summary>
+            <div className="mt-3"><PayoutForm creatorId={p.id} suggestedPaise={owed} /></div>
+          </details>
         </Panel>
         <Panel title="Plan" aside={<Badge status={hasCreatorPlan(p) ? "live" : "archived"} label={p.is_admin ? "Admin" : hasCreatorPlan(p) ? "Creator" : "Free"} />}>
           <p className="mb-4 text-[14px] text-body">
@@ -58,6 +75,8 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
           <AdjustmentForm creatorId={p.id} />
         </Panel>
       </div>
+      <h2 className="text-[20px] font-semibold">Payouts</h2>
+      <PayoutsTable payouts={(payouts ?? []) as Payout[]} />
       <h2 className="text-[20px] font-semibold">Ledger</h2>
       <LedgerTable entries={(entries ?? []) as LedgerEntry[]} />
     </>

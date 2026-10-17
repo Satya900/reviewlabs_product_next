@@ -4,6 +4,7 @@ import { razorpay, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { isAuthorizedCron } from "@/lib/cron";
 import { fetchSubscription, grantLifetime, syncSubscription } from "@/lib/billing";
+import { syncOpenPayouts } from "@/lib/payouts";
 
 export const maxDuration = 60;
 
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   if (!isAuthorizedCron(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const admin = createAdminClient();
   const now = Date.now();
-  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, errors: 0 };
+  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, errors: 0 };
 
   // 1. Unpaid orders 10 minutes to 3 days old: ask Razorpay what happened.
   const { data: pending } = await admin
@@ -144,7 +145,17 @@ export async function GET(request: Request) {
     }
   }
 
-  // 6. Housekeeping: rate-limit windows older than a day are useless.
+  // 6. Creator payouts still queued or processing (missed RazorpayX webhooks).
+  try {
+    const payouts = await syncOpenPayouts();
+    summary.payoutsSynced = payouts.synced;
+    summary.errors += payouts.errors;
+  } catch (e) {
+    summary.errors++;
+    console.error("[reconcile] payouts:", e);
+  }
+
+  // 7. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return NextResponse.json(summary);

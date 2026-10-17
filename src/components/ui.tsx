@@ -73,6 +73,10 @@ const statusStyle: Record<string, string> = {
   partially_refunded: "text-accent-yellow",
   attempted: "text-accent-yellow",
   pending: "text-accent-yellow",
+  queued: "text-accent-yellow",
+  processing: "text-accent-yellow",
+  reversed: "text-down",
+  cancelled: "text-down",
 };
 
 export function Badge({ status, label }: { status: string; label?: string }) {

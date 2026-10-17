@@ -82,10 +82,26 @@ export type LedgerEntry = {
   creator_id: string;
   order_id: string | null;
   payout_id: string | null;
-  entry_type: "sale" | "gateway_fee" | "platform_fee" | "refund" | "subscription_fee" | "payout" | "adjustment";
+  entry_type: "sale" | "gateway_fee" | "platform_fee" | "refund" | "subscription_fee" | "payout" | "payout_reversal" | "adjustment";
   amount_paise: number;
   description: string | null;
   created_at: string;
+};
+
+export type Payout = {
+  id: string;
+  creator_id: string;
+  amount_paise: number;
+  method: "upi" | "bank_transfer" | "other";
+  provider: "manual" | "razorpayx";
+  status: "queued" | "processing" | "processed" | "failed" | "reversed" | "cancelled";
+  reference: string | null;
+  utr: string | null;
+  mode: string | null;
+  destination_label: string | null;
+  failure_reason: string | null;
+  created_at: string;
+  processed_at: string | null;
 };
 
 export type Testimonial = {

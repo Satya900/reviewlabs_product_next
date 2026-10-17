@@ -24,7 +24,7 @@ export default function Pricing() {
       <PageHero
         kicker="Pricing"
         title="Start free. Pay less per sale as you grow."
-        sub={`Payment pages, a storefront and lead magnets on every plan. One all-inclusive fee per sale with the payment gateway covered: ${FREE_FEE_PERCENT}% on Free, ${CREATOR_FEE_PERCENT}% on Creator. No setup fees, no hidden charges.`}
+        sub={`Payment pages, a storefront and lead magnets on every plan. One all-inclusive fee per sale, with the payment gateway and GST covered: ${FREE_FEE_PERCENT}% on Free, ${CREATOR_FEE_PERCENT}% on Creator. All prices include GST. No setup fees, no hidden charges.`}
       />
 
       <Section className="pt-4 md:pt-8">
@@ -36,7 +36,7 @@ export default function Pricing() {
               <span className="display text-[56px]">₹0</span>
               <span className="text-[16px] text-body">/ month</span>
             </p>
-            <p className="text-[15px] text-body"><b className="text-ink">{FREE_FEE_PERCENT}%</b> per sale, gateway included</p>
+            <p className="text-[15px] text-body"><b className="text-ink">{FREE_FEE_PERCENT}%</b> per sale, gateway and GST included</p>
             <Link href="/signup" className={cx(buttonClass.secondary, "mt-8 h-12 w-full")}>Start for free</Link>
             <div className="mt-8"><CheckList items={freeFeatures} /></div>
           </div>
@@ -53,24 +53,24 @@ export default function Pricing() {
                 <div className="rounded-2xl bg-dark-elevated p-4">
                   <p className="text-[13px] text-on-dark-soft">Monthly</p>
                   <p className="display mt-1 text-[32px]">{priceLabels.monthly}</p>
-                  <p className="text-[12px] text-on-dark-soft">First month {priceLabels.intro}</p>
+                  <p className="text-[12px] text-on-dark-soft">First month {priceLabels.intro} · incl. GST</p>
                 </div>
                 <div className="rounded-2xl bg-dark-elevated p-4 ring-1 ring-primary/60">
                   <p className="flex items-center justify-between text-[13px] text-on-dark-soft">
                     Yearly <span className="rounded-full bg-up/20 px-2 py-0.5 text-[11px] font-semibold text-up">Save {priceLabels.saving}</span>
                   </p>
                   <p className="display mt-1 text-[32px]">{priceLabels.yearly}</p>
-                  <p className="text-[12px] text-on-dark-soft">About 2 months free</p>
+                  <p className="text-[12px] text-on-dark-soft">About 2 months free · incl. GST</p>
                 </div>
                 <div className="col-span-2 flex items-center justify-between rounded-2xl bg-dark-elevated p-4">
                   <div>
                     <p className="text-[13px] text-on-dark-soft">Lifetime</p>
                     <p className="display mt-1 text-[32px]">{priceLabels.lifetime}</p>
                   </div>
-                  <p className="max-w-[9rem] text-right text-[12px] text-on-dark-soft">Pay once. Creator for good, no renewals.</p>
+                  <p className="max-w-[9rem] text-right text-[12px] text-on-dark-soft">Pay once, incl. GST. Creator for good, no renewals.</p>
                 </div>
               </div>
-              <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">{CREATOR_FEE_PERCENT}%</b> per sale, gateway included</p>
+              <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">{CREATOR_FEE_PERCENT}%</b> per sale, gateway and GST included</p>
               <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Start free, upgrade anytime</Link>
               <div className="mt-8"><CheckList dark items={["Everything in Free", ...creatorFeatures]} /></div>
             </div>
@@ -167,8 +167,10 @@ export default function Pricing() {
           <Faq
             items={[
               { q: "Is the Free plan really free?", a: `Yes. There's no monthly charge. You pay a ${FREE_FEE_PERCENT}% fee only when you make a sale, and that already includes Razorpay's charge.` },
-              { q: "What does \"gateway included\" mean?", a: "Razorpay charges a fee on every payment. We pay that out of our fee, so you see one simple percentage and nothing else is deducted." },
-              { q: "What's the difference between Free and Creator?", a: `Free gives you one product page, one lead magnet and your storefront, with checkout, delivery, testimonials, FAQ and payouts, at ${FREE_FEE_PERCENT}% per sale. Creator lowers the fee to ${CREATOR_FEE_PERCENT}% and adds unlimited pages and lead magnets, coupons, add-on offers, analytics, Meta Pixel and Conversions API, CSV export, and removes our branding.` },
+              { q: "What does \"gateway and GST included\" mean?", a: "Razorpay charges a fee on every payment, and GST applies on top of fees. We pay both out of our fee, so you see one simple percentage and nothing else is deducted." },
+              { q: "Do plan prices include GST?", a: `Yes. ${priceLabels.intro} for the first month, ${priceLabels.monthly} a month, ${priceLabels.yearly} a year and ${priceLabels.lifetime} for lifetime are the full amounts you pay. There is no GST added at checkout.` },
+              { q: "When do I get paid?", a: "Every day. Payouts go to your UPI ID or bank account, for sales made at least 24 hours earlier, once you have ₹100 or more. Each payout shows in your earnings with its UTR number." },
+              { q: "What's the difference between Free and Creator?", a: `Free gives you one product page, one lead magnet and your storefront, with checkout, delivery, testimonials, FAQ and daily payouts, at ${FREE_FEE_PERCENT}% per sale. Creator lowers the fee to ${CREATOR_FEE_PERCENT}% and adds unlimited pages and lead magnets, coupons, add-on offers, analytics, Meta Pixel and Conversions API, CSV export, and removes our branding.` },
               { q: "Is the storefront free?", a: "Yes, on every plan. You get reviewlabs.space/@yourname with your photo, bio, social links and all your products and lead magnets. On Free it shows a small Made with Reviewlabs badge; Creator hides it." },
               { q: "What are lead magnets and do they cost anything?", a: "A lead magnet is a free download, like a checklist or mini guide, that people get in exchange for their name and email. There's no fee because no money changes hands. Free includes one; Creator has unlimited. You can export the leads as CSV on any plan." },
               { q: "How does the first month work?", a: `If you've never had Creator, your first month is ${priceLabels.intro}. After that it's ${priceLabels.monthly} a month by autopay. You can cancel anytime before the month ends.` },

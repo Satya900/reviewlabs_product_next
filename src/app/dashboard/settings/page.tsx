@@ -18,7 +18,7 @@ export default async function SettingsPage() {
       <PageTitle>Settings</PageTitle>
       <div className="grid max-w-3xl gap-6">
         <Panel title="Profile and payouts">
-          <p className="mb-5 text-[14px] text-body">We send your earnings to the UPI ID or bank account below.</p>
+          <p className="mb-5 text-[14px] text-body">We send your earnings every day to the UPI ID or bank account below. Sales are ready to pay 24 hours after they happen.</p>
           <ProfileForm profile={profile} />
         </Panel>
         <Panel title="Meta Pixel and Conversions API">

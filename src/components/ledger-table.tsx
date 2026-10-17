@@ -9,6 +9,7 @@ const labels: Record<LedgerEntry["entry_type"], string> = {
   refund: "Refund",
   subscription_fee: "Plan fee",
   payout: "Payout",
+  payout_reversal: "Payout returned",
   adjustment: "Adjustment",
 };
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });

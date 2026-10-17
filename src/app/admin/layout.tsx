@@ -6,6 +6,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const nav = [
     { href: "/admin", label: "Creators", exact: true },
     { href: "/admin/orders", label: "All orders" },
+    { href: "/admin/payouts", label: "Payouts" },
     { href: "/admin/requests", label: "Requests" },
     { href: "/dashboard", label: "Back to dashboard", exact: true },
   ];

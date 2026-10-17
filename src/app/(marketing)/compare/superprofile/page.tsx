@@ -21,9 +21,9 @@ export default function CompareSuperprofile() {
   const migrateHref = `mailto:${site.supportEmail}?subject=${encodeURIComponent("Free migration from Superprofile")}&body=${encodeURIComponent("Hi, I sell on Superprofile and want to move to Reviewlabs.\n\nMy Superprofile link: \nInstagram: \nWhat I sell: ")}`;
   const rows: Row[] = [
     { label: "Start selling in India for free", us: <span className="font-medium">Yes, on the Free plan</span>, them: sp.indiaSellingNeedsPaidPlan ? "Needs a paid plan" : null },
-    { label: "Paid plan", us: `${priceLabels.monthly}/month (${priceLabels.intro} first month), ${priceLabels.yearly}/year`, them: sp.indiaCreatorPrice },
+    { label: "Paid plan", us: `${priceLabels.monthly}/month (${priceLabels.intro} first month), ${priceLabels.yearly}/year, GST included`, them: sp.indiaCreatorPrice },
     { label: "Lifetime option", us: <span className="font-medium">{priceLabels.lifetime} once, no renewals</span>, them: null },
-    { label: "Fee per sale", us: `${CREATOR_FEE_PERCENT}% on Creator, ${FREE_FEE_PERCENT}% on Free, payment gateway included`, them: sp.indiaFeePerSale },
+    { label: "Fee per sale", us: `${CREATOR_FEE_PERCENT}% on Creator, ${FREE_FEE_PERCENT}% on Free, payment gateway and GST included`, them: sp.indiaFeePerSale },
     { label: "UPI, cards and netbanking", us: yes, them: yes },
     { label: "Instant download after payment", us: yes, them: yes },
     { label: "Files attached to the delivery email", us: "Up to 10 MB", them: null },
@@ -31,7 +31,7 @@ export default function CompareSuperprofile() {
     { label: "Link-in-bio storefront", us: yes, them: yes },
     { label: "Lead magnets", us: "Unlimited on Creator, email verification codes", them: yes },
     { label: "Meta Pixel and Conversions API", us: "Account-wide or per page", them: yes },
-    { label: "Payouts", us: "To your UPI or bank, with UTR", them: sp.payouts },
+    { label: "Payouts", us: "Daily, to your UPI or bank, with UTR", them: sp.payouts },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
   ].filter((r) => r.them !== null || ["Lifetime option", "Files attached to the delivery email", "Line-by-line earnings ledger", "Free migration, done for you"].includes(r.label));
 
@@ -89,7 +89,7 @@ export default function CompareSuperprofile() {
               items={[
                 "Start selling for ₹0. Upgrade only when it pays for itself",
                 `${priceLabels.monthly}/month, or ${priceLabels.lifetime} once and never pay a plan again`,
-                `One all-inclusive fee: ${CREATOR_FEE_PERCENT}% on Creator, payment gateway already covered`,
+                `One all-inclusive fee: ${CREATOR_FEE_PERCENT}% on Creator, payment gateway and GST already covered`,
                 "Every sale, fee, refund and payout as a line in your ledger",
                 "Files attached to the email, lifetime links buyers can resend themselves",
                 "We move your products, covers and files for you, free",
@@ -102,7 +102,6 @@ export default function CompareSuperprofile() {
             <ul className="space-y-2 text-[15px] text-body">
               <li>• Instagram AutoDM automation</li>
               <li>• Courses and paid communities</li>
-              <li>• Automatic next-day payouts</li>
               <li>• Selling in multiple currencies</li>
             </ul>
             <p className="text-[15px] text-body">If you mainly sell ebooks, templates, presets or other files, Reviewlabs is built for exactly that.</p>
@@ -136,7 +135,7 @@ export default function CompareSuperprofile() {
             items={[
               { q: "Will my buyers lose access?", a: "No. People who bought on Superprofile keep their access there. New buyers get their files from Reviewlabs, instantly and by email." },
               { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your UPI ID or bank account and we pay your balance to it, with the UTR in your ledger." },
-              { q: "How often are payouts?", a: "We pay your balance to your UPI ID or bank account on a regular schedule, and every payout shows in your ledger with its UTR. Ask us for the current schedule before you switch." },
+              { q: "How often are payouts?", a: "Every day. We send sales from at least 24 hours earlier to your UPI ID or bank account, once you have ₹100 or more. Every payout shows in your ledger with its UTR." },
               { q: "Can I keep my Meta Pixel?", a: `Yes, on Creator. Add your Pixel ID and Conversions API token and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events from browser and server.` },
               { q: "Is the lifetime plan really one payment?", a: `Yes. ${priceLabels.lifetime} once gives you Creator for as long as Reviewlabs runs, with no renewals.` },
             ]}

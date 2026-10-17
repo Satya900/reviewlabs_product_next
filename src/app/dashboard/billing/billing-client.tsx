@@ -171,22 +171,22 @@ export function PlanPicker({ monthly, yearly, lifetime, intro, saving, features 
         {choice === "lifetime" ? (
           <>
             <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{lifetime}</span><span className="text-on-dark-soft">once</span></p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">Pay once, Creator for good. No renewals, ever.</p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Pay once, GST included. Creator for good. No renewals, ever.</p>
           </>
         ) : choice === "year" ? (
           <>
             <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{yearly}</span><span className="text-on-dark-soft">/ year</span></p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">12 months for less than 10 months of monthly.</p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">12 months for less than 10 months of monthly. GST included.</p>
           </>
         ) : intro ? (
           <>
             <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{intro}</span><span className="text-on-dark-soft">first month</span></p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">Then {monthly}/month. Cancel anytime.</p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Then {monthly}/month. GST included. Cancel anytime.</p>
           </>
         ) : (
           <>
             <p className="flex items-baseline justify-center gap-2"><span className="display text-[52px]">{monthly}</span><span className="text-on-dark-soft">/ month</span></p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">Billed monthly. Cancel anytime.</p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">Billed monthly, GST included. Cancel anytime.</p>
           </>
         )}
       </div>

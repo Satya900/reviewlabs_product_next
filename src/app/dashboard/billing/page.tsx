@@ -26,7 +26,7 @@ export default async function BillingPage() {
 
   return (
     <>
-      <PageTitle sub={`Your fee per sale is ${fee}%, all-inclusive (Razorpay's charge is covered). Free is ${FREE_FEE_PERCENT}%, Creator is ${CREATOR_FEE_PERCENT}%.`}>Plan and billing</PageTitle>
+      <PageTitle sub={`Your fee per sale is ${fee}%, all-inclusive (Razorpay's charge and GST are covered). Plan prices include GST. Free is ${FREE_FEE_PERCENT}%, Creator is ${CREATOR_FEE_PERCENT}%.`}>Plan and billing</PageTitle>
 
       {profile.is_admin && <Notice>Admin accounts have every Creator feature without a subscription.</Notice>}
       {profile.plan_status === "past_due" && (

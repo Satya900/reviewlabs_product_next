@@ -201,8 +201,8 @@ export default function Features() {
         title="Earnings you can actually check."
         sub="Every sale, fee, refund and payout is a separate line, and your balance is their total. When we pay you, the UTR number is right there."
         items={[
-          "Payouts to your UPI ID or bank account",
-          "One all-inclusive fee per sale (6% Free, 4% Creator), gateway included",
+          "Daily payouts to your UPI ID or bank account",
+          "One all-inclusive fee per sale (6% Free, 4% Creator), gateway and GST included",
           "Download orders as CSV for your accountant (Creator)",
           "Refunds handled for you and recorded in the ledger",
         ]}
@@ -211,7 +211,7 @@ export default function Features() {
             <p className="text-[14px] text-body">Balance owed to you</p>
             <p className="num mt-1 text-[32px]">₹8,940.50</p>
             <ul className="mt-5 divide-y divide-hairline-soft">
-              {[["Sale", "+₹349.00", true], ["Fees 4% (includes payment gateway)", "−₹13.96", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
+              {[["Sale", "+₹349.00", true], ["Fees 4% (gateway and GST included)", "−₹13.96", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
                 <li key={String(k) + String(v)} className="flex justify-between py-3 text-[14px]">
                   <span>{k}</span>
                   <span className={cx("num", up ? "text-up" : "text-ink")}>{v}</span>
@@ -230,7 +230,7 @@ export default function Features() {
             ["spark", "Missed updates recovered", "A background check asks Razorpay about unfinished orders, so a closed tab never loses a sale."],
             ["ledger", "A ledger nobody can edit", "Corrections are new lines, never rewrites, so your history stays honest."],
             ["mail", "Emails sent once", "Retries never send the same buyer two emails or report two purchases to Meta."],
-            ["bank", "Payout records with UTR", "Each payout is logged against the reference your bank shows."],
+            ["bank", "Daily payouts with UTR", "Paid every day, 24 hours after the sale. Each payout is logged with the reference your bank shows."],
             ["upi", "Verified accounts", "Every creator verifies their email before they can sell, and limits are enforced in the database."],
           ].map(([icon, title, body]) => (
             <div key={title} className="rounded-3xl border border-hairline p-6">
