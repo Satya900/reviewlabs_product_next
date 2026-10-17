@@ -239,21 +239,27 @@ export async function applyPayout(payout: RazorpayXPayout, ourId?: string): Prom
   const notes = payout.notes && !Array.isArray(payout.notes) ? payout.notes : {};
   const id = ourId ?? payout.reference_id ?? notes.payout_id;
   if (!id || !/^[0-9a-f-]{36}$/.test(id)) return "ignored"; // a payout made outside Reviewlabs
-  const reason = payout.status_details?.description || payout.failure_reason || null;
+  // status_details can still describe an earlier state ("queued for low balance",
+  // "processed" on a later reversal), so only trust it when it explains a failure.
+  const staleDetail = ["low_balance", "payout_processed"].includes(payout.status_details?.reason ?? "");
+  const details = staleDetail ? null : payout.status_details?.description;
+  const reason = details || payout.failure_reason || (payout.status === "cancelled" ? "Cancelled in RazorpayX" : null);
   return (await finish(id, payout.status, payout.id, payout.utr ?? null, reason, payout.fees ?? null)) ?? "ignored";
 }
 
-// Emails the creator once a payout reaches a final status.
+// Emails the creator once per final status (a sent payout can later be reversed).
 async function notifyCreator(payoutId: string) {
   const db = createAdminClient();
-  const { data: po } = await db
+  const { data: current } = await db.from("payouts").select("status, notified_status").eq("id", payoutId).maybeSingle();
+  if (!current || !["processed", "failed", "reversed", "cancelled"].includes(current.status) || current.notified_status === current.status) return;
+  // Claim it atomically so two webhooks can't both send the email.
+  let claim = db
     .from("payouts")
-    .update({ notified_at: new Date().toISOString() })
+    .update({ notified_at: new Date().toISOString(), notified_status: current.status })
     .eq("id", payoutId)
-    .is("notified_at", null)
-    .in("status", ["processed", "failed", "reversed", "cancelled"])
-    .select("amount_paise, status, utr, destination_label, failure_reason, creator_id")
-    .maybeSingle();
+    .eq("status", current.status);
+  claim = current.notified_status === null ? claim.is("notified_status", null) : claim.eq("notified_status", current.notified_status);
+  const { data: po } = await claim.select("amount_paise, status, utr, destination_label, failure_reason, creator_id").maybeSingle();
   if (!po) return;
   const { data: creator } = await db.from("profiles").select("email, name").eq("id", po.creator_id).maybeSingle();
   if (!creator?.email) return;
