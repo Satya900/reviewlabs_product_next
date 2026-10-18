@@ -30,8 +30,8 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
   const [{ data: fields }, { data: files }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
     supabase.from("page_fields").select("*").eq("page_id", id).order("position"),
     supabase.from("page_files").select("*").eq("page_id", id).order("created_at"),
-    // Tokens are never selected here; only whether tracking is set up.
-    admin.from("page_pixel_settings").select("pixel_id, test_event_code").eq("page_id", id).maybeSingle(),
+    // Tokens never leave the server; only whether one is saved.
+    admin.from("page_pixel_settings").select("pixel_id, test_event_code, capi_token_encrypted").eq("page_id", id).maybeSingle(),
     admin.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle(),
     supabase.from("page_testimonials").select("*").eq("page_id", id).order("position").order("created_at"),
     supabase.from("page_faqs").select("*").eq("page_id", id).order("position").order("created_at"),
@@ -40,7 +40,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
   const { data: offerFiles } = offer
     ? await supabase.from("offer_files").select("*").eq("offer_id", offer.id).order("created_at")
     : { data: [] as OfferFile[] };
-  const accountPixelId = accountPixel?.pixel_id && accountPixel.capi_token_encrypted ? accountPixel.pixel_id : null;
+  const accountPixelId = accountPixel?.pixel_id ?? null;
   const publicUrl = `${env.appUrl()}/p/${page.slug}`;
 
   return (
@@ -101,7 +101,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
           {hasCreatorPlan(profile) ? (
             <TrackingPanel
               pageId={page.id}
-              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "" } : null}
+              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "", hasToken: Boolean(ownPixel.capi_token_encrypted) } : null}
               accountPixelId={accountPixelId}
             />
           ) : (

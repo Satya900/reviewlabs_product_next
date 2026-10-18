@@ -8,7 +8,7 @@ import type { ActionState } from "../../actions";
 
 type Props = {
   pageId: string;
-  own: { pixelId: string; testEventCode: string } | null;
+  own: { pixelId: string; testEventCode: string; hasToken: boolean } | null;
   accountPixelId: string | null;
 };
 
@@ -29,7 +29,8 @@ export function TrackingPanel({ pageId, own, accountPixelId }: Props) {
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <Badge status={status.on ? "live" : "archived"} label={status.label} />
-        {own?.testEventCode && <Badge status="pending" label="Test mode" />}
+        {own && !own.hasToken && <Badge status="archived" label="Browser only" />}
+        {own?.hasToken && own.testEventCode && <Badge status="pending" label="Test mode" />}
       </div>
 
       <div className="grid gap-2">
@@ -54,7 +55,7 @@ export function TrackingPanel({ pageId, own, accountPixelId }: Props) {
         <div className="space-y-2 text-[13px] text-body">
           {!accountPixelId && (
             <p>
-              Add your Pixel ID and token in <Link href="/dashboard/settings" className="link">Settings</Link> to track all your pages at once.
+              Add your Pixel ID in <Link href="/dashboard/settings" className="link">Settings</Link> to track all your pages at once.
             </p>
           )}
           {own && (
@@ -78,17 +79,23 @@ export function TrackingPanel({ pageId, own, accountPixelId }: Props) {
             <input name="pixel_id" defaultValue={own?.pixelId ?? ""} inputMode="numeric" placeholder="2185635582336243" className={inputClass} />
           </Field>
           <Field
-            label="Conversions API token (required)"
-            hint={own ? "A token is saved and hidden. Leave blank to keep it." : "Starts with EAA. Stored encrypted."}
+            label="Conversions API token (optional, recommended)"
+            hint={own?.hasToken ? "A token is saved and hidden. Leave blank to keep it." : "Without it, events come from the buyer's browser only. Starts with EAA. Stored encrypted."}
           >
-            <input name="capi_token" type="password" autoComplete="off" placeholder={own ? "••••••••••••" : "EAA..."} className={inputClass} />
+            <input name="capi_token" type="password" autoComplete="off" placeholder={own?.hasToken ? "••••••••••••" : "EAA..."} className={inputClass} />
           </Field>
-          <Field label="Test event code (optional)" hint="With a code, Save checks the token with Meta. Remove it before real sales.">
+          {own?.hasToken && (
+            <label className="flex items-center gap-2 text-[13px] text-body">
+              <input type="checkbox" name="remove_token" className="accent-primary" />
+              Remove the saved token (browser events only)
+            </label>
+          )}
+          <Field label="Test event code (optional)" hint="Needs a token. With a code, Save checks the token with Meta. Remove it before real sales.">
             <input name="test_event_code" defaultValue={own?.testEventCode ?? ""} placeholder="TEST12345" className={inputClass} />
           </Field>
           <div className="flex flex-wrap items-center gap-3">
             <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save pixel"}</Button>
-            {own?.testEventCode && (
+            {own?.hasToken && own.testEventCode && (
               <Button
                 type="button"
                 variant="secondary"

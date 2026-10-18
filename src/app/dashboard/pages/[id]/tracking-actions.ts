@@ -23,8 +23,8 @@ async function ownedPage(pageId: string) {
 
 const pageIdSchema = z.uuid();
 
-// Gives one page its own Meta pixel. Both Pixel ID and token are required,
-// same rules as the account-level settings.
+// Gives one page its own Meta pixel. Pixel ID is required, the token is
+// optional, same rules as the account-level settings.
 export async function savePageTracking(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const pageId = pageIdSchema.safeParse(formData.get("page_id"));
   if (!pageId.success) return { error: "Invalid page" };
@@ -40,11 +40,12 @@ export async function savePageTracking(_prev: ActionState, formData: FormData): 
   const db = createAdminClient();
   const { data: current } = await db.from("page_pixel_settings").select("pixel_id, capi_token_encrypted").eq("page_id", pageId.data).maybeSingle();
 
-  // A blank token field keeps the saved token; it is never sent back to the browser.
-  const token = input.capi_token || (current?.capi_token_encrypted ? decrypt(current.capi_token_encrypted) : "");
-  if (!token) return { error: "Add the Conversions API access token for this page's pixel" };
+  // A blank token field keeps the saved token unless "remove token" is ticked;
+  // the token is never sent back to the browser.
+  const removeToken = formData.get("remove_token") === "on" && !input.capi_token;
+  const token = removeToken ? "" : input.capi_token || (current?.capi_token_encrypted ? decrypt(current.capi_token_encrypted) : "");
 
-  if (input.test_event_code && (input.capi_token || current?.pixel_id !== input.pixel_id)) {
+  if (token && input.test_event_code && (input.capi_token || current?.pixel_id !== input.pixel_id)) {
     const problem = await checkTokenWithMeta(input.pixel_id, token, input.test_event_code);
     if (problem) return { error: `Meta didn't accept this token for pixel ${input.pixel_id}: ${problem}` };
   }
@@ -53,13 +54,14 @@ export async function savePageTracking(_prev: ActionState, formData: FormData): 
     {
       page_id: pageId.data,
       pixel_id: input.pixel_id,
-      capi_token_encrypted: input.capi_token ? encrypt(input.capi_token) : current!.capi_token_encrypted,
+      capi_token_encrypted: input.capi_token ? encrypt(input.capi_token) : removeToken ? null : (current?.capi_token_encrypted ?? null),
       test_event_code: input.test_event_code || null,
     },
     { onConflict: "page_id" },
   );
   if (error) return { error: error.message };
   revalidatePath(`/dashboard/pages/${pageId.data}`);
+  if (!token) return { ok: "Saved. This page now uses its own pixel (browser events only)." };
   return { ok: input.test_event_code ? "Saved. This page uses its own pixel, in test mode." : "Saved. This page now uses its own pixel." };
 }
 
@@ -89,7 +91,7 @@ export async function sendPageTestEvent(pageId: string): Promise<ActionState> {
       tracking: { source_url: `${env.appUrl()}/p/${owned.page.slug}`, user_agent: "reviewlabs-test", client_ip: "127.0.0.1" },
     },
   );
-  if (result.status === "skipped") return { error: "Save this page's Pixel ID and token first" };
+  if (result.status === "skipped") return { error: "Test events are sent from our server, so they need this pixel's Conversions API token" };
   if (result.status === "failed") return { error: `Meta rejected the event: ${JSON.stringify(result.response ?? result.error)}` };
   return { ok: "Test event sent to this page's pixel. Check the Test events tab in Events Manager." };
 }

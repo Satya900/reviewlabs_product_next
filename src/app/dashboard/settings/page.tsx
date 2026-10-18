@@ -23,9 +23,9 @@ export default async function SettingsPage() {
         </Panel>
         <Panel title="Meta Pixel and Conversions API">
           <p className="mb-5 text-[14px] text-body">
-            Track PageView, ViewContent, InitiateCheckout and Purchase in Meta. Each event is sent from the buyer&apos;s
-            browser and from our server with the same event ID, so Meta counts it once and still sees sales that ad
-            blockers or closed tabs would hide.
+            Track PageView, ViewContent, InitiateCheckout and Purchase in Meta. A Pixel ID is all you need to start.
+            Add a Conversions API token as well and each event is also sent from our server with the same event ID, so
+            Meta counts it once and still sees sales that ad blockers or closed tabs would hide.
           </p>
           {hasCreatorPlan(profile) ? (
             <PixelForm pixelId={pixel?.pixel_id ?? ""} testEventCode={pixel?.test_event_code ?? ""} hasToken={Boolean(pixel?.capi_token_encrypted)} />

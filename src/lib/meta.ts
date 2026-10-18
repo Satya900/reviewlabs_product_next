@@ -52,7 +52,8 @@ function userData(tracking: Tracking, buyer?: Buyer) {
 }
 
 // Which pixel an event belongs to: the page's own pixel if it has one,
-// otherwise the creator's account pixel.
+// otherwise the creator's account pixel. A Pixel ID alone is enough for the
+// browser; server events also need that pixel's Conversions API token.
 export type MetaTarget = { creatorId: string; pageId?: string | null };
 
 type PixelRow = { pixel_id: string | null; capi_token_encrypted: string | null; test_event_code: string | null };
@@ -67,19 +68,20 @@ export async function resolvePixelRow(target: MetaTarget): Promise<PixelRow | nu
       .select("pixel_id, capi_token_encrypted, test_event_code")
       .eq("page_id", target.pageId)
       .maybeSingle<PixelRow>();
-    if (data?.pixel_id && data.capi_token_encrypted) return data;
+    if (data?.pixel_id) return data;
   }
   const { data } = await admin
     .from("creator_pixel_settings")
     .select("pixel_id, capi_token_encrypted, test_event_code")
     .eq("creator_id", target.creatorId)
     .maybeSingle<PixelRow>();
-  return data?.pixel_id && data.capi_token_encrypted ? data : null;
+  return data?.pixel_id ? data : null;
 }
 
 async function loadPixel(target: MetaTarget) {
   const row = await resolvePixelRow(target);
-  if (!row) return null;
+  // Pixel-only setups get browser events only.
+  if (!row?.capi_token_encrypted) return null;
   return { pixelId: row.pixel_id as string, token: decrypt(row.capi_token_encrypted as string), testCode: row.test_event_code };
 }
 

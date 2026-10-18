@@ -64,7 +64,7 @@ openssl rand -hex 32      # → CRON_SECRET
 Add a verified domain in Resend and set `RESEND_API_KEY` and `EMAIL_FROM`. Without a key, emails are printed to the server console.
 
 ### 5. Meta Pixel / CAPI (per creator)
-Each creator enters their Pixel ID, CAPI access token and an optional test event code under **Dashboard → Settings**, then clicks **Send test event**. Tokens are encrypted with AES-256-GCM and never reach the browser.
+Each creator enters their Pixel ID under **Dashboard → Settings** (or per page). That alone turns on browser Pixel events. The CAPI access token is optional but recommended: with it the server sends the same events (deduplicated by event_id), and with a test event code the creator can click **Send test event**. Tokens are encrypted with AES-256-GCM and never reach the browser. Run migration `0017` so a page pixel can be saved without a token.
 
 | Event | Browser (Pixel) | Server (CAPI) | Shared event_id |
 |---|---|---|---|

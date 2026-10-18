@@ -236,8 +236,8 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
   return { ok: "Saved" };
 }
 
-// Meta tracking needs both the Pixel ID and the Conversions API token, so every
-// connected creator gets browser and server events. Leaving both empty turns tracking off.
+// A Pixel ID turns on browser events; the optional Conversions API token adds
+// server events. Leaving the Pixel ID empty turns tracking off.
 export async function updatePixel(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const profile = await requireCreator();
   if (!hasCreatorPlan(profile)) return { error: "Meta tracking is part of the Creator plan." };
@@ -247,7 +247,7 @@ export async function updatePixel(_prev: ActionState, formData: FormData): Promi
   const db = createAdminClient();
 
   if (!input.pixel_id) {
-    if (input.capi_token) return { error: "Add your Pixel ID too. Meta tracking needs both." };
+    if (input.capi_token) return { error: "Add your Pixel ID too. The token only works with its pixel." };
     const { error } = await db
       .from("creator_pixel_settings")
       .upsert({ creator_id: profile.id, pixel_id: null, capi_token_encrypted: null, test_event_code: null }, { onConflict: "creator_id" });
@@ -258,11 +258,12 @@ export async function updatePixel(_prev: ActionState, formData: FormData): Promi
 
   const { data: current } = await db.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle();
 
-  // A blank token field keeps the saved token; it is never sent back to the browser.
-  const token = input.capi_token || (current?.capi_token_encrypted ? decrypt(current.capi_token_encrypted) : "");
-  if (!token) return { error: "Add your Conversions API access token. Meta tracking needs both the Pixel ID and the token." };
+  // A blank token field keeps the saved token unless "remove token" is ticked;
+  // the token is never sent back to the browser.
+  const removeToken = formData.get("remove_token") === "on" && !input.capi_token;
+  const token = removeToken ? "" : input.capi_token || (current?.capi_token_encrypted ? decrypt(current.capi_token_encrypted) : "");
 
-  if (input.test_event_code && (input.capi_token || current?.pixel_id !== input.pixel_id)) {
+  if (token && input.test_event_code && (input.capi_token || current?.pixel_id !== input.pixel_id)) {
     const problem = await checkTokenWithMeta(input.pixel_id, token, input.test_event_code);
     if (problem) return { error: `Meta didn't accept this token for pixel ${input.pixel_id}: ${problem}` };
   }
@@ -272,13 +273,14 @@ export async function updatePixel(_prev: ActionState, formData: FormData): Promi
       creator_id: profile.id,
       pixel_id: input.pixel_id,
       test_event_code: input.test_event_code || null,
-      ...(input.capi_token ? { capi_token_encrypted: encrypt(input.capi_token) } : {}),
+      ...(input.capi_token ? { capi_token_encrypted: encrypt(input.capi_token) } : removeToken ? { capi_token_encrypted: null } : {}),
     },
     { onConflict: "creator_id" },
   );
   if (error) return { error: error.message };
   revalidatePath("/dashboard/settings");
-  return { ok: input.test_event_code ? "Saved. Meta tracking is on, in test mode." : "Saved. Meta tracking is on." };
+  if (!token) return { ok: "Saved. Meta Pixel is on (browser events only)." };
+  return { ok: input.test_event_code ? "Saved. Meta Pixel and Conversions API are on, in test mode." : "Saved. Meta Pixel and Conversions API are on." };
 }
 
 export async function sendTestMetaEvent(): Promise<ActionState> {
@@ -292,7 +294,7 @@ export async function sendTestMetaEvent(): Promise<ActionState> {
     eventId: `test_${crypto.randomUUID()}`,
     tracking: { source_url: env.appUrl(), user_agent: "reviewlabs-test", client_ip: "127.0.0.1" },
   });
-  if (result.status === "skipped") return { error: "Save your Pixel ID and access token first" };
+  if (result.status === "skipped") return { error: "Test events are sent from our server, so they need your Conversions API token" };
   if (result.status === "failed") return { error: `Meta rejected the event: ${JSON.stringify(result.response ?? result.error)}` };
   return { ok: "Test event sent. Check the Test events tab in Events Manager." };
 }
