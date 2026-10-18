@@ -1,6 +1,7 @@
 import { requireCreator } from "@/lib/auth";
 import { hasCreatorPlan } from "@/lib/plans";
 import { AppShell } from "@/components/app-shell";
+import { PlatformPixel } from "@/components/platform-pixel";
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const profile = await requireCreator();
@@ -19,6 +20,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   ];
   return (
     <AppShell label={profile.is_admin ? "Admin" : hasCreatorPlan(profile) ? "Creator plan" : "Free plan"} nav={nav} email={profile.email}>
+      <PlatformPixel pageViews={false} />
       {children}
     </AppShell>
   );

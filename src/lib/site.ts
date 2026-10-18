@@ -11,7 +11,7 @@ export const site = {
   creatorIntroPaise: 9900,
   creatorLifetimePaise: 499900, // one-time payment, Creator for good
   refundWindowDays: 7,
-  policiesUpdated: "17 October 2026",
+  policiesUpdated: "18 October 2026",
 };
 
 export const legalLinks = [

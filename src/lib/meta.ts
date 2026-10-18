@@ -5,11 +5,11 @@ import { env } from "@/lib/env";
 import type { Order, Tracking } from "@/lib/types";
 import { creatorHasPlan } from "@/lib/plans-server";
 
-export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase" | "Lead";
+export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase" | "Lead" | "CompleteRegistration" | "Subscribe";
 
 type Buyer = { email?: string; phone?: string; name?: string };
 
-type MetaEvent = {
+export type MetaEvent = {
   eventName: MetaEventName;
   eventId: string;
   tracking: Tracking;
@@ -17,7 +17,7 @@ type MetaEvent = {
   customData?: Record<string, unknown>;
 };
 
-type SendResult = { status: "sent" | "failed" | "skipped"; response?: unknown; error?: string };
+export type SendResult = { status: "sent" | "failed" | "skipped"; response?: unknown; error?: string };
 
 // Shared with the browser Pixel so Meta can deduplicate the two sources.
 export const eventIds = {
@@ -93,7 +93,11 @@ export async function sendMetaEvent(target: MetaTarget, event: MetaEvent): Promi
     return { status: "failed", error: `pixel settings: ${(e as Error).message}` };
   }
   if (!pixel) return { status: "skipped" };
+  return postMetaEvent(pixel, event);
+}
 
+// Posts one event to a pixel's Conversions API endpoint.
+export async function postMetaEvent(pixel: { pixelId: string; token: string; testCode?: string | null }, event: MetaEvent): Promise<SendResult> {
   const body: Record<string, unknown> = {
     data: [
       {

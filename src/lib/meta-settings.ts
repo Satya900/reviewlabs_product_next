@@ -10,11 +10,12 @@ export const pixelSchema = z.object({
   test_event_code: z.string().trim().max(50),
 });
 
-// Asks Meta whether this token can send events to this pixel by posting one
-// event under the creator's own test event code, so it only shows in their
-// Test events tab and never counts in reporting. Only runs when the creator
-// supplied a test code. (A plain GET on the pixel fails with "Missing
-// Permission" even for valid Conversions API tokens, so it can't be used.)
+// Asks Meta whether this token can send events to this pixel. The event has
+// deliberately too little customer data: Meta checks the token and pixel
+// first, then rejects the event (subcode 2804050) without recording it, so a
+// valid token never adds a fake event to the creator's data. Only runs when
+// the creator supplied a test code. (A plain GET on the pixel fails with
+// "Missing Permission" even for valid Conversions API tokens, so it can't be used.)
 export async function checkTokenWithMeta(pixelId: string, token: string, testEventCode: string): Promise<string | null> {
   try {
     const res = await fetch(
@@ -41,6 +42,8 @@ export async function checkTokenWithMeta(pixelId: string, token: string, testEve
     if (res.ok) return null;
     const body = await res.json().catch(() => null);
     const code = body?.error?.code;
+    // Token and pixel accepted; only the (intentionally empty) event was refused.
+    if (code === 100 && body?.error?.error_subcode === 2804050) return null;
     if (code === 190) return "the token is invalid or has expired";
     if (code === 100 && body?.error?.error_subcode === 33) return "this token doesn't have access to that pixel";
     return body?.error?.message ?? `Meta returned HTTP ${res.status}`;

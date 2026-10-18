@@ -293,6 +293,8 @@ export async function sendTestMetaEvent(): Promise<ActionState> {
     eventName: "PageView",
     eventId: `test_${crypto.randomUUID()}`,
     tracking: { source_url: env.appUrl(), user_agent: "reviewlabs-test", client_ip: "127.0.0.1" },
+    // Meta refuses events with no customer data; the creator's own email is enough.
+    buyer: { email: profile.email },
   });
   if (result.status === "skipped") return { error: "Test events are sent from our server, so they need your Conversions API token" };
   if (result.status === "failed") return { error: `Meta rejected the event: ${JSON.stringify(result.response ?? result.error)}` };

@@ -3,6 +3,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { grantLifetime, isLifetimePayment, syncSubscription, type RazorpaySubscription } from "@/lib/billing";
+import { sendLifetimeEvent, sendSubscribeEvent } from "@/lib/platform-meta";
+
+// Creator who owns a subscription, but only on its first payment, so a renewal
+// of a subscription from before tracking existed isn't reported as new.
+async function firstPaymentOwner(subscriptionId: string): Promise<string | null> {
+  const admin = createAdminClient();
+  const { count } = await admin.from("subscription_payments").select("id", { count: "exact", head: true }).eq("razorpay_subscription_id", subscriptionId);
+  if ((count ?? 0) > 1) return null;
+  const { data } = await admin.from("profiles").select("id").eq("razorpay_subscription_id", subscriptionId).maybeSingle();
+  return data?.id ?? null;
+}
 
 type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string; notes?: Record<string, string> };
 
@@ -60,7 +71,11 @@ async function handleEvent(body: WebhookBody) {
       if (!payment?.order_id) return;
       // Lifetime Creator plan: platform revenue, not a creator sale.
       if (isLifetimePayment(payment)) {
-        if (payment.status === "captured") await grantLifetime(payment.order_id, payment.id, payment.amount);
+        if (payment.status === "captured") {
+          const granted = await grantLifetime(payment.order_id, payment.id, payment.amount);
+          // Backup for when the browser never reached /api/billing/lifetime.
+          if (granted?.creator_id) await sendLifetimeEvent(granted.creator_id, payment.order_id, payment.amount).catch(() => {});
+        }
         return;
       }
       const result = await recordCapturedPayment(payment);
@@ -108,6 +123,12 @@ async function handleEvent(body: WebhookBody) {
       if (!sub) return;
       const pay = body.event === "subscription.charged" ? body.payload.payment?.entity : null;
       await syncSubscription(sub, pay ? { id: pay.id, amount: pay.amount, status: pay.status } : null);
+      // Backup for when the browser never reached /api/billing/verify. Keyed by
+      // subscription, so renewals don't send it again.
+      if (pay && (pay.status === "captured" || pay.status === "authorized")) {
+        const owner = await firstPaymentOwner(sub.id);
+        if (owner) await sendSubscribeEvent(owner, sub.id, pay.amount).catch(() => {});
+      }
       return;
     }
     default:

@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/auth";
 import { verifySubscriptionSignature } from "@/lib/razorpay";
 import { fetchSubscription, recordSubscriptionPayment, syncSubscription } from "@/lib/billing";
 import { razorpay } from "@/lib/razorpay";
+import { platformEventIds, sendSubscribeEvent, trackingFromRequest } from "@/lib/platform-meta";
 
 const schema = z.object({
   razorpay_payment_id: z.string().min(1),
@@ -34,7 +35,12 @@ export async function POST(request: Request) {
     const payment = (await razorpay().payments.fetch(razorpay_payment_id)) as unknown as { id: string; amount: number; status: string };
     await recordSubscriptionPayment(sub, payment);
     await syncSubscription(sub);
-    return NextResponse.json({ status: sub.status });
+    const paid = payment.status === "captured" || payment.status === "authorized";
+    if (!paid) return NextResponse.json({ status: sub.status });
+    const tracking = trackingFromRequest(request);
+    after(() => sendSubscribeEvent(profile.id, sub.id, payment.amount, tracking).catch((e) => console.warn("[billing/verify] subscribe event:", e)));
+    // The browser sends the same event with this ID for deduplication.
+    return NextResponse.json({ status: sub.status, event: { id: platformEventIds.subscribe(sub.id), value: payment.amount / 100 } });
   } catch (e) {
     console.error("[billing/verify]", e);
     return NextResponse.json({ status: "processing" });

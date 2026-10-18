@@ -89,6 +89,8 @@ export async function sendPageTestEvent(pageId: string): Promise<ActionState> {
       eventName: "PageView",
       eventId: `test_${crypto.randomUUID()}`,
       tracking: { source_url: `${env.appUrl()}/p/${owned.page.slug}`, user_agent: "reviewlabs-test", client_ip: "127.0.0.1" },
+      // Meta refuses events with no customer data; the creator's own email is enough.
+      buyer: { email: owned.profile.email },
     },
   );
   if (result.status === "skipped") return { error: "Test events are sent from our server, so they need this pixel's Conversions API token" };

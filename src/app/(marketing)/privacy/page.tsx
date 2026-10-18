@@ -46,6 +46,7 @@ export default function Privacy() {
           <li>Razorpay, to process payments and refunds.</li>
           <li>Supabase, which hosts our database and file storage.</li>
           <li>Our email provider, to send receipts, download links and verification codes.</li>
+          <li>Meta, for our own ads: on our website and when creators sign up or buy a plan, we use the Meta Pixel and send a creator&apos;s email as a one-way hash, plus IP and browser details, so we can measure our ads.</li>
           <li>Meta, only if the creator turned on tracking. We send your email, phone and name as one-way hashes, plus your IP and browser details, so Meta can measure the creator&apos;s ads.</li>
         </ul>
         <p>We do not sell personal data.</p>

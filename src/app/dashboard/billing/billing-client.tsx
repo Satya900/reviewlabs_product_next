@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cancelCreatorSubscription, startCreatorSubscription, startLifetimePurchase } from "./actions";
 import { Button, FormMessage, cx } from "@/components/ui";
+import { trackPlatformEvent } from "@/components/platform-pixel";
 
 type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error: { description: string } }) => void) => void };
 
@@ -48,7 +49,9 @@ export function UpgradeButton({ interval, label }: { interval: "month" | "year";
       theme: { color: "#0052ff" },
       handler: async (response: Record<string, string>) => {
         setState({ ok: "Payment received. Turning on your Creator plan…" });
-        await fetch("/api/billing/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => {});
+        const res = await fetch("/api/billing/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => null);
+        const json = await res?.json().catch(() => null);
+        if (json?.event) trackPlatformEvent("Subscribe", json.event.id, { value: json.event.value, currency: "INR", content_name: "Creator plan" });
         router.refresh();
         setBusy(false);
       },
@@ -98,7 +101,9 @@ export function LifetimeButton({ label, variant = "hero" }: { label: string; var
       theme: { color: "#0052ff" },
       handler: async (response: Record<string, string>) => {
         setState({ ok: "Payment received. Turning on lifetime Creator…" });
-        await fetch("/api/billing/lifetime", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => {});
+        const res = await fetch("/api/billing/lifetime", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => null);
+        const json = await res?.json().catch(() => null);
+        if (json?.event) trackPlatformEvent("Purchase", json.event.id, { value: json.event.value, currency: "INR", content_name: "Creator lifetime", content_type: "product", content_ids: ["creator_lifetime"] });
         router.refresh();
         setBusy(false);
       },
