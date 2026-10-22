@@ -35,6 +35,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
         content={{ name: page.title, value: page.amount_paise / 100, currency: page.currency }}
       />
       <ProductView
+        buttonLabel={page.button_label || "Get it now"}
         data={{
           title: page.title,
           amountPaise: page.amount_paise,

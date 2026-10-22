@@ -128,11 +128,12 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
   }
 
   return (
-    <div className="rounded-3xl bg-canvas p-6 shadow-soft ring-1 ring-hairline sm:p-8">
-      <p className="text-[20px] font-semibold">Checkout</p>
-      <p className="mt-1 text-[14px] text-muted">Your files arrive by email right after payment.</p>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <fieldset disabled={preview} className="contents">
+    // Phone: fills the full-screen checkout (ProductCheckout). Wide: a card.
+    <div className="flex flex-1 flex-col bg-canvas px-5 pt-5 @3xl:block @3xl:rounded-3xl @3xl:p-8 @3xl:shadow-soft @3xl:ring-1 @3xl:ring-hairline">
+      <p className="hidden text-[20px] font-semibold @3xl:block">Checkout</p>
+      <p className="text-[14px] text-muted @3xl:mt-1">Your files arrive by email right after payment.</p>
+      <form onSubmit={onSubmit} className="mt-5 flex flex-1 flex-col gap-4 @3xl:mt-6 @3xl:block @3xl:space-y-4">
+        <fieldset disabled={preview} className="contents min-w-0 @3xl:block @3xl:space-y-4">
         <Field label="Full name">
           <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} className={inputClass} autoComplete="name" />
         </Field>
@@ -238,16 +239,21 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
             </p>
           </div>
         )}
-        {error && <p className="text-[14px] font-medium text-down">{error}</p>}
-        <Button type="submit" variant="hero" className="w-full" loading={busy}>
-          {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
-        </Button>
-        </fieldset>
-        <p className="text-center text-[12px] leading-relaxed text-muted">
+        <p className="text-center text-[12px] leading-relaxed text-muted @3xl:pt-1">
           By paying, you agree to share the details above with {sellerName ?? "the seller"} (owner of this page) and Reviewlabs, and to the{" "}
           <a href="/terms" target="_blank" className="underline">terms</a> and{" "}
           <a href="/refund-policy" target="_blank" className="underline">refund policy</a>.
         </p>
+        {/* Pinned to the bottom of the screen on phones, so paying is always one tap away. */}
+        <div className="sticky bottom-0 mt-auto z-10 -mx-5 space-y-2 border-t border-hairline bg-canvas px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] @3xl:static @3xl:mx-0 @3xl:border-0 @3xl:p-0">
+          {error && <p className="text-[14px] font-medium text-down">{error}</p>}
+          <Button type="submit" variant="hero" className="w-full" loading={busy}>
+            {busy ? "Opening payment" : `${page.buttonLabel}: ${formatPaise(payable)}`}
+          </Button>
+          <p className="text-center text-[12px] text-muted @3xl:hidden">Secured by Razorpay · UPI, cards, netbanking</p>
+        </div>
+        </fieldset>
+
         {preview && <p className="text-center text-[12px] text-muted">Preview only. Checkout works on your live page.</p>}
       </form>
     </div>

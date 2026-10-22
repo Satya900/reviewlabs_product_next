@@ -95,6 +95,8 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
   const preview = (
     <PreviewFrame url={previewUrl}>
       <ProductView
+        preview
+        buttonLabel={draft.button_label || "Buy now"}
         data={{ title: draft.title, amountPaise, coverImageUrl: draft.cover_image_url || null, descriptionHtml: previewHtml, descriptionText: "", files, testimonials, faqs,
           policies: { sellerName: "You", supportEmail: page.support_email, refundPolicy: page.refund_policy ?? "", terms: page.terms ?? "" } }}
         checkout={

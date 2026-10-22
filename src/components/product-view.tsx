@@ -3,6 +3,7 @@ import { formatPaise } from "@/lib/money";
 import { TestimonialsGrid, type TestimonialCard } from "@/components/testimonials-grid";
 import { FaqAccordion, type FaqItem } from "@/components/faq-accordion";
 import { PagePolicies } from "@/components/page-policies";
+import { ProductCheckout } from "@/components/product-checkout";
 
 export type ProductViewData = {
   title: string;
@@ -25,7 +26,7 @@ function formatSize(bytes: number) {
 // The buyer-facing product layout, shared by the live page and the editor's
 // preview so they always match. It responds to its container's width (not the
 // window), which is what lets the preview show a true phone or desktop layout.
-export function ProductView({ data, checkout }: { data: ProductViewData; checkout: ReactNode }) {
+export function ProductView({ data, checkout, buttonLabel, preview }: { data: ProductViewData; checkout: ReactNode; buttonLabel: string; preview?: boolean }) {
   return (
     <div className="@container">
       <div className="mx-auto grid max-w-[1100px] gap-8 @3xl:grid-cols-[1fr_400px]">
@@ -77,10 +78,13 @@ export function ProductView({ data, checkout }: { data: ProductViewData; checkou
           <TestimonialsGrid items={data.testimonials ?? []} />
           <FaqAccordion items={data.faqs ?? []} />
           {data.policies && <PagePolicies {...data.policies} />}
+          {/* Room for the pinned buy bar on phones. */}
+          <div className="h-20 @3xl:hidden" aria-hidden />
         </section>
         <aside className="@3xl:sticky @3xl:top-6 @3xl:self-start">
-          {checkout}
-          <p className="mt-4 text-center text-[13px] text-muted">Payments secured by Razorpay · UPI, cards, netbanking</p>
+          <ProductCheckout priceLabel={formatPaise(data.amountPaise)} buttonLabel={buttonLabel} preview={preview}>
+            {checkout}
+          </ProductCheckout>
         </aside>
       </div>
     </div>
