@@ -11,11 +11,13 @@ import { cx } from "@/components/ui";
 // Sizes follow the container, so the editor's phone preview behaves the same.
 export function ProductCheckout({
   priceLabel,
+  compareLabel,
   buttonLabel,
   preview,
   children,
 }: {
   priceLabel: string;
+  compareLabel?: string | null;
   buttonLabel: string;
   preview?: boolean;
   children: ReactNode;
@@ -106,7 +108,10 @@ export function ProductCheckout({
           <div className="mx-auto flex max-w-[560px] items-center gap-4">
             <div className="shrink-0">
               <p className="text-[12px] text-muted">Total</p>
-              <p className="num text-[20px] font-semibold leading-tight">{priceLabel}</p>
+              <p className="flex items-baseline gap-2 leading-tight">
+                {compareLabel && <s className="num text-[13px] text-muted">{compareLabel}</s>}
+                <span className="num text-[20px] font-semibold">{priceLabel}</span>
+              </p>
             </div>
             <button
               type="button"

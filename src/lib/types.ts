@@ -16,6 +16,7 @@ export type PaymentPage = {
   terms: string;
   cover_image_url: string | null;
   amount_paise: number;
+  compare_at_paise: number | null;
   currency: "INR";
   button_label: string;
   thank_you_message: string;

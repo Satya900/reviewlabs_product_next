@@ -63,7 +63,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
       <PageDetailsForm
         creatorId={profile.id}
         appUrl={env.appUrl()}
-        page={{ ...page, price: paiseToRupeesString(page.amount_paise) }}
+        page={{ ...page, price: paiseToRupeesString(page.amount_paise), compare_price: page.compare_at_paise ? paiseToRupeesString(page.compare_at_paise) : "" }}
         files={((files ?? []) as PageFile[]).map((f) => ({ file_name: f.file_name, size_bytes: f.size_bytes }))}
         fields={(fields ?? []) as PageField[]}
         testimonials={(testimonials ?? []) as Testimonial[]}

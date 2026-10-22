@@ -39,6 +39,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
         data={{
           title: page.title,
           amountPaise: page.amount_paise,
+          compareAtPaise: page.compare_at_paise,
           coverImageUrl: page.cover_image_url,
           // Sanitised again on display, in case anything slipped in another way.
           descriptionHtml: sanitizeDescription(page.description_html ?? ""),

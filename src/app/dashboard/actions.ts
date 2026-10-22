@@ -25,7 +25,8 @@ function planLimitMessage(message: string): string | null {
 }
 
 function slugify(input: string) {
-  return input.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "page";
+  // Trim hyphens after cutting too, or a long title can end in "-" and give "…--ab12".
+  return input.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").slice(0, 48).replace(/^-+|-+$/g, "") || "page";
 }
 
 // ---------------------------------------------------------------- pages
@@ -52,6 +53,7 @@ const pageSchema = z.object({
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])$/, "Slug: 3-60 chars, lowercase letters, numbers and hyphens"),
   description_html: z.string().max(200000, "The description is too long"),
   price: z.string(),
+  compare_price: z.string().trim().default(""),
   button_label: z.string().trim().min(1).max(40),
   thank_you_message: z.string().trim().max(2000),
   status: z.enum(["draft", "live", "archived"]),
@@ -67,6 +69,9 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
   const amount = rupeesToPaise(input.price);
   if (amount === null || amount < 100) return { error: "Price must be at least ₹1" };
   if (amount > 50_000_000) return { error: "Price is too high" };
+  const compareAt = input.compare_price ? rupeesToPaise(input.compare_price) : null;
+  if (input.compare_price && (compareAt === null || compareAt <= amount)) return { error: "The original price must be higher than the price, or left empty" };
+  if (compareAt !== null && compareAt > 50_000_000) return { error: "The original price is too high" };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -78,6 +83,7 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
       description_html: sanitizeDescription(input.description_html),
       description: htmlToText(input.description_html).slice(0, 10000),
       amount_paise: amount,
+      compare_at_paise: compareAt,
       button_label: input.button_label,
       thank_you_message: input.thank_you_message || "Thank you for your purchase!",
       status: input.status,

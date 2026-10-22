@@ -8,6 +8,7 @@ import { ProductCheckout } from "@/components/product-checkout";
 export type ProductViewData = {
   title: string;
   amountPaise: number;
+  compareAtPaise?: number | null;
   coverImageUrl: string | null;
   // Already sanitised HTML. Falls back to plain text for old pages.
   descriptionHtml: string;
@@ -50,7 +51,17 @@ export function ProductView({ data, checkout, buttonLabel, preview }: { data: Pr
               ))}
             </div>
             <h1 className="display mt-4 text-[34px] @lg:text-[44px]">{data.title || "Untitled product"}</h1>
-            <p className="num mt-3 text-[28px]">{formatPaise(data.amountPaise)}</p>
+            <p className="mt-3 flex flex-wrap items-baseline gap-x-3">
+              <span className="num text-[28px]">{formatPaise(data.amountPaise)}</span>
+              {data.compareAtPaise && data.compareAtPaise > data.amountPaise && (
+                <>
+                  <s className="num text-[18px] text-muted">{formatPaise(data.compareAtPaise)}</s>
+                  <span className="rounded-full bg-up/15 px-2.5 py-0.5 text-[13px] font-semibold text-up">
+                    {Math.round((1 - data.amountPaise / data.compareAtPaise) * 100)}% off
+                  </span>
+                </>
+              )}
+            </p>
             {data.descriptionHtml ? (
               <div className="rich-text mt-6" dangerouslySetInnerHTML={{ __html: data.descriptionHtml }} />
             ) : data.descriptionText ? (
@@ -82,7 +93,10 @@ export function ProductView({ data, checkout, buttonLabel, preview }: { data: Pr
           <div className="h-20 @3xl:hidden" aria-hidden />
         </section>
         <aside className="@3xl:sticky @3xl:top-6 @3xl:self-start">
-          <ProductCheckout priceLabel={formatPaise(data.amountPaise)} buttonLabel={buttonLabel} preview={preview}>
+          <ProductCheckout
+            priceLabel={formatPaise(data.amountPaise)}
+            compareLabel={data.compareAtPaise && data.compareAtPaise > data.amountPaise ? formatPaise(data.compareAtPaise) : null}
+            buttonLabel={buttonLabel} preview={preview}>
             {checkout}
           </ProductCheckout>
         </aside>

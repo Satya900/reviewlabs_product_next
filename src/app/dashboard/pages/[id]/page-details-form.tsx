@@ -15,7 +15,7 @@ import { PreviewFrame } from "./preview-frame";
 type Props = {
   creatorId: string;
   appUrl: string;
-  page: PaymentPage & { price: string };
+  page: PaymentPage & { price: string; compare_price: string };
   files: { file_name: string; size_bytes: number }[];
   fields: PageField[];
   testimonials: Testimonial[];
@@ -29,6 +29,7 @@ type Draft = {
   title: string;
   slug: string;
   price: string;
+  compare_price: string;
   description_html: string;
   cover_image_url: string;
   button_label: string;
@@ -41,6 +42,7 @@ function draftFrom(page: Props["page"]): Draft {
     title: page.title,
     slug: page.slug,
     price: page.price,
+    compare_price: page.compare_price,
     description_html: page.description_html ?? "",
     cover_image_url: page.cover_image_url ?? "",
     button_label: page.button_label,
@@ -89,6 +91,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
   }
 
   const amountPaise = rupeesToPaise(draft.price) ?? 0;
+  const comparePaise = rupeesToPaise(draft.compare_price);
   const previewHtml = useMemo(() => sanitizeDescription(draft.description_html), [draft.description_html]);
   const previewUrl = `${appUrl.replace(/^https?:\/\//, "")}/p/${draft.slug || "your-link"}`;
 
@@ -97,7 +100,7 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
       <ProductView
         preview
         buttonLabel={draft.button_label || "Buy now"}
-        data={{ title: draft.title, amountPaise, coverImageUrl: draft.cover_image_url || null, descriptionHtml: previewHtml, descriptionText: "", files, testimonials, faqs,
+        data={{ title: draft.title, amountPaise, compareAtPaise: comparePaise && comparePaise > amountPaise ? comparePaise : null, coverImageUrl: draft.cover_image_url || null, descriptionHtml: previewHtml, descriptionText: "", files, testimonials, faqs,
           policies: { sellerName: "You", supportEmail: page.support_email, refundPolicy: page.refund_policy ?? "", terms: page.terms ?? "" } }}
         checkout={
           <CheckoutForm
@@ -126,9 +129,12 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
             <Field label="Title">
               <input name="title" value={draft.title} onChange={(e) => set("title", e.target.value)} required className={inputClass} />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Price (₹)">
                 <input name="price" value={draft.price} onChange={(e) => set("price", e.target.value)} inputMode="decimal" required className={inputClass} />
+              </Field>
+              <Field label="Original price (₹)" hint="Optional. Shown crossed out.">
+                <input name="compare_price" value={draft.compare_price} onChange={(e) => set("compare_price", e.target.value)} inputMode="decimal" placeholder="e.g. 1499" className={inputClass} />
               </Field>
               <Field label="Status">
                 <select name="status" value={draft.status} onChange={(e) => set("status", e.target.value as Draft["status"])} className={inputClass}>
