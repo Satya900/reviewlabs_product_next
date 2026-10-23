@@ -11,7 +11,7 @@ export default async function SignupPage() {
   return (
     <AuthCard
       title="Start selling for free"
-      sub="Create your account, verify your email, and put your first product online in minutes."
+      sub="Create your account and start building your first product page straight away."
       footer={<>Already have an account? <Link href="/login" className="link">Log in</Link></>}
     >
       <SignupForm />

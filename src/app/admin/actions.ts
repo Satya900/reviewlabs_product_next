@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay } from "@/lib/razorpay";
 import { formatPaise, rupeesToPaise } from "@/lib/money";
 import { payCreator, recordManualPayout, runDailyPayouts, syncOpenPayouts } from "@/lib/payouts";
+import { sendVerificationEmail } from "@/lib/email-verification";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -227,4 +228,71 @@ export async function refundOrder(_prev: ActionState, formData: FormData): Promi
   }
   revalidatePath("/admin/orders");
   return { ok: "Refund initiated" };
+}
+
+// ---------------------------------------------------------------- creator accounts
+
+const createCreatorSchema = z.object({
+  name: z.string().trim().min(1, "Enter their name").max(80),
+  email: z.email("Enter a valid email").max(200).transform((v) => v.trim().toLowerCase()),
+  password: z.string().min(8, "Use at least 8 characters").max(72, "Use at most 72 characters"),
+  verification: z.enum(["send", "verified", "later"]),
+});
+
+export type CreateCreatorState = { error?: string; ok?: string; creatorId?: string; email?: string } | null;
+
+// An admin sets up an account and shares the login details with the creator.
+// They sign in straight away; their email is verified as chosen below.
+export async function createCreatorAccount(_prev: CreateCreatorState, formData: FormData): Promise<CreateCreatorState> {
+  const admin = await requireAdmin();
+  const parsed = createCreatorSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const { name, email, password, verification } = parsed.data;
+
+  const db = createAdminClient();
+  const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } });
+  if (error || !data.user) {
+    if (error?.code === "email_exists" || /already been registered|already exists/i.test(error?.message ?? "")) {
+      return { error: "An account with this email already exists." };
+    }
+    return { error: error?.message ?? "Couldn't create the account" };
+  }
+  const id = data.user.id;
+  if (verification === "verified") {
+    await db.from("profiles").update({ email_verified_at: new Date().toISOString() }).eq("id", id);
+  } else if (verification === "send") {
+    try {
+      await sendVerificationEmail({ id, email, name });
+    } catch (e) {
+      console.error("[admin] verification email", (e as Error).message);
+      return { ok: "Account created, but the verification email didn't send. They can send it again from the banner in their dashboard.", creatorId: id, email };
+    }
+  }
+  console.info(`[admin] ${admin.email} created creator account ${id}`);
+  revalidatePath("/admin");
+  return { ok: "Account created", creatorId: id, email };
+}
+
+export async function markEmailVerified(creatorId: string): Promise<ActionState> {
+  await requireAdmin();
+  if (!z.uuid().safeParse(creatorId).success) return { error: "Invalid creator" };
+  const { error } = await createAdminClient().from("profiles").update({ email_verified_at: new Date().toISOString() }).eq("id", creatorId).is("email_verified_at", null);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/creators/${creatorId}`);
+  revalidatePath("/admin");
+  return { ok: "Email marked as verified" };
+}
+
+export async function resendCreatorVerification(creatorId: string): Promise<ActionState> {
+  await requireAdmin();
+  if (!z.uuid().safeParse(creatorId).success) return { error: "Invalid creator" };
+  const { data: p } = await createAdminClient().from("profiles").select("id, email, name, email_verified_at").eq("id", creatorId).maybeSingle();
+  if (!p) return { error: "Creator not found" };
+  if (p.email_verified_at) return { ok: "Already verified" };
+  try {
+    await sendVerificationEmail(p);
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  return { ok: `Verification link sent to ${p.email}` };
 }

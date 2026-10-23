@@ -11,6 +11,7 @@ import { COVER_KEYS, LEAD_LIMITS, leadSlug, type CoverPreset } from "@/lib/lead-
 export type LeadActionState = { error?: string; ok?: string } | null;
 
 function limitMessage(message: string) {
+  if (message.includes("email_not_verified")) return "Verify your email to publish. Use the link at the top of the page, then publish again.";
   return message.includes("free_plan_lead_magnet_limit")
     ? "The Free plan includes one lead magnet. Upgrade to Creator in Plan and billing for unlimited lead magnets."
     : null;
@@ -116,7 +117,7 @@ export async function saveLeadSettings(input: z.input<typeof settingsSchema>): P
     const { data: page } = await supabase.from("payment_pages").select("id").eq("id", d.recommendedPageId).eq("creator_id", profile.id).maybeSingle();
     if (!page) return { error: "Pick one of your own products to recommend." };
   }
-  const { error } = await supabase
+  const save = (status: typeof d.status) => supabase
     .from("lead_magnets")
     .update({
       slug: d.slug,
@@ -124,9 +125,18 @@ export async function saveLeadSettings(input: z.input<typeof settingsSchema>): P
       redirect_url: d.redirectUrl || null,
       recommended_page_id: d.recommendedPageId || null,
       storefront_visible: d.storefrontVisible,
-      status: d.status,
+      status,
     })
     .eq("id", d.id);
+  let { error } = await save(d.status);
+  // Unverified email: keep the edits, as a draft, and say how to publish.
+  if (error?.message.includes("email_not_verified")) {
+    ({ error } = await save("draft"));
+    if (!error) {
+      refresh(d.id);
+      return { error: "Saved as a draft. Verify your email to publish: use the link at the top of the page, then publish again." };
+    }
+  }
   if (error) return { error: error.code === "23505" ? "That link name is taken. Try another." : limitMessage(error.message) ?? error.message };
   refresh(d.id);
   if (profile.handle) revalidatePath(`/s/${profile.handle}`);

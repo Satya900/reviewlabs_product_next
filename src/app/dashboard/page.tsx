@@ -21,7 +21,8 @@ export default async function DashboardHome({ searchParams }: PageProps<"/dashbo
     supabase.from("creator_balances").select("*").eq("creator_id", profile.id).maybeSingle(),
     supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(8),
     supabase.from("orders").select("amount_paise").in("status", ["paid", "partially_refunded"]).gte("paid_at", since),
-    supabase.from("payment_pages").select("id", { count: "exact", head: true }).eq("status", "live"),
+    // Filter by creator: live pages are publicly readable, so RLS alone would count everyone's.
+    supabase.from("payment_pages").select("id", { count: "exact", head: true }).eq("creator_id", profile.id).eq("status", "live"),
   ]);
 
   const sales30 = (last30 ?? []).reduce((sum, o) => sum + o.amount_paise, 0);

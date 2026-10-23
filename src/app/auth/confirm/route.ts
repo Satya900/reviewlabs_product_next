@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { after, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PLATFORM_EVENT_COOKIE } from "@/lib/platform-pixel";
 import { platformEventIds, sendRegistrationEvent, trackingFromRequest } from "@/lib/platform-meta";
 
@@ -23,6 +24,8 @@ export async function GET(request: Request) {
       // cookie lets the dashboard fire the browser half with the same event ID.
       const userId = data.user?.id;
       if ((type === "email" || type === "signup") && userId) {
+        // Links from before instant signup (migration 0019) still verify the account.
+        await createAdminClient().from("profiles").update({ email_verified_at: new Date().toISOString() }).eq("id", userId).is("email_verified_at", null);
         const tracking = trackingFromRequest(request, `${url.origin}/signup`);
         after(() => sendRegistrationEvent(userId, tracking).catch((e) => console.warn("[auth/confirm] registration event:", e)));
         response.cookies.set(PLATFORM_EVENT_COOKIE, `CompleteRegistration:${platformEventIds.registration(userId)}`, { path: "/", maxAge: 600, sameSite: "lax" });

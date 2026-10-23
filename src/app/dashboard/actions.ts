@@ -20,6 +20,7 @@ export type ActionState = { error?: string; ok?: string } | null;
 // Turns the database's plan-limit errors into something a creator can act on.
 function planLimitMessage(message: string): string | null {
   if (message.includes("free_plan_page_limit")) return "The Free plan includes one product page. Upgrade to Creator in Plan and billing for unlimited pages.";
+  if (message.includes("email_not_verified")) return "Verify your email to publish. Use the link at the top of the page, then set it to Live.";
   if (message.includes("free_plan_live_limit")) return "The Free plan can have one live page. Upgrade to Creator in Plan and billing to publish more.";
   return null;
 }
@@ -74,7 +75,7 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
   if (compareAt !== null && compareAt > 50_000_000) return { error: "The original price is too high" };
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const save = (status: typeof input.status) => supabase
     .from("payment_pages")
     .update({
       title: input.title,
@@ -86,10 +87,19 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
       compare_at_paise: compareAt,
       button_label: input.button_label,
       thank_you_message: input.thank_you_message || "Thank you for your purchase!",
-      status: input.status,
+      status,
       cover_image_url: input.cover_image_url || null,
     })
     .eq("id", input.id);
+  let { error } = await save(input.status);
+  // Unverified email: keep the edits, as a draft, and say how to publish.
+  if (error?.message.includes("email_not_verified")) {
+    ({ error } = await save("draft"));
+    if (!error) {
+      revalidatePath(`/dashboard/pages/${input.id}`);
+      return { error: "Saved as a draft. Verify your email to publish: use the link at the top of the page, then set it to Live." };
+    }
+  }
   if (error) return { error: error.code === "23505" ? "That slug is taken, try another" : planLimitMessage(error.message) ?? error.message };
 
   revalidatePath(`/dashboard/pages/${input.id}`);

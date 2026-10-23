@@ -2,8 +2,12 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendVerificationEmail } from "@/lib/email-verification";
+import { getProfile } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
@@ -30,33 +34,55 @@ const signUpSchema = z.object({
   password,
 });
 
+// Instant signup: the account is created already confirmed, so the creator lands
+// in the dashboard straight away. Their email is verified afterwards with our own
+// link (profiles.email_verified_at); until then they can build but not sell.
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   if (!(await rateLimit(`signup:ip:${await ip()}`, 5, 3600))) return tooManyRequests;
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data: created, error } = await createAdminClient().auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: {
-      data: { name: parsed.data.name },
-      emailRedirectTo: `${env.appUrl()}/auth/confirm?next=/dashboard`,
-    },
+    email_confirm: true,
+    user_metadata: { name: parsed.data.name },
   });
-  if (error) {
-    console.error("[signup]", error.message);
-    if (/rate limit/i.test(error.message)) return { error: "Too many emails have gone out recently. Please try again in a little while." };
-    if (/password/i.test(error.message)) return { error: error.message };
+  if (error || !created.user) {
+    if (error?.code === "email_exists" || /already been registered|already exists/i.test(error?.message ?? "")) {
+      return { error: "An account with this email already exists. Log in instead, or reset your password if you've forgotten it." };
+    }
+    if (error?.code === "weak_password" || /password/i.test(error?.message ?? "")) return { error: error?.message };
+    console.error("[signup]", error?.message);
     return { error: "We couldn't create your account right now. Please try again." };
   }
-  // Same response whether or not the email already had an account.
-  return { sentTo: parsed.data.email };
+
+  const supabase = await createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+  if (signInError) {
+    console.error("[signup] sign in", signInError.message);
+    redirect("/login");
+  }
+  const user = { id: created.user.id, email: parsed.data.email, name: parsed.data.name };
+  after(() => sendVerificationEmail(user).catch((e) => console.error("[signup] verification email", (e as Error).message)));
+  redirect("/dashboard?welcome=1");
 }
 
 // ---------------------------------------------------------------- sign in
 
 const signInSchema = z.object({ email, password: z.string().min(1, "Enter your password").max(72) });
+
+// Accounts created before instant signup that never clicked Supabase's link
+// can't sign in. Confirm them at the auth level so the password works; their
+// email stays unverified (profiles.email_verified_at) until they verify it.
+async function confirmLegacyAccount(email: string): Promise<boolean> {
+  const db = createAdminClient();
+  const { data: profile } = await db.from("profiles").select("id").eq("email", email).is("email_verified_at", null).maybeSingle();
+  if (!profile) return false;
+  const { error } = await db.auth.admin.updateUserById(profile.id, { email_confirm: true });
+  if (error) console.error("[login] confirm legacy account", error.message);
+  return !error;
+}
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = signInSchema.safeParse(Object.fromEntries(formData));
@@ -66,7 +92,10 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   if (!ipOk || !emailOk) return tooManyRequests;
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+  let { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+  if (error && /not confirmed/i.test(error.message) && (await confirmLegacyAccount(parsed.data.email))) {
+    ({ error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password }));
+  }
   if (error) {
     if (/not confirmed/i.test(error.message)) {
       return { error: "Please verify your email first. Check your inbox for the link.", unverifiedEmail: parsed.data.email };
@@ -93,6 +122,23 @@ export async function resendVerification(_prev: AuthState, formData: FormData): 
   });
   if (error) console.error("[verify-resend]", error.message);
   return { sentTo: parsed.data };
+}
+
+// From the dashboard banner: (re)send the verification link to the signed-in creator.
+export async function sendMyVerificationEmail(): Promise<AuthState> {
+  const profile = await getProfile();
+  if (!profile) return { error: "Please log in again." };
+  if (profile.email_verified_at) return { ok: "Your email is already verified." };
+  if (!(await rateLimit(`verify-send:${profile.id}`, 5, 3600))) {
+    return { error: "We've sent a few links already. Check your inbox and spam folder, or try again in an hour." };
+  }
+  try {
+    await sendVerificationEmail(profile);
+  } catch (e) {
+    console.error("[verify-send]", (e as Error).message);
+    return { error: "We couldn't send the email right now. Please try again in a minute." };
+  }
+  return { sentTo: profile.email };
 }
 
 // ---------------------------------------------------------------- password reset

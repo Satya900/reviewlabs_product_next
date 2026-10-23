@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatPaise } from "@/lib/money";
-import { PageTitle, Stat, cx, tableClass } from "@/components/ui";
+import { PageTitle, Stat, buttonClass, cx, tableClass } from "@/components/ui";
 import { hasCreatorPlan } from "@/lib/plans";
 
 export default async function AdminCreators() {
   const db = createAdminClient();
   const [{ data: profiles }, { data: balances }] = await Promise.all([
-    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number").order("created_at"),
+    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number, email_verified_at").order("created_at"),
     db.from("creator_balances").select("*"),
   ]);
   const { data: subPayments } = await db.from("subscription_payments").select("amount_paise").in("status", ["captured", "authorized"]);
@@ -22,6 +22,7 @@ export default async function AdminCreators() {
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageTitle sub={<>Total owed to creators: <b>{formatPaise(totalOwed)}</b></>}>Creators</PageTitle>
+        <Link href="/admin/creators/new" className={buttonClass.primary}>Add creator</Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Creator plan subscribers" value={creatorCount} />
@@ -47,7 +48,10 @@ export default async function AdminCreators() {
                 <tr key={p.id}>
                   <td className={tableClass.td}>
                     <Link href={`/admin/creators/${p.id}`} className="font-semibold">{p.name || p.email}</Link>
-                    <p className="text-[13px] text-muted">{p.email}{p.is_admin ? " (admin)" : ""}</p>
+                    <p className="text-[13px] text-muted">
+                      {p.email}{p.is_admin ? " (admin)" : ""}
+                      {!p.email_verified_at && !p.is_admin && <span className="ml-2 font-medium text-accent-yellow">Email not verified</span>}
+                    </p>
                   </td>
                   <td className={tableClass.td}>
                     {p.payout_upi || (p.payout_account_number ? `A/c ending ${p.payout_account_number.slice(-4)}` : <span className="font-medium text-accent-yellow">Not set</span>)}

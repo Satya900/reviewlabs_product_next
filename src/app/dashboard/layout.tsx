@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { requireCreator } from "@/lib/auth";
+import { VerifiedNotice, VerifyEmailBanner } from "@/components/verify-email-banner";
 import { hasCreatorPlan } from "@/lib/plans";
 import { AppShell } from "@/components/app-shell";
 import { PlatformPixel } from "@/components/platform-pixel";
@@ -21,6 +23,9 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   return (
     <AppShell label={profile.is_admin ? "Admin" : hasCreatorPlan(profile) ? "Creator plan" : "Free plan"} nav={nav} email={profile.email}>
       <PlatformPixel pageViews={false} />
+      <Suspense>
+        {profile.email_verified_at || profile.is_admin ? <VerifiedNotice /> : <VerifyEmailBanner email={profile.email} />}
+      </Suspense>
       {children}
     </AppShell>
   );

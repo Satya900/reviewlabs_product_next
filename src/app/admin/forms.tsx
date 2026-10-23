@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { addAdjustment, grantCreatorPlan, markPaidManually, payCreatorNow, recordPayout, refundOrder, revokeCreatorPlan, runPayoutsNow, setCreatorFee, setPayoutsPaused } from "./actions";
-import { Button, Field, FormMessage, inputClass } from "@/components/ui";
+import { addAdjustment, createCreatorAccount, grantCreatorPlan, markEmailVerified, resendCreatorVerification, markPaidManually, payCreatorNow, recordPayout, refundOrder, revokeCreatorPlan, runPayoutsNow, setCreatorFee, setPayoutsPaused } from "./actions";
+import Link from "next/link";
+import { Button, Field, FormMessage, Notice, buttonClass, cx, inputClass } from "@/components/ui";
 import { formatPaise, paiseToRupeesString } from "@/lib/money";
 
 export function PayNowForm({ creatorId, availablePaise, ready }: { creatorId: string; availablePaise: number; ready: boolean }) {
@@ -184,5 +185,97 @@ export function RefundForm({ orderId }: { orderId: string }) {
       </div>
       <FormMessage state={state} />
     </form>
+  );
+}
+
+// 14 characters from an alphabet without look-alikes (no 0/O, 1/l/I), easy to read out.
+function generatePassword() {
+  const chars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint32Array(14));
+  return Array.from(bytes, (b) => chars[b % chars.length]).join("");
+}
+
+export function CreateCreatorForm() {
+  const [state, action, pending] = useActionState(createCreatorAccount, null);
+  // Controlled, so a failed attempt keeps what was typed and the password can be shown afterwards.
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  if (state?.creatorId) {
+    const details = `Your Reviewlabs account is ready.\n\nLog in: ${window.location.origin}/login\nEmail: ${state.email}\nPassword: ${password}\n\nYou can change your password any time with "Forgot password" on the login page.`;
+    return (
+      <div className="space-y-5">
+        <Notice tone="good">{state.ok}</Notice>
+        <div>
+          <p className="mb-2 text-[15px] font-semibold">Login details to share</p>
+          <pre className="whitespace-pre-wrap break-all rounded-2xl bg-surface-soft p-4 text-[14px]">{details}</pre>
+          <p className="mt-2 text-[13px] text-muted">The password is only shown here, once. Send it privately (WhatsApp or a direct message), not in a public chat.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button type="button" onClick={async () => { await navigator.clipboard.writeText(details); setCopied(true); }}>{copied ? "Copied" : "Copy login details"}</Button>
+          <Link href={`/admin/creators/${state.creatorId}`} className={cx(buttonClass.secondary, "h-11 px-5")}>Open their account</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form action={action} className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Their name">
+          <input name="name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={80} autoComplete="off" className={inputClass} />
+        </Field>
+        <Field label="Their email">
+          <input name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" className={inputClass} />
+        </Field>
+      </div>
+      <Field label="Password" hint="At least 8 characters. Generate one, then share it with them.">
+        <div className="flex gap-2">
+          <input name="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} maxLength={72} autoComplete="new-password" spellCheck={false} className={cx(inputClass, "num")} />
+          <Button type="button" variant="secondary" onClick={() => setPassword(generatePassword())}>Generate</Button>
+        </div>
+      </Field>
+      <fieldset className="space-y-2">
+        <legend className="mb-2 text-[14px] font-semibold">Email verification</legend>
+        {([
+          ["send", "Email them a verification link now", "They can log in straight away and publish once they click the link."],
+          ["later", "Let them verify from their dashboard", "No email now. They see “Email verification pending” at the top and verify when ready."],
+          ["verified", "Mark as already verified", "Only if you've confirmed the email is theirs. They can publish and get paid straight away."],
+        ] as const).map(([value, label, hint]) => (
+          <label key={value} className="flex cursor-pointer gap-3 rounded-2xl border border-hairline p-4 has-[:checked]:border-primary has-[:checked]:bg-primary-soft/40">
+            <input type="radio" name="verification" value={value} defaultChecked={value === "send"} className="mt-1 accent-primary" />
+            <span>
+              <span className="block text-[15px] font-medium">{label}</span>
+              <span className="block text-[13px] text-muted">{hint}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+      <FormMessage state={state} />
+      <Button loading={pending} type="submit" disabled={pending}>{pending ? "Creating account" : "Create account"}</Button>
+    </form>
+  );
+}
+
+export function EmailVerificationControls({ creatorId }: { creatorId: string }) {
+  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="secondary" disabled={pending} onClick={() => start(async () => setState(await resendCreatorVerification(creatorId)))}>Send verification link</Button>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={pending}
+          onClick={() => { if (confirm("Mark this email as verified? Only do this if you've confirmed it belongs to them.")) start(async () => setState(await markEmailVerified(creatorId))); }}
+        >
+          Mark as verified
+        </Button>
+      </div>
+      <FormMessage state={state} />
+    </div>
   );
 }

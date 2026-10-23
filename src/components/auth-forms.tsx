@@ -28,17 +28,6 @@ function ResendVerification({ email }: { email: string }) {
   );
 }
 
-function CheckInbox({ email, what }: { email: string; what: string }) {
-  return (
-    <div className="space-y-4">
-      <Notice tone="good">
-        We sent {what} to <b>{email}</b>. Open it on any device and click the link. Check spam or promotions if you don&apos;t see it within a minute.
-      </Notice>
-      <ResendVerification email={email} />
-    </div>
-  );
-}
-
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signIn, null);
   return (
@@ -63,7 +52,6 @@ export function LoginForm({ next }: { next: string }) {
 
 export function SignupForm() {
   const [state, action, pending] = useActionState(signUp, null);
-  if (state?.sentTo) return <CheckInbox email={state.sentTo} what="a verification link" />;
   return (
     <form action={action} className="space-y-4">
       <Field label="Your name">

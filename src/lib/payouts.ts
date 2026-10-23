@@ -146,11 +146,12 @@ export async function payCreator(creatorId: string, opts: { createdBy?: string |
   const db = createAdminClient();
   const { data: profile } = await db
     .from("profiles")
-    .select("id, email, name, payout_upi, payout_account_name, payout_account_number, payout_ifsc, payouts_paused")
+    .select("id, email, name, is_admin, email_verified_at, payout_upi, payout_account_name, payout_account_number, payout_ifsc, payouts_paused")
     .eq("id", creatorId)
     .maybeSingle();
   if (!profile) return { ok: false, reason: "Creator not found." };
   if (profile.payouts_paused) return { ok: false, reason: "Payouts are paused for this creator." };
+  if (!profile.email_verified_at && !profile.is_admin) return { ok: false, reason: "This creator hasn't verified their email yet." };
   const dest = destinationFor(profile);
   if (!dest) return { ok: false, reason: "No valid UPI ID or bank account saved." };
 
@@ -408,12 +409,12 @@ export async function listDuePayouts(): Promise<DuePayout[]> {
   if (!ids.length) return [];
   const { data: profiles } = await db
     .from("profiles")
-    .select("id, email, name, is_admin, payouts_paused, payout_upi, payout_account_name, payout_account_number, payout_ifsc")
+    .select("id, email, name, is_admin, payouts_paused, email_verified_at, payout_upi, payout_account_name, payout_account_number, payout_ifsc")
     .in("id", ids);
   const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
   return (due ?? []).flatMap((d) => {
     const p = byId.get(d.creator_id);
-    if (!p || p.is_admin || p.payouts_paused) return [];
+    if (!p || p.is_admin || p.payouts_paused || !p.email_verified_at) return [];
     return [{
       creatorId: p.id,
       email: p.email,

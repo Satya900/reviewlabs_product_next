@@ -5,7 +5,7 @@ import { formatPaise } from "@/lib/money";
 import { PageTitle, Panel, Stat } from "@/components/ui";
 import { LedgerTable } from "@/components/ledger-table";
 import type { LedgerEntry, Payout } from "@/lib/types";
-import { AdjustmentForm, FeeForm, PausePayoutsButton, PayNowForm, PayoutForm, PlanForm } from "../../forms";
+import { AdjustmentForm, EmailVerificationControls, FeeForm, PausePayoutsButton, PayNowForm, PayoutForm, PlanForm } from "../../forms";
 import { PayoutsTable } from "@/components/payouts-table";
 import { destinationFor, payoutsEnabled } from "@/lib/payouts";
 import { feePercentFor } from "@/lib/plans";
@@ -32,6 +32,12 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
         <Link href="/admin" className="link text-[14px]">← Back to creators</Link>
         <PageTitle sub={p.email}>{p.name || p.email}</PageTitle>
       </div>
+      {!p.email_verified_at && !p.is_admin && (
+        <Panel title="Email not verified" aside={<Badge status="pending" label="Pending" />}>
+          <p className="mb-4 text-[14px] text-body">Until they verify {p.email}, they can build pages but can&apos;t publish them or receive payouts.</p>
+          <EmailVerificationControls creatorId={p.id} />
+        </Panel>
+      )}
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Balance owed" value={formatPaise(owed)} />
         <Stat label="Available now" value={formatPaise(available)} sub="Sales older than 24 hours" />
