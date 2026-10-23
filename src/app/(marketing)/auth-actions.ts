@@ -65,7 +65,8 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   }
   const user = { id: created.user.id, email: parsed.data.email, name: parsed.data.name };
   after(() => sendVerificationEmail(user).catch((e) => console.error("[signup] verification email", (e as Error).message)));
-  redirect("/dashboard?welcome=1");
+  // Step 2: the bank account for payouts (skippable), then the dashboard.
+  redirect("/dashboard/setup/payouts?welcome=1");
 }
 
 // ---------------------------------------------------------------- sign in

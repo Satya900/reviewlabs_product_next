@@ -215,20 +215,9 @@ export async function deleteFile(fileId: string, pageId: string) {
 
 // ---------------------------------------------------------------- settings
 
+// Bank details have their own form (payout-actions.ts), with a cancelled cheque.
 const profileSchema = z.object({
   name: z.string().trim().max(120),
-  payout_upi: z.union([z.string().trim().regex(/^[\w.\-]{2,}@[a-zA-Z]{2,}$/, "Invalid UPI ID"), z.literal("")]),
-  payout_account_name: z.string().trim().max(120),
-  payout_account_number: z.union([z.string().trim().regex(/^\d{6,20}$/, "Invalid account number"), z.literal("")]),
-  payout_ifsc: z.union([z.string().trim().toUpperCase().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC"), z.literal("")]),
-}).superRefine((v, ctx) => {
-  // A bank payout needs all three; half-filled details would fail at RazorpayX.
-  const bank = [v.payout_account_name, v.payout_account_number, v.payout_ifsc];
-  if (bank.some(Boolean) && !bank.every(Boolean)) {
-    ctx.addIssue({ code: "custom", message: "For bank payouts, fill in the account holder, account number and IFSC" });
-  } else if (v.payout_account_name && v.payout_account_name.replace(/[^\p{L}]/gu, "").length < 4) {
-    ctx.addIssue({ code: "custom", message: "Enter the account holder's full name as the bank has it" });
-  }
 });
 
 export async function updateProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -239,13 +228,7 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
-    .update({
-      name: nullIfEmpty(parsed.data.name),
-      payout_upi: nullIfEmpty(parsed.data.payout_upi),
-      payout_account_name: nullIfEmpty(parsed.data.payout_account_name),
-      payout_account_number: nullIfEmpty(parsed.data.payout_account_number),
-      payout_ifsc: nullIfEmpty(parsed.data.payout_ifsc),
-    })
+    .update({ name: nullIfEmpty(parsed.data.name) })
     .eq("id", profile.id);
   if (error) return { error: error.message };
   revalidatePath("/dashboard/settings");

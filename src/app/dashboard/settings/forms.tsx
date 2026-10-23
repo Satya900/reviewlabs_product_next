@@ -1,6 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BankDetailsForm } from "@/components/bank-details-form";
+import { maskAccountNumber } from "@/lib/bank-details";
 import { sendTestMetaEvent, updatePixel, updateProfile } from "../actions";
 import { Badge, Button, Field, FormMessage, inputClass } from "@/components/ui";
 import type { Profile } from "@/lib/auth";
@@ -10,12 +13,6 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <form action={action} className="space-y-4">
       <Field label="Display name"><input name="name" defaultValue={profile.name ?? ""} className={inputClass} /></Field>
-      <Field label="UPI ID" hint="For example: yourname@okhdfcbank. We pay to UPI when it's set, otherwise to your bank account."><input name="payout_upi" defaultValue={profile.payout_upi ?? ""} className={inputClass} /></Field>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Account holder"><input name="payout_account_name" defaultValue={profile.payout_account_name ?? ""} className={inputClass} /></Field>
-        <Field label="Account number"><input name="payout_account_number" defaultValue={profile.payout_account_number ?? ""} inputMode="numeric" className={inputClass} /></Field>
-        <Field label="IFSC"><input name="payout_ifsc" defaultValue={profile.payout_ifsc ?? ""} className={inputClass} /></Field>
-      </div>
       <div className="flex items-center gap-3">
         <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Save"}</Button>
         <FormMessage state={state} />
@@ -88,6 +85,35 @@ export function PixelForm({ pixelId, testEventCode, hasToken }: { pixelId: strin
           <FormMessage state={testState} />
         </form>
       )}
+    </div>
+  );
+}
+
+export function BankAccountSettings({ profile }: { profile: Profile }) {
+  const router = useRouter();
+  const saved = Boolean(profile.payout_bank_submitted_at && profile.payout_account_number);
+  const [editing, setEditing] = useState(!saved);
+  const [done, setDone] = useState(false);
+
+  if (!editing) {
+    return (
+      <div className="space-y-4">
+        {done && <p className="rounded-2xl bg-up/10 p-3 text-[14px] font-medium text-ink">Bank details saved. You can request payouts from Earnings.</p>}
+        <dl className="grid gap-x-6 gap-y-3 text-[14px] sm:grid-cols-2">
+          <div><dt className="text-muted">Account holder</dt><dd className="font-medium">{profile.payout_account_name}</dd></div>
+          <div><dt className="text-muted">Account number</dt><dd className="num font-medium">{maskAccountNumber(profile.payout_account_number ?? "")}</dd></div>
+          <div><dt className="text-muted">IFSC</dt><dd className="num font-medium">{profile.payout_ifsc}</dd></div>
+          <div><dt className="text-muted">Bank</dt><dd className="font-medium">{profile.payout_bank_name ?? "—"}</dd></div>
+          <div className="sm:col-span-2"><dt className="text-muted">Cancelled cheque</dt><dd className="font-medium">Uploaded {new Date(profile.payout_bank_submitted_at!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</dd></div>
+        </dl>
+        <Button type="button" variant="secondary" onClick={() => { setDone(false); setEditing(true); }}>Change bank account</Button>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      {saved && <p className="text-[14px] text-body">Changing your bank account needs a cancelled cheque from the new account. <button type="button" className="link" onClick={() => setEditing(false)}>Keep the current one</button></p>}
+      <BankDetailsForm creatorId={profile.id} onSaved={() => { setDone(true); setEditing(false); router.refresh(); }} />
     </div>
   );
 }

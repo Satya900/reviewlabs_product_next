@@ -139,8 +139,8 @@ type PayoutRow = {
 
 export type PayResult = { ok: true; payoutId: string; amountPaise: number; status: string } | { ok: false; reason: string };
 
-// Pays the creator's available balance (up to maxPaise). Used by the daily run
-// and by the admin "Pay now" button.
+// Pays the creator's available balance (up to maxPaise) through RazorpayX.
+// Used by the admin "Pay now" button.
 export async function payCreator(creatorId: string, opts: { createdBy?: string | null; maxPaise?: number; minPaise?: number } = {}): Promise<PayResult> {
   if (!payoutsEnabled()) return { ok: false, reason: "RazorpayX isn't set up (RAZORPAYX_KEY_ID, RAZORPAYX_KEY_SECRET or RAZORPAYX_ACCOUNT_NUMBER is empty)." };
   const db = createAdminClient();
@@ -271,7 +271,7 @@ async function notifyCreator(payoutId: string) {
     ? [`We sent ${amount} to your ${po.destination_label}.`, po.utr ? `Bank reference (UTR): ${po.utr}` : "", "It usually shows in your account within minutes."]
     : [
         `Your payout of ${amount} to ${po.destination_label} didn't go through${po.failure_reason ? `: ${po.failure_reason}` : "."}`,
-        "The money is back in your Reviewlabs balance. Check your UPI ID or bank details in Settings, and we'll send it again in the next daily payout.",
+        "The money is back in your Reviewlabs balance. Check your bank details in Settings, then request the payout again from Earnings.",
       ];
   const settingsUrl = `${env.appUrl()}/dashboard/settings`;
   try {
@@ -327,107 +327,9 @@ export async function syncOpenPayouts(limit = 50) {
   return summary;
 }
 
-// The daily automatic run: pays every creator whose available balance is at
-// least the minimum. Creators whose last payout failed are skipped until they
-// change their payout details.
-export async function runDailyPayouts(limit = 100) {
-  const summary = { paid: 0, skipped: 0, errors: 0, totalPaise: 0 };
-  if (!payoutsEnabled()) {
-    // Manual mode (RazorpayX not connected yet): remind the admins who is due today.
-    await emailDueListToAdmins();
-    return { ...summary, disabled: true, manual: true };
-  }
-  if (!env.autoPayouts()) return { ...summary, disabled: true };
-  const db = createAdminClient();
-
-  const { data: due } = await db
-    .from("creator_balances")
-    .select("creator_id, available_paise")
-    .gte("available_paise", PAYOUT_MIN_PAISE)
-    .order("available_paise", { ascending: false })
-    .limit(limit);
-  const ids = (due ?? []).map((d) => d.creator_id as string);
-  if (!ids.length) return summary;
-
-  const [{ data: profiles }, { data: recent }] = await Promise.all([
-    db.from("profiles").select("id, is_admin, payouts_paused, payout_details_updated_at").in("id", ids),
-    db.from("payouts").select("creator_id, status, updated_at").eq("provider", "razorpayx").in("creator_id", ids).order("created_at", { ascending: false }),
-  ]);
-  const lastPayout = new Map<string, { status: string; updated_at: string }>();
-  for (const p of recent ?? []) if (!lastPayout.has(p.creator_id)) lastPayout.set(p.creator_id, p);
-
-  for (const p of profiles ?? []) {
-    const last = lastPayout.get(p.id);
-    const failedOnDetails =
-      last && ["failed", "reversed", "cancelled"].includes(last.status) &&
-      (!p.payout_details_updated_at || new Date(p.payout_details_updated_at) < new Date(last.updated_at));
-    if (p.is_admin || p.payouts_paused || failedOnDetails) {
-      summary.skipped++;
-      continue;
-    }
-    try {
-      const result = await payCreator(p.id);
-      if (result.ok) {
-        summary.paid++;
-        summary.totalPaise += result.amountPaise;
-      } else {
-        summary.skipped++;
-      }
-    } catch (e) {
-      summary.errors++;
-      console.error(`[payouts] daily ${p.id}:`, (e as Error).message);
-    }
-  }
-  return summary;
-}
-
 // ---------------------------------------------------------------- manual mode
-// Until RazorpayX is connected, an admin pays from their bank or UPI app and
-// records the UTR here. Same 24-hour hold, minimum and ledger as automatic payouts.
-
-export type DuePayout = {
-  creatorId: string;
-  email: string;
-  name: string | null;
-  availablePaise: number;
-  destination: Destination | null;
-  upi: string | null;
-  accountName: string | null;
-  accountNumber: string | null;
-  ifsc: string | null;
-};
-
-export async function listDuePayouts(): Promise<DuePayout[]> {
-  const db = createAdminClient();
-  const { data: due } = await db
-    .from("creator_balances")
-    .select("creator_id, available_paise")
-    .gte("available_paise", PAYOUT_MIN_PAISE)
-    .order("available_paise", { ascending: false })
-    .limit(500);
-  const ids = (due ?? []).map((d) => d.creator_id as string);
-  if (!ids.length) return [];
-  const { data: profiles } = await db
-    .from("profiles")
-    .select("id, email, name, is_admin, payouts_paused, email_verified_at, payout_upi, payout_account_name, payout_account_number, payout_ifsc")
-    .in("id", ids);
-  const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
-  return (due ?? []).flatMap((d) => {
-    const p = byId.get(d.creator_id);
-    if (!p || p.is_admin || p.payouts_paused || !p.email_verified_at) return [];
-    return [{
-      creatorId: p.id,
-      email: p.email,
-      name: p.name,
-      availablePaise: Number(d.available_paise),
-      destination: destinationFor(p),
-      upi: p.payout_upi,
-      accountName: p.payout_account_name,
-      accountNumber: p.payout_account_number,
-      ifsc: p.payout_ifsc,
-    }];
-  });
-}
+// Until RazorpayX is connected, an admin pays an approved payout request from
+// their bank or UPI app and records the UTR here (see payout-requests.ts).
 
 // Records a payout the admin already sent by hand, then emails the creator.
 export async function recordManualPayout(creatorId: string, amountPaise: number, utr: string, adminId: string): Promise<PayResult> {
@@ -452,29 +354,4 @@ export async function recordManualPayout(creatorId: string, amountPaise: number,
   await db.from("payouts").update({ utr, destination_label: dest?.label ?? null, mode: dest?.mode ?? null, processed_at: new Date().toISOString() }).eq("id", payoutId);
   await notifyCreator(payoutId as string);
   return { ok: true, payoutId: payoutId as string, amountPaise, status: "processed" };
-}
-
-async function emailDueListToAdmins() {
-  const due = await listDuePayouts();
-  if (!due.length) return;
-  const db = createAdminClient();
-  const { data: admins } = await db.from("profiles").select("email").eq("is_admin", true);
-  const total = due.reduce((sum, d) => sum + d.availablePaise, 0);
-  const url = `${env.appUrl()}/admin/payouts`;
-  const lines = due.map((d) => `${formatPaise(d.availablePaise)} to ${d.name || d.email}: ${d.destination?.label ?? "no payout details yet"}`);
-  for (const admin of admins ?? []) {
-    try {
-      await sendEmail({
-        to: admin.email,
-        subject: `Payouts due today: ${formatPaise(total)} to ${due.length} creator${due.length === 1 ? "" : "s"}`,
-        html: `<div style="font-family:-apple-system,system-ui,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;max-width:560px;margin:auto;color:#0a0b0d;padding:24px">
-  <p style="margin:0 0 12px">These creators have money ready to pay today (sales older than 24 hours):</p>
-  <ul>${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join("")}</ul>
-  <p><a href="${url}" style="color:#0052ff;font-weight:600">Open payouts</a> to copy their details, download the bank CSV and mark each one paid with its UTR.</p></div>`,
-        text: [`Payouts due today (${formatPaise(total)}):`, ...lines, `Open payouts: ${url}`].join("\n"),
-      });
-    } catch (e) {
-      console.error("[payouts] admin reminder:", (e as Error).message);
-    }
-  }
 }

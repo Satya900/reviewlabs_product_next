@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { addAdjustment, createCreatorAccount, grantCreatorPlan, markEmailVerified, resendCreatorVerification, markPaidManually, payCreatorNow, recordPayout, refundOrder, revokeCreatorPlan, runPayoutsNow, setCreatorFee, setPayoutsPaused } from "./actions";
+import { addAdjustment, approvePayoutRequest, rejectPayoutRequest, createCreatorAccount, grantCreatorPlan, markEmailVerified, resendCreatorVerification, payCreatorNow, recordPayout, refundOrder, revokeCreatorPlan, setCreatorFee, setPayoutsPaused } from "./actions";
 import Link from "next/link";
 import { Button, Field, FormMessage, Notice, buttonClass, cx, inputClass } from "@/components/ui";
 import { formatPaise, paiseToRupeesString } from "@/lib/money";
@@ -32,42 +32,7 @@ export function PausePayoutsButton({ creatorId, paused }: { creatorId: string; p
   return (
     <div className="space-y-2">
       <Button type="button" variant="secondary" disabled={pending} onClick={() => start(async () => setState(await setPayoutsPaused(creatorId, !paused)))}>
-        {pending ? "Saving" : paused ? "Resume automatic payouts" : "Pause automatic payouts"}
-      </Button>
-      <FormMessage state={state} />
-    </div>
-  );
-}
-
-export function MarkPaidForm({ creatorId, amountPaise }: { creatorId: string; amountPaise: number }) {
-  const [state, action, pending] = useActionState(markPaidManually, null);
-  // Controlled, so a failed attempt doesn't wipe what the admin typed.
-  const [amount, setAmount] = useState(paiseToRupeesString(amountPaise));
-  const [utr, setUtr] = useState("");
-  if (state?.ok) return <FormMessage state={state} />;
-  return (
-    <form action={action} className="flex flex-wrap items-start gap-2">
-      <input type="hidden" name="creator_id" value={creatorId} />
-      <input name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" aria-label="Amount sent (₹)" className={`${inputClass} w-28`} />
-      <input name="utr" value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference" required aria-label="UTR" className={`${inputClass} w-44`} />
-      <Button loading={pending} type="submit" disabled={pending}>{pending ? "Saving" : "Mark paid"}</Button>
-      <div className="basis-full"><FormMessage state={state} /></div>
-    </form>
-  );
-}
-
-export function RunPayoutsButton({ disabled }: { disabled: boolean }) {
-  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
-  const [pending, start] = useTransition();
-  return (
-    <div className="space-y-2">
-      <Button
-        type="button"
-        loading={pending}
-        disabled={pending || disabled}
-        onClick={() => { if (confirm("Pay every creator their available balance now?")) start(async () => setState(await runPayoutsNow())); }}
-      >
-        {pending ? "Running" : "Run payouts now"}
+        {pending ? "Saving" : paused ? "Resume payouts" : "Pause payouts"}
       </Button>
       <FormMessage state={state} />
     </div>
@@ -276,6 +241,42 @@ export function EmailVerificationControls({ creatorId }: { creatorId: string }) 
         </Button>
       </div>
       <FormMessage state={state} />
+    </div>
+  );
+}
+
+export function PayoutRequestActions({ requestId, amountPaise }: { requestId: string; amountPaise: number }) {
+  const [approveState, approve, approving] = useActionState(approvePayoutRequest, null);
+  const [rejectState, reject, rejecting] = useActionState(rejectPayoutRequest, null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  // Controlled, so a failed attempt doesn't wipe what the admin typed.
+  const [utr, setUtr] = useState("");
+  const [reason, setReason] = useState("");
+  if (approveState?.ok || rejectState?.ok) return <FormMessage state={approveState?.ok ? approveState : rejectState} />;
+  return (
+    <div className="space-y-3">
+      <form action={approve} className="space-y-2">
+        <input type="hidden" name="request_id" value={requestId} />
+        <p className="text-[13px] text-body">Send {formatPaise(amountPaise)} from your bank, then paste the UTR:</p>
+        <div className="flex flex-wrap gap-2">
+          <input name="utr" value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference" required aria-label="UTR" className={`${inputClass} w-48`} />
+          <Button loading={approving} type="submit" disabled={approving || rejecting}>{approving ? "Approving" : "Approve as paid"}</Button>
+        </div>
+        <FormMessage state={approveState} />
+      </form>
+      {rejectOpen ? (
+        <form action={reject} className="space-y-2">
+          <input type="hidden" name="request_id" value={requestId} />
+          <textarea name="reason" value={reason} onChange={(e) => setReason(e.target.value)} required maxLength={300} rows={2} placeholder="Why? The creator sees this, e.g. the cheque doesn't match the account number." aria-label="Reason" className={`${inputClass} h-auto w-full py-2`} />
+          <div className="flex gap-2">
+            <Button loading={rejecting} type="submit" variant="secondary" disabled={rejecting || approving}>{rejecting ? "Rejecting" : "Reject request"}</Button>
+            <button type="button" className="link text-[14px]" onClick={() => setRejectOpen(false)}>Cancel</button>
+          </div>
+          <FormMessage state={rejectState} />
+        </form>
+      ) : (
+        <button type="button" className="text-[14px] font-medium text-down" onClick={() => setRejectOpen(true)}>Reject…</button>
+      )}
     </div>
   );
 }

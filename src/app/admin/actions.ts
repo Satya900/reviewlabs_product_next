@@ -7,7 +7,8 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay } from "@/lib/razorpay";
 import { formatPaise, rupeesToPaise } from "@/lib/money";
-import { payCreator, recordManualPayout, runDailyPayouts, syncOpenPayouts } from "@/lib/payouts";
+import { payCreator, recordManualPayout } from "@/lib/payouts";
+import { emailCreatorRejected } from "@/lib/payout-requests";
 import { sendVerificationEmail } from "@/lib/email-verification";
 
 export type ActionState = { error?: string; ok?: string } | null;
@@ -62,28 +63,70 @@ export async function payCreatorNow(_prev: ActionState, formData: FormData): Pro
   }
 }
 
-const manualPaidSchema = z.object({
-  creator_id: z.uuid(),
-  amount: z.string(),
+// ---------------------------------------------------------------- payout requests
+
+const approveSchema = z.object({
+  request_id: z.uuid(),
   utr: z.string().trim().min(6, "Paste the UTR / transaction reference from your bank or UPI app").max(40),
 });
 
-// Manual mode: the admin already sent the money from their bank or UPI app.
-export async function markPaidManually(_prev: ActionState, formData: FormData): Promise<ActionState> {
+// Manual mode: the admin sent the requested amount from their bank or UPI app,
+// then approves the request with the UTR. Records the payout in the ledger and
+// emails the creator.
+export async function approvePayoutRequest(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireAdmin();
-  const parsed = manualPaidSchema.safeParse(Object.fromEntries(formData));
+  const parsed = approveSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const amount = rupeesToPaise(parsed.data.amount);
-  if (!amount || amount < 100) return { error: "Enter the amount you sent" };
+  const db = createAdminClient();
+  // Claim it first so a double click can't record the payout twice.
+  const { data: request } = await db
+    .from("payout_requests")
+    .update({ status: "paid", utr: parsed.data.utr, decided_by: admin.id, decided_at: new Date().toISOString() })
+    .eq("id", parsed.data.request_id)
+    .eq("status", "pending")
+    .select("id, creator_id, amount_paise")
+    .maybeSingle();
+  if (!request) return { error: "This request was already handled or cancelled." };
+  const release = () => db.from("payout_requests").update({ status: "pending", utr: null, decided_by: null, decided_at: null }).eq("id", request.id);
   try {
-    const result = await recordManualPayout(parsed.data.creator_id, amount, parsed.data.utr, admin.id);
-    if (!result.ok) return { error: result.reason };
+    const result = await recordManualPayout(request.creator_id, request.amount_paise, parsed.data.utr, admin.id);
+    if (!result.ok) {
+      await release();
+      return { error: result.reason };
+    }
+    await db.from("payout_requests").update({ payout_id: result.payoutId }).eq("id", request.id);
   } catch (e) {
+    await release();
     return { error: (e as Error).message };
   }
   revalidatePath("/admin/payouts");
-  revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
-  return { ok: `Recorded ${formatPaise(amount)}. The creator has been emailed.` };
+  revalidatePath(`/admin/creators/${request.creator_id}`);
+  return { ok: `Approved and recorded ${formatPaise(request.amount_paise)}. The creator has been emailed.` };
+}
+
+const rejectSchema = z.object({
+  request_id: z.uuid(),
+  reason: z.string().trim().min(5, "Tell the creator why, so they can fix it").max(300),
+});
+
+export async function rejectPayoutRequest(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const parsed = rejectSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const db = createAdminClient();
+  const { data: request } = await db
+    .from("payout_requests")
+    .update({ status: "rejected", reject_reason: parsed.data.reason, decided_by: admin.id, decided_at: new Date().toISOString() })
+    .eq("id", parsed.data.request_id)
+    .eq("status", "pending")
+    .select("creator_id, amount_paise")
+    .maybeSingle();
+  if (!request) return { error: "This request was already handled or cancelled." };
+  const { data: creator } = await db.from("profiles").select("email").eq("id", request.creator_id).maybeSingle();
+  if (creator) await emailCreatorRejected(creator, request.amount_paise, parsed.data.reason);
+  revalidatePath("/admin/payouts");
+  revalidatePath(`/admin/creators/${request.creator_id}`);
+  return { ok: "Request rejected. The creator has been emailed the reason." };
 }
 
 export async function setPayoutsPaused(creatorId: string, paused: boolean): Promise<ActionState> {
@@ -91,21 +134,7 @@ export async function setPayoutsPaused(creatorId: string, paused: boolean): Prom
   const { error } = await createAdminClient().from("profiles").update({ payouts_paused: paused }).eq("id", creatorId);
   if (error) return { error: error.message };
   revalidatePath(`/admin/creators/${creatorId}`);
-  return { ok: paused ? "Automatic payouts paused for this creator" : "Automatic payouts resumed" };
-}
-
-// Runs the daily payout job on demand.
-export async function runPayoutsNow(): Promise<ActionState> {
-  await requireAdmin();
-  try {
-    const synced = await syncOpenPayouts();
-    const daily = await runDailyPayouts();
-    revalidatePath("/admin/payouts");
-    if ("disabled" in daily) return { error: "Automatic payouts are off (a RAZORPAYX_* key is missing or AUTO_PAYOUTS=off)." };
-    return { ok: `Paid ${daily.paid} creator${daily.paid === 1 ? "" : "s"} (${formatPaise(daily.totalPaise)}), skipped ${daily.skipped}, ${daily.errors + synced.errors} error(s), ${synced.synced} open payout(s) updated.` };
-  } catch (e) {
-    return { error: (e as Error).message };
-  }
+  return { ok: paused ? "Payouts paused for this creator" : "Payouts resumed" };
 }
 
 const adjustmentSchema = z.object({

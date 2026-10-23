@@ -50,7 +50,7 @@ export default function Terms() {
           <li>If a Creator subscription ends or a renewal fails, your account moves to Free: your oldest live page stays live and other pages become drafts.</li>
           <li>Refunds and chargebacks are deducted from your balance. The fee on a refunded sale is not returned, because the payment gateway keeps its charge too.</li>
           <li>You may add your own support email, refund policy and terms to your product pages. They apply between you and your buyers, alongside these terms.</li>
-          <li>We pay your balance every day to the UPI ID or bank account in your settings. A sale can be paid out 24 hours after it is made, and we send a payout once at least ₹100 is ready. If a payout fails, for example because of wrong bank details, the amount goes back to your balance and is sent again after you update your details. You are responsible for the accuracy of your payout details and for any tax due on your income.</li>
+          <li>To receive payouts, you add a bank account in your name or your business&apos;s name, with a cancelled cheque from that account. You can then request a payout of at least ₹500 and up to your available balance. A sale becomes available 24 hours after it is made. We review each request and may reject it, with a reason, for example if the cheque does not match the account details; the amount then stays in your balance. Approved payouts are sent to the bank account you submitted. You are responsible for the accuracy of your payout details and for any tax due on your income.</li>
           <li>We may hold a payout while we look into a dispute, a chargeback or a suspected breach of these terms.</li>
         </ul>
       </Clause>

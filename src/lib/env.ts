@@ -21,8 +21,6 @@ export const env = {
   razorpayxKeyId: () => required("RAZORPAYX_KEY_ID"),
   razorpayxKeySecret: () => required("RAZORPAYX_KEY_SECRET"),
   razorpayxWebhookSecret: () => required("RAZORPAYX_WEBHOOK_SECRET"),
-  // "off" stops the daily automatic run; admins can still pay from the creator page.
-  autoPayouts: () => process.env.AUTO_PAYOUTS !== "off",
   encryptionKey: () => required("ENCRYPTION_KEY"),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,

@@ -28,7 +28,7 @@ export default function Privacy() {
         <p>The creator receives these details because you asked for their free resource and agreed to receive updates from them.</p>
       </Clause>
       <Clause n={3} title="What we collect from creators">
-        <p>Your email address, display name, payout details (UPI ID or bank account and IFSC), and your Meta Pixel settings. Your Meta access token is stored encrypted.</p>
+        <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them), and your Meta Pixel settings. Your Meta access token is stored encrypted.</p>
         <p>If you set up a storefront, your handle, photo, bio and social links are shown publicly. If you ask about a custom plan, we keep the details you send us so we can reply.</p>
       </Clause>
       <Clause n={4} title="Why we use it">

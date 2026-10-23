@@ -27,6 +27,9 @@ export type Profile = {
   payouts_paused: boolean;
   payout_details_updated_at: string | null;
   email_verified_at: string | null;
+  payout_bank_name: string | null;
+  payout_cheque_path: string | null;
+  payout_bank_submitted_at: string | null;
 };
 
 // Session JWT is verified (locally with asymmetric signing keys, otherwise by

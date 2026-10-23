@@ -73,7 +73,7 @@ export const freeFeatures = [
   "Lifetime download links for buyers",
   "Link-in-bio storefront at reviewlabs.space/@you",
   "Testimonials, FAQ and your own policies on pages",
-  "Daily payouts to UPI or bank",
+  "Payouts to your bank on request",
 ];
 
 // Side-by-side comparison on the pricing page. true = included, false = not included.
@@ -131,7 +131,7 @@ export const planMatrix: { group: string; rows: { feature: string; free: PlanCel
   {
     group: "Get paid",
     rows: [
-      { feature: "Daily payouts to your UPI ID or bank account, with UTR", free: true, creator: true },
+      { feature: "Payouts to your bank on request (from ₹500), with UTR", free: true, creator: true },
       { feature: "Refunds handled and recorded for you", free: true, creator: true },
     ],
   },

@@ -7,7 +7,7 @@ import { hasCreatorPlan } from "@/lib/plans";
 export default async function AdminCreators() {
   const db = createAdminClient();
   const [{ data: profiles }, { data: balances }] = await Promise.all([
-    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number, email_verified_at").order("created_at"),
+    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number, payout_bank_submitted_at, payout_bank_name, email_verified_at").order("created_at"),
     db.from("creator_balances").select("*"),
   ]);
   const { data: subPayments } = await db.from("subscription_payments").select("amount_paise").in("status", ["captured", "authorized"]);
@@ -54,7 +54,9 @@ export default async function AdminCreators() {
                     </p>
                   </td>
                   <td className={tableClass.td}>
-                    {p.payout_upi || (p.payout_account_number ? `A/c ending ${p.payout_account_number.slice(-4)}` : <span className="font-medium text-accent-yellow">Not set</span>)}
+                    {p.payout_bank_submitted_at && p.payout_account_number
+                      ? <>{p.payout_bank_name?.split(",")[0] ?? "Bank"} · A/c ending {p.payout_account_number.slice(-4)}</>
+                      : <span className="font-medium text-accent-yellow">No bank yet</span>}
                   </td>
                   <td className={tableClass.td}>{p.is_admin ? "Admin" : hasCreatorPlan(p) ? `Creator (${p.plan_status})` : "Free"}</td>
                   <td className={tableClass.td}>{formatPaise(Number(b?.gross_sales_paise ?? 0))}</td>

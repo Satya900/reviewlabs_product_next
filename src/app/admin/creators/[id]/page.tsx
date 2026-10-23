@@ -11,6 +11,7 @@ import { destinationFor, payoutsEnabled } from "@/lib/payouts";
 import { feePercentFor } from "@/lib/plans";
 import { hasCreatorPlan } from "@/lib/plans";
 import { Badge } from "@/components/ui";
+import { chequeUrl } from "@/lib/payout-requests";
 
 export default async function AdminCreator({ params }: PageProps<"/admin/creators/[id]">) {
   const { id } = await params;
@@ -22,6 +23,7 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
     db.from("payouts").select("*").eq("creator_id", id).order("created_at", { ascending: false }).limit(50),
   ]);
   if (!p) notFound();
+  const cheque = await chequeUrl(p.payout_cheque_path);
   const owed = Number(balance?.balance_paise ?? 0);
   const available = Number(balance?.available_paise ?? 0);
   const destination = destinationFor(p);
@@ -45,12 +47,21 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
         <Stat label="Paid out" value={formatPaise(Number(balance?.paid_out_paise ?? 0))} />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <Panel title="Payouts" aside={p.payouts_paused ? <Badge status="failed" label="Paused" /> : <Badge status="live" label="Automatic" />}>
+        <Panel title="Payouts" aside={p.payouts_paused ? <Badge status="failed" label="Paused" /> : p.payout_bank_submitted_at ? <Badge status="live" label="Bank added" /> : <Badge status="pending" label="No bank yet" />}>
           <dl className="mb-4 space-y-1 rounded-2xl bg-surface-soft p-4 text-[14px]">
-            <div>Pays to: <b>{destination?.label ?? "no valid UPI ID or bank account"}</b></div>
-            <div>UPI: <span className="select-all font-mono">{p.payout_upi ?? "not set"}</span></div>
-            <div>A/c: <span className="select-all font-mono">{p.payout_account_number ?? "not set"}</span> · IFSC: <span className="select-all font-mono">{p.payout_ifsc ?? "not set"}</span></div>
-            <div>Name: {p.payout_account_name ?? "not set"}</div>
+            {p.payout_bank_submitted_at ? (
+              <>
+                <div>Name: <span className="select-all font-medium">{p.payout_account_name}</span></div>
+                <div>A/c: <span className="select-all font-mono">{p.payout_account_number}</span> · IFSC: <span className="select-all font-mono">{p.payout_ifsc}</span></div>
+                {p.payout_bank_name && <div className="text-body">{p.payout_bank_name}</div>}
+                <div className="pt-1">
+                  {cheque ? <a href={cheque} target="_blank" rel="noopener noreferrer" className="link">View cancelled cheque ↗</a> : <span className="text-down">Cheque file missing</span>}
+                  <span className="text-muted"> · added {new Date(p.payout_bank_submitted_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                </div>
+              </>
+            ) : (
+              <div className="text-body">No bank account submitted yet. They can&apos;t request payouts until they add one in Settings.</div>
+            )}
           </dl>
           {payoutsEnabled() ? (
             <PayNowForm creatorId={p.id} availablePaise={available} ready={Boolean(destination)} />
@@ -58,6 +69,7 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
             <p className="text-[14px] text-body">RazorpayX isn&apos;t connected. Set the RAZORPAYX_* keys to send payouts from here.</p>
           )}
           <div className="mt-4 border-t border-hairline pt-4">
+            <p className="mb-3 text-[13px] text-body">Paused creators can&apos;t request payouts.</p>
             <PausePayoutsButton creatorId={p.id} paused={p.payouts_paused} />
           </div>
           <details className="mt-4 border-t border-hairline pt-4">

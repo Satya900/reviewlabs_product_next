@@ -247,7 +247,7 @@ export default function Home() {
             <CheckList
               items={[
                 "Sales, fees, refunds and payouts, each with a date",
-                "Daily payouts to your UPI ID or bank account, with the UTR number",
+                "Request a payout any time from ₹500, sent to your bank with the UTR number",
                 "Download every order as a CSV for your accountant",
               ]}
             />
@@ -319,12 +319,12 @@ export default function Home() {
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
               { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway and GST included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month, ${priceLabels.yearly} a year, or ${priceLabels.lifetime} once for lifetime access, GST included, with unlimited pages and the growth tools.` },
-              { q: "How do I get paid?", a: "Every day. We send sales from at least 24 hours earlier to the UPI ID or bank account in your settings, once you have ₹100 or more. Each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
+              { q: "How do I get paid?", a: "Add your bank account once, with a cancelled cheque. Then request a payout from Earnings whenever you have ₹500 or more available (sales become available 24 hours after they happen). We review it and send it to your bank, and each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I track sales in Meta Ads Manager?", a: "Yes, on the Creator plan. Add your Pixel ID in settings, for your whole account or per page, and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events. Add a Conversions API token too and every event is also sent from our server with a matching event ID, so ad blockers don't hide your sales." },
               { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Free includes one lead magnet; Creator has unlimited." },
               { q: "I already sell on Superprofile. Can I move my products?", a: "Yes. Save your product page from your browser and upload it in Payment pages → Import from Superprofile. In about a minute you get a draft with your text, prices, images, testimonials, FAQs and policies. Imports from other platforms are in development, and until then we'll move your products for you, free." },
-              { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your UPI ID or bank details for payouts, and publish your page." },
+              { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your bank account for payouts, and publish your page." },
             ]}
           />
         </div>

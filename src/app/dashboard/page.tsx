@@ -26,7 +26,7 @@ export default async function DashboardHome({ searchParams }: PageProps<"/dashbo
   ]);
 
   const sales30 = (last30 ?? []).reduce((sum, o) => sum + o.amount_paise, 0);
-  const missingPayout = !profile.payout_upi && !profile.payout_account_number;
+  const missingPayout = !profile.is_admin && !profile.payout_bank_submitted_at;
 
   return (
     <>
@@ -43,7 +43,7 @@ export default async function DashboardHome({ searchParams }: PageProps<"/dashbo
       )}
       {missingPayout && (
         <Notice tone="warn">
-          Add your UPI ID or bank account in <Link href="/dashboard/settings" className="link">settings</Link> so we can send your payouts.
+          Add your bank account in <Link href="/dashboard/settings" className="link">Settings</Link> so you can request payouts.
         </Notice>
       )}
       <div className="grid gap-4 sm:grid-cols-3">

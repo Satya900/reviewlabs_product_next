@@ -31,7 +31,7 @@ export default function CompareSuperprofile() {
     { label: "Link-in-bio storefront", us: yes, them: yes },
     { label: "Lead magnets", us: "Unlimited on Creator, email verification codes", them: yes },
     { label: "Meta Pixel and Conversions API", us: "Account-wide or per page", them: yes },
-    { label: "Payouts", us: "Daily, to your UPI or bank, with UTR", them: sp.payouts },
+    { label: "Payouts", us: "On request from ₹500, to your bank, with UTR", them: sp.payouts },
     { label: "Import your Superprofile pages", us: <><span className="font-medium">Upload a saved page, get a draft in a minute.</span> <Link href="/import" className="link">How it works</Link></>, them: null },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
   ].filter((r) => r.them !== null || ["Lifetime option", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
@@ -147,8 +147,8 @@ export default function CompareSuperprofile() {
             items={[
               { q: "Can I import my Superprofile pages myself?", a: <>Yes. Save your product page from your browser and upload the file. You get a draft with your text, prices, images, testimonials, FAQs, add-on offer and policies in about a minute. <Link href="/import" className="link">Read the step-by-step guide</Link>.</> },
               { q: "Will my buyers lose access?", a: "No. People who bought on Superprofile keep their access there. New buyers get their files from Reviewlabs, instantly and by email." },
-              { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your UPI ID or bank account and we pay your balance to it, with the UTR in your ledger." },
-              { q: "How often are payouts?", a: "Every day. We send sales from at least 24 hours earlier to your UPI ID or bank account, once you have ₹100 or more. Every payout shows in your ledger with its UTR." },
+              { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your bank account and request payouts from your balance, with the UTR in your ledger." },
+              { q: "How often are payouts?", a: "Whenever you like. Request a payout from Earnings once you have ₹500 or more available (sales become available 24 hours after they happen), and we send it to your bank. Every payout shows in your ledger with its UTR." },
               { q: "Can I keep my Meta Pixel?", a: `Yes, on Creator. Paste your Pixel ID and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events. Add a Conversions API token too and they're also sent from our server, so ad blockers don't hide sales.` },
               { q: "Is the lifetime plan really one payment?", a: `Yes. ${priceLabels.lifetime} once gives you Creator for as long as Reviewlabs runs, with no renewals.` },
             ]}

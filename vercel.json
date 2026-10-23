@@ -6,10 +6,6 @@
     {
       "path": "/api/cron/reconcile",
       "schedule": "30 20 * * *"
-    },
-    {
-      "path": "/api/cron/payouts",
-      "schedule": "30 4 * * *"
     }
   ]
 }

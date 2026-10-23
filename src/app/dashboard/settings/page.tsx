@@ -1,7 +1,7 @@
 import { requireCreator } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PageTitle, Panel } from "@/components/ui";
-import { ProfileForm, PixelForm } from "./forms";
+import { BankAccountSettings, ProfileForm, PixelForm } from "./forms";
 import { hasCreatorPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 
@@ -17,9 +17,14 @@ export default async function SettingsPage() {
     <>
       <PageTitle>Settings</PageTitle>
       <div className="grid max-w-3xl gap-6">
-        <Panel title="Profile and payouts">
-          <p className="mb-5 text-[14px] text-body">We send your earnings every day to the UPI ID or bank account below. Sales are ready to pay 24 hours after they happen.</p>
+        <Panel title="Profile">
           <ProfileForm profile={profile} />
+        </Panel>
+        <Panel title="Bank account for payouts">
+          <p className="mb-5 text-[14px] text-body">
+            When you request a payout from Earnings, we send it to this account. You need to add it, with a cancelled cheque, before you can request a payout.
+          </p>
+          <BankAccountSettings profile={profile} />
         </Panel>
         <Panel title="Meta Pixel and Conversions API">
           <p className="mb-5 text-[14px] text-body">
