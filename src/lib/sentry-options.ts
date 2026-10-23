@@ -31,7 +31,10 @@ export function sentryOptions(environment: string | undefined) {
       queues: false,
       stackFrameVariables: false,
     },
-    beforeSend(event: ErrorEvent) {
+    beforeSend(event: ErrorEvent): ErrorEvent | null {
+      // In development Next.js copies browser console errors into the server
+      // log as "[browser] …"; the browser already reported them, so skip.
+      if (event.logger === "console" && /^\[browser\]/.test(event.message ?? "")) return null;
       if (event.request) {
         event.request.url = scrubUrl(event.request.url);
         if (event.request.headers?.referer) event.request.headers.referer = scrubUrl(event.request.headers.referer)!;

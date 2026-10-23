@@ -19,7 +19,10 @@ test("off without a DSN; errors only and nothing personal when on", () => {
   assert.equal(o.environment, "development");
   assert.equal(o.tracesSampleRate, 0);
   assert.deepEqual([o.dataCollection.cookies, o.dataCollection.userInfo, o.dataCollection.httpBodies, o.dataCollection.stackFrameVariables], [false, false, [], false]);
+  assert.equal(o.beforeSend({ type: undefined, logger: "console", message: "[browser] Uncaught Error: x" } as never), null);
+  assert.notEqual(o.beforeSend({ type: undefined, logger: "console", message: "[checkout] failed" } as never), null);
   const ev = o.beforeSend({ type: undefined, request: { url: "https://x/d/secret", headers: { referer: "https://x/auth/verify-email?t=s" } }, breadcrumbs: [{ data: { url: "/d/zzz" } }] } as never);
+  assert.ok(ev);
   assert.equal(ev.request!.url, "https://x/d/[token]");
   assert.equal(ev.request!.headers!.referer, "https://x/auth/verify-email?t=[filtered]");
   assert.equal(ev.breadcrumbs![0].data!.url, "/d/[token]");
