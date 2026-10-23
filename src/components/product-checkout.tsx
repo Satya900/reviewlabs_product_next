@@ -104,19 +104,20 @@ export function ProductCheckout({
 
       {/* Phone: price and buy button pinned to the bottom of the screen. */}
       {!open && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 px-5 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur pb-[max(12px,env(safe-area-inset-bottom))] @3xl:hidden">
-          <div className="mx-auto flex max-w-[560px] items-center gap-4">
-            <div className="shrink-0">
-              <p className="text-[12px] text-muted">Total</p>
+        <div data-buy-bar className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 px-5 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur pb-[max(12px,env(safe-area-inset-bottom))] @3xl:hidden">
+          <div className="mx-auto max-w-[560px] space-y-2.5">
+            {/* Price on its own line so the button text never gets cut off. */}
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[13px] text-muted">Total</p>
               <p className="flex items-baseline gap-2 leading-tight">
-                {compareLabel && <s className="num text-[13px] text-muted">{compareLabel}</s>}
+                {compareLabel && <s className="num text-[14px] text-muted">{compareLabel}</s>}
                 <span className="num text-[20px] font-semibold">{priceLabel}</span>
               </p>
             </div>
             <button
               type="button"
               onClick={show}
-              className="flex h-13 min-w-0 flex-1 items-center justify-between gap-3 rounded-full bg-primary px-6 text-[16px] font-semibold text-white transition active:scale-[0.98] active:bg-primary-active"
+              className="flex h-13 w-full items-center justify-center gap-3 rounded-full bg-primary px-6 text-[16px] font-semibold text-white transition active:scale-[0.98] active:bg-primary-active"
             >
               <span className="truncate">{buttonLabel}</span>
               <svg viewBox="0 0 24 24" className="size-5 shrink-0" aria-hidden>

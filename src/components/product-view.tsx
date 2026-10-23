@@ -89,8 +89,8 @@ export function ProductView({ data, checkout, buttonLabel, preview }: { data: Pr
           <TestimonialsGrid items={data.testimonials ?? []} />
           <FaqAccordion items={data.faqs ?? []} />
           {data.policies && <PagePolicies {...data.policies} />}
-          {/* Room for the pinned buy bar on phones. */}
-          <div className="h-20 @3xl:hidden" aria-hidden />
+          {/* Room for the pinned buy bar in the editor's phone preview (live pages get it from BuyerShell). */}
+          {preview && <div className="h-32 @3xl:hidden" aria-hidden />}
         </section>
         <aside className="@3xl:sticky @3xl:top-6 @3xl:self-start">
           <ProductCheckout

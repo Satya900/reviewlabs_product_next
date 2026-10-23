@@ -51,9 +51,11 @@ export function MarketingShell({ children }: { children: ReactNode }) {
 }
 
 // Buyer pages: slim nav so nothing competes with checkout.
+// While a product page's buy bar is pinned (below 832px, where its container is
+// under 48rem), leave room so the content and footer can scroll clear of it.
 export function BuyerShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-soft">
+    <div className="flex min-h-screen flex-col bg-surface-soft max-[832px]:has-[[data-buy-bar]]:pb-[120px]">
       <header className="border-b border-hairline bg-canvas">
         <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between px-5 sm:px-8">
           <Logo />
