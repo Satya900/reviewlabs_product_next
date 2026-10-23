@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
@@ -9,8 +10,20 @@ import { syncOpenPayouts } from "@/lib/payouts";
 export const maxDuration = 60;
 
 // Catches anything a missed webhook or a crashed request left behind.
+// Reported to Sentry as a cron monitor: it alerts when a run fails, or when
+// runs stop arriving (e.g. the Supabase pg_cron job or its secret broke).
 export async function GET(request: Request) {
   if (!isAuthorizedCron(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const summary = await Sentry.withMonitor("reconcile", reconcile, {
+    schedule: { type: "crontab", value: "*/15 * * * *" },
+    checkinMargin: 10,
+    maxRuntime: 2,
+    timezone: "UTC",
+  });
+  return NextResponse.json(summary);
+}
+
+async function reconcile() {
   const admin = createAdminClient();
   const now = Date.now();
   const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, errors: 0 };
@@ -158,5 +171,5 @@ export async function GET(request: Request) {
   // 7. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
-  return NextResponse.json(summary);
+  return summary;
 }
