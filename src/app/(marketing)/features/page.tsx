@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { CheckList, CtaBand, Icon, PageHero, Section, SectionHead, type IconName } from "@/components/marketing";
 import { cx } from "@/components/ui";
@@ -222,7 +223,40 @@ export default function Features() {
         }
       />
 
-      <Section>
+      <Group
+        icon="file"
+        kicker="Move"
+        title="Coming from Superprofile? Bring your page with you."
+        sub="Save your product page from your browser and upload the file. In about a minute you have a draft with everything on it, ready for your file."
+        items={[
+          "Title, price and the crossed-out original price",
+          "Description with its images, plus your cover, copied to Reviewlabs",
+          "Testimonials, FAQs, checkout questions and policies",
+          "Add-on offer, saved switched off until you add its file (Creator)",
+          "Always a draft first, so nothing goes live until you publish",
+          "Imports from other platforms are in development",
+        ]}
+        mock={
+          <MockFrame>
+            <p className="text-[13px] font-semibold uppercase tracking-wider text-primary">Found on Superprofile</p>
+            <p className="mt-2 text-[18px] font-semibold">Lightroom presets: Monsoon pack</p>
+            <dl className="mt-4 divide-y divide-hairline-soft text-[14px]">
+              {[["Price", "₹349 (was ₹999)"], ["Description", "640 words, 6 images"], ["Testimonials", "4"], ["FAQs", "5"], ["Refund policy and terms", "Both"]].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 py-2.5">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="text-ink">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-4 flex h-11 items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white">Create draft page</div>
+            <p className="mt-3 text-center text-[13px] text-muted">
+              <Link href="/import" className="link">How importing works</Link>
+            </p>
+          </MockFrame>
+        }
+      />
+
+      <Section tone="soft">
         <SectionHead center kicker="Under the hood" title="The boring parts, done carefully." sub="You won't see these, but they are why buyers get their files and your numbers add up." />
         <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
@@ -233,7 +267,7 @@ export default function Features() {
             ["bank", "Daily payouts with UTR", "Paid every day, 24 hours after the sale. Each payout is logged with the reference your bank shows."],
             ["upi", "Verified accounts", "Every creator verifies their email before they can sell, and limits are enforced in the database."],
           ].map(([icon, title, body]) => (
-            <div key={title} className="rounded-3xl border border-hairline p-6">
+            <div key={title} className="rounded-3xl border border-hairline bg-canvas p-6">
               <Icon name={icon as IconName} className="size-6 text-primary" />
               <p className="mt-4 text-[16px] font-semibold">{title}</p>
               <p className="mt-1 text-[15px] text-body">{body}</p>

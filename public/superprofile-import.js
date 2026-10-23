@@ -1,19 +1,14 @@
 /*
  * Reviewlabs: import a product page from Superprofile.
  *
- * Runs in two places:
- * 1. As a bookmarklet on the creator's own superprofile.bio page. Their browser
- *    has already loaded the page, so we read it there and hand it to the
- *    Reviewlabs tab with postMessage. We never fetch Superprofile ourselves.
- * 2. On the Reviewlabs import page, to read a page the creator saved as .html.
+ * Runs on the Reviewlabs import page, in the creator's browser, to read a page
+ * they saved from their own superprofile.bio account as .html. We never fetch
+ * Superprofile ourselves.
  *
  * Only the fields below are read. Private data on the page (the creator's
  * email, phone, earnings, sales counts, tracking pixels) is never copied.
  */
 (function () {
-  var self = document.currentScript;
-  var APP = self ? new URL(self.src).origin : "https://reviewlabs.space";
-
   function str(v, max) {
     return typeof v === "string" ? v.slice(0, max) : "";
   }
@@ -24,7 +19,7 @@
     var d;
     try {
       d = JSON.parse(el.textContent).props.pageProps.prefetchedData;
-    } catch (e) {
+    } catch {
       return { error: "unreadable" };
     }
     if (!d || typeof d.title !== "string") return { error: "not_product" };
@@ -93,37 +88,4 @@
   }
 
   window.__reviewlabsSuperprofile = { pick: pick };
-
-  if (!self || self.getAttribute("data-mode") !== "bookmarklet") return;
-
-  // Bookmarklet: the loader already opened the Reviewlabs tab (window.__rlWin)
-  // inside the click, so popup blockers allow it.
-  var target = window.__rlWin;
-  if (!/(^|\.)superprofile\.bio$/.test(location.hostname)) {
-    if (target) target.close();
-    alert("Open your product page on superprofile.bio first, then click \"Import to Reviewlabs\".");
-    return;
-  }
-  var data = pick(document, location.href.split("?")[0].split("#")[0]);
-  if (data.error) {
-    if (target) target.close();
-    alert("This doesn't look like a Superprofile product page. Open the product page itself (superprofile.bio/vp/...) and try again.");
-    return;
-  }
-  if (!target || target.closed) {
-    alert("Your browser blocked the Reviewlabs tab. Allow pop-ups for superprofile.bio and click Import again.");
-    return;
-  }
-
-  // The Reviewlabs tab says "ready" (again after a login redirect); answer with the data.
-  var sent = 0;
-  window.addEventListener("message", function (event) {
-    if (event.origin !== APP || event.source !== target) return;
-    if (!event.data || event.data.type !== "reviewlabs-import-ready") return;
-    target.postMessage({ type: "reviewlabs-import-data", payload: data }, APP);
-    sent++;
-  });
-  setTimeout(function () {
-    if (!sent) console.warn("Reviewlabs import: the Reviewlabs tab never asked for the data.");
-  }, 600000);
 })();

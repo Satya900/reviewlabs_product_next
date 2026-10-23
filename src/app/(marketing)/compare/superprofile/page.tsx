@@ -32,8 +32,9 @@ export default function CompareSuperprofile() {
     { label: "Lead magnets", us: "Unlimited on Creator, email verification codes", them: yes },
     { label: "Meta Pixel and Conversions API", us: "Account-wide or per page", them: yes },
     { label: "Payouts", us: "Daily, to your UPI or bank, with UTR", them: sp.payouts },
+    { label: "Import your Superprofile pages", us: <><span className="font-medium">Upload a saved page, get a draft in a minute.</span> <Link href="/import" className="link">How it works</Link></>, them: null },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
-  ].filter((r) => r.them !== null || ["Lifetime option", "Files attached to the delivery email", "Line-by-line earnings ledger", "Free migration, done for you"].includes(r.label));
+  ].filter((r) => r.them !== null || ["Lifetime option", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
 
   return (
     <>
@@ -44,7 +45,7 @@ export default function CompareSuperprofile() {
       >
         <div className="flex flex-wrap gap-3 pt-2">
           <Link href="/signup" className={buttonClass.hero}>Start free</Link>
-          <a href={migrateHref} className={cx(buttonClass.secondary, "h-14 px-8")}>Get free migration</a>
+          <Link href="/import" className={cx(buttonClass.secondary, "h-14 px-8")}>Import your page</Link>
         </div>
       </PageHero>
 
@@ -92,7 +93,7 @@ export default function CompareSuperprofile() {
                 `One all-inclusive fee: ${CREATOR_FEE_PERCENT}% on Creator, payment gateway and GST already covered`,
                 "Every sale, fee, refund and payout as a line in your ledger",
                 "Files attached to the email, lifetime links buyers can resend themselves",
-                "We move your products, covers and files for you, free",
+                "Import a Superprofile page yourself in a minute, or we move everything for you, free",
               ]}
             />
           </div>
@@ -110,22 +111,33 @@ export default function CompareSuperprofile() {
       </Section>
 
       <Section tone="soft">
-        <SectionHead center kicker="Switching" title="Move over in a day. We do the work." />
-        <div className="mx-auto mt-10 grid max-w-5xl gap-6 md:grid-cols-3">
-          {[
-            ["1. Send us your link", "Email or DM us your Superprofile link. That's all we need to start."],
-            ["2. We rebuild your pages", "Titles, prices, covers, descriptions and files, set up on Reviewlabs. You review them."],
-            ["3. Swap the link", "Put your new page or storefront link in your bio and ads. Your old page keeps working until you switch it off."],
-          ].map(([t, b]) => (
-            <div key={t} className="rounded-3xl border border-hairline bg-canvas p-6">
-              <p className="text-[17px] font-semibold">{t}</p>
-              <p className="mt-2 text-[15px] text-body">{b}</p>
-            </div>
-          ))}
+        <SectionHead center kicker="Switching" title="Move over in minutes. Two ways to do it." />
+        <div className="mx-auto mt-10 grid max-w-5xl gap-6 lg:grid-cols-2">
+          <div className="space-y-5 rounded-3xl border border-hairline bg-canvas p-8">
+            <span className="inline-flex rounded-full bg-primary-soft px-3 py-1 text-[13px] font-semibold text-primary">New · Do it yourself</span>
+            <p className="text-[22px] font-semibold">Import a page in about a minute</p>
+            <ol className="space-y-3 text-[15px] text-body">
+              <li><b className="text-ink">1. Save your page.</b> Open your product page on superprofile.bio on a laptop and press Ctrl+S (Cmd+S on a Mac), choosing “Webpage, Complete”.</li>
+              <li><b className="text-ink">2. Upload the .html file.</b> Payment pages → Import from Superprofile. You see everything we found before anything is saved.</li>
+              <li><b className="text-ink">3. Finish the draft.</b> Your text, prices, images, testimonials, FAQs, add-on offer and policies are already in. Upload your file and publish.</li>
+            </ol>
+            <Link href="/import" className={buttonClass.primary}>See the full guide</Link>
+          </div>
+          <div className="space-y-5 rounded-3xl border border-hairline bg-canvas p-8">
+            <span className="inline-flex rounded-full bg-surface-strong px-3 py-1 text-[13px] font-semibold text-body">Done for you · Free</span>
+            <p className="text-[22px] font-semibold">Or we move everything</p>
+            <ol className="space-y-3 text-[15px] text-body">
+              <li><b className="text-ink">1. Send us your link.</b> Email or DM us your Superprofile link. That&apos;s all we need to start.</li>
+              <li><b className="text-ink">2. We rebuild your pages.</b> Titles, prices, covers, descriptions and files, set up on Reviewlabs. You review them.</li>
+              <li><b className="text-ink">3. Swap the link.</b> Put your new page or storefront link in your bio and ads. Your old page keeps working until you switch it off.</li>
+            </ol>
+            <a href={migrateHref} className={buttonClass.secondary}>Request free migration</a>
+          </div>
         </div>
-        <div className="mt-8 flex justify-center">
-          <a href={migrateHref} className={buttonClass.primary}>Request free migration</a>
-        </div>
+        <p className="mx-auto mt-8 max-w-3xl text-center text-[15px] text-body">
+          <span className="font-semibold text-ink">Selling on another platform?</span> Imports from other platforms are in development.{" "}
+          <Link href="/import#other-platforms" className="link">Tell us which one you use</Link> and we&apos;ll build it sooner.
+        </p>
       </Section>
 
       <Section>
@@ -133,6 +145,7 @@ export default function CompareSuperprofile() {
           <SectionHead kicker="Questions" title="Switching, answered." />
           <Faq
             items={[
+              { q: "Can I import my Superprofile pages myself?", a: <>Yes. Save your product page from your browser and upload the file. You get a draft with your text, prices, images, testimonials, FAQs, add-on offer and policies in about a minute. <Link href="/import" className="link">Read the step-by-step guide</Link>.</> },
               { q: "Will my buyers lose access?", a: "No. People who bought on Superprofile keep their access there. New buyers get their files from Reviewlabs, instantly and by email." },
               { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your UPI ID or bank account and we pay your balance to it, with the UTR in your ledger." },
               { q: "How often are payouts?", a: "Every day. We send sales from at least 24 hours earlier to your UPI ID or bank account, once you have ₹100 or more. Every payout shows in your ledger with its UTR." },
@@ -143,7 +156,7 @@ export default function CompareSuperprofile() {
         </div>
       </Section>
 
-      <CtaBand title="Try it on one product first." sub="Free to start. We'll move it over for you." primary={{ href: "/signup", label: "Start free" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Try it on one product first." sub="Free to start. Import it yourself in a minute, or we'll move it over for you." primary={{ href: "/signup", label: "Start free" }} secondary={{ href: "/pricing", label: "See pricing" }} />
 
       <p className="mx-auto max-w-[1200px] px-5 pb-10 text-[12px] text-muted sm:px-8">
         Superprofile is a trademark of its owner. Reviewlabs is not affiliated with or endorsed by Superprofile. This comparison uses information from Superprofile&apos;s public website as of {sp.checkedOn}.

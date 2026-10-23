@@ -167,6 +167,39 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* Import */}
+      <Section tone="soft">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+          <div className="space-y-6">
+            <span className="inline-flex rounded-full bg-primary-soft px-3 py-1 text-[13px] font-semibold text-primary">New</span>
+            <SectionHead
+              kicker="Already selling on Superprofile?"
+              title="Bring your page over in about a minute."
+              sub="Save your product page from your browser and upload the file. You get a draft with your text, prices, images, testimonials, FAQs, add-on offer and policies already in. Add your file and publish."
+            />
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link href="/import" className={buttonClass.primary}>See how importing works</Link>
+              <p className="text-[14px] text-muted">Imports from other platforms are in development.</p>
+            </div>
+          </div>
+          <ol className="space-y-3">
+            {[
+              ["Save", "Open your page on superprofile.bio and press Ctrl+S"],
+              ["Upload", "Drop the .html file into Reviewlabs and check what we found"],
+              ["Publish", "Upload your file, check the price, set it Live"],
+            ].map(([t, b], i) => (
+              <li key={t} className="flex items-center gap-4 rounded-3xl border border-hairline bg-canvas p-5">
+                <span className="num flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white">{i + 1}</span>
+                <div>
+                  <p className="text-[17px] font-semibold">{t}</p>
+                  <p className="text-[15px] text-body">{b}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+
       {/* Old way vs this */}
       <Section tone="dark">
         <SectionHead dark center kicker="Why switch" title="Stop matching UPI screenshots at midnight." />
@@ -219,7 +252,7 @@ export default function Home() {
               ]}
             />
           </div>
-          <div className="rounded-3xl border border-hairline bg-canvas p-6 shadow-soft sm:p-8">
+          <div className="min-w-0 rounded-3xl border border-hairline bg-canvas p-6 shadow-soft sm:p-8">
             <div className="flex items-baseline justify-between">
               <p className="text-[14px] text-body">Balance</p>
               <Kicker>Ledger</Kicker>
@@ -290,6 +323,7 @@ export default function Home() {
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I track sales in Meta Ads Manager?", a: "Yes, on the Creator plan. Add your Pixel ID in settings, for your whole account or per page, and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events. Add a Conversions API token too and every event is also sent from our server with a matching event ID, so ad blockers don't hide your sales." },
               { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Free includes one lead magnet; Creator has unlimited." },
+              { q: "I already sell on Superprofile. Can I move my products?", a: "Yes. Save your product page from your browser and upload it in Payment pages → Import from Superprofile. In about a minute you get a draft with your text, prices, images, testimonials, FAQs and policies. Imports from other platforms are in development, and until then we'll move your products for you, free." },
               { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your UPI ID or bank details for payouts, and publish your page." },
             ]}
           />

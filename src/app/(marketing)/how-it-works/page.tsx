@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CheckList, CtaBand, FeatureCard, PageHero, Section, SectionHead, Steps } from "@/components/marketing";
 
 export const metadata = { title: "How it works" };
@@ -17,7 +18,7 @@ export default function HowItWorks() {
           <Steps
             items={[
               { title: "Create your account", body: "Sign up with your email and a password, then click the link we email you to verify it. It's free." },
-              { title: "Make your page", body: "Add a title, price, description, cover and the file. Add testimonials and an FAQ if you like. Turn it live when it looks right." },
+              { title: "Make your page", body: <>Add a title, price, description, cover and the file. Add testimonials and an FAQ if you like. Turn it live when it looks right. Already on Superprofile? <Link href="/import" className="link">Import your page</Link> instead.</> },
               { title: "Share and get paid", body: "Post the page link, or your storefront link with all your products. Orders and your balance update on their own." },
             ]}
           />

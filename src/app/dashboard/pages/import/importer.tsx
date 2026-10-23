@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button, FormMessage, buttonClass, cx } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
 import { importPayloadSchema, planImport, type ImportPayload } from "@/lib/superprofile-import";
+import { SaveSteps } from "@/components/import-guide";
 import { importFromSuperprofile, type ImportResult } from "./actions";
 
 const SUPERPROFILE = "https://superprofile.bio";
-const WINDOW_NAME = "reviewlabs_import";
 
 type Picker = { pick: (doc: Document, url: string) => (ImportPayload & { error?: undefined }) | { error: string } };
 declare global {
@@ -21,141 +21,50 @@ function loadPicker(): Promise<Picker> {
   if (window.__reviewlabsSuperprofile) return Promise.resolve(window.__reviewlabsSuperprofile);
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = `/superprofile-import.js?v=1`;
+    s.src = `/superprofile-import.js?v=2`;
     s.onload = () => (window.__reviewlabsSuperprofile ? resolve(window.__reviewlabsSuperprofile) : reject(new Error("load")));
     s.onerror = () => reject(new Error("load"));
     document.body.appendChild(s);
   });
 }
 
-function bookmarkletCode(origin: string) {
-  return `javascript:(function(){window.__rlWin=window.open('${origin}/dashboard/pages/import','${WINDOW_NAME}');var s=document.createElement('script');s.src='${origin}/superprofile-import.js?t='+Date.now();s.setAttribute('data-mode','bookmarklet');document.body.appendChild(s);})();`;
-}
-
 export function Importer({ creatorPlan }: { creatorPlan: boolean }) {
-  const [tab, setTab] = useState<"bookmarklet" | "file">("bookmarklet");
   const [payload, setPayload] = useState<ImportPayload | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
-  // True in the tab the bookmarklet opened (it names the window), false on the server.
-  const fromBookmarklet = useSyncExternalStore(
-    () => () => {},
-    () => window.name === WINDOW_NAME && Boolean(window.opener),
-    () => false,
-  );
-  const [answered, setAnswered] = useState(false);
-  const waiting = fromBookmarklet && !answered;
-
-  // Opened by the bookmarklet: ask the Superprofile tab for the page data.
-  useEffect(() => {
-    if (!fromBookmarklet) return;
-    const opener = window.opener as Window;
-    let done = false;
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== SUPERPROFILE || event.source !== opener) return;
-      if (event.data?.type !== "reviewlabs-import-data") return;
-      done = true;
-      setAnswered(true);
-      const parsed = importPayloadSchema.safeParse(event.data.payload);
-      if (parsed.success) setPayload(parsed.data);
-      else setReadError("We couldn't read that page. Open the product page itself on superprofile.bio and click Import again.");
-    };
-    window.addEventListener("message", onMessage);
-    const ask = () => {
-      try {
-        opener.postMessage({ type: "reviewlabs-import-ready" }, SUPERPROFILE);
-      } catch {
-        // The Superprofile tab was closed or navigated away.
-      }
-    };
-    ask();
-    const timer = setInterval(() => (done ? clearInterval(timer) : ask()), 800);
-    const giveUp = setTimeout(() => {
-      if (!done) {
-        setAnswered(true);
-        setReadError("We didn't hear back from your Superprofile tab. Keep it open, then click \"Import to Reviewlabs\" on it again.");
-      }
-    }, 15000);
-    return () => {
-      window.removeEventListener("message", onMessage);
-      clearInterval(timer);
-      clearTimeout(giveUp);
-    };
-  }, [fromBookmarklet]);
 
   if (payload) return <Preview payload={payload} creatorPlan={creatorPlan} onReset={() => { setPayload(null); setReadError(null); }} />;
 
-  if (waiting) {
-    return (
-      <div className="flex items-center gap-3 rounded-3xl border border-hairline bg-canvas p-8 text-[16px]">
-        <span className="spinner" aria-hidden /> Reading your Superprofile page…
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {readError && <p className="rounded-2xl bg-down/10 p-4 text-[14px] font-medium text-down">{readError}</p>}
-      <div className="flex rounded-full bg-surface-strong p-1 sm:inline-flex" role="tablist" aria-label="Import method">
-        {([["bookmarklet", "One-click import"], ["file", "Upload a saved page"]] as const).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={cx("flex-1 rounded-full px-4 py-2 text-[14px] font-semibold sm:flex-none", tab === key ? "bg-canvas text-ink shadow-soft" : "text-body")}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      {tab === "bookmarklet" ? <BookmarkletSteps /> : <FileImport onData={setPayload} onError={setReadError} />}
+      {readError && <p role="alert" className="rounded-2xl bg-down/10 p-4 text-[14px] font-medium text-down">{readError}</p>}
+      <FileImport onData={setPayload} onError={setReadError} />
       <p className="text-[13px] text-muted">
         Only import pages you own. We copy the text, prices, images, testimonials, FAQs, add-on offer and policies. Your files,
-        buyers and sales stay on Superprofile, and we never see your Superprofile login.
+        buyers and sales stay on Superprofile, and we never see your Superprofile login.{" "}
+        <Link href="/import" target="_blank" className="link">Full step-by-step guide</Link>
       </p>
     </div>
   );
 }
 
-function BookmarkletSteps() {
-  const link = useRef<HTMLAnchorElement>(null);
-  // React blocks javascript: links in JSX, so the bookmarklet is set after mount.
-  useEffect(() => {
-    link.current?.setAttribute("href", bookmarkletCode(window.location.origin));
-  }, []);
-  return (
-    <div className="space-y-5 rounded-3xl border border-hairline bg-canvas p-6 sm:p-8">
-      <Step n={1} title="Add the import button to your browser">
-        <p>Drag this button to your bookmarks bar. You only do this once. (No bookmarks bar? Press Ctrl+Shift+B, or Cmd+Shift+B on a Mac.)</p>
-        <a
-          ref={link}
-          href="#"
-          onClick={(e) => e.preventDefault()}
-          draggable
-          className={cx(buttonClass.primary, "mt-3 h-11 cursor-grab px-5 active:cursor-grabbing")}
-          title="Drag me to your bookmarks bar"
-        >
-          ⇪ Import to Reviewlabs
-        </a>
-      </Step>
-      <Step n={2} title="Open your product page on Superprofile">
-        <p>Go to the page you want to bring over, for example <span className="num">superprofile.bio/vp/your-product</span>, and let it load.</p>
-      </Step>
-      <Step n={3} title="Click “Import to Reviewlabs” in your bookmarks">
-        <p>A Reviewlabs tab opens with everything we found. Check it, then create your draft page.</p>
-      </Step>
-      <p className="text-[13px] text-muted">Works in Chrome, Edge, Firefox and Safari on a computer. On a phone, use “Upload a saved page” instead.</p>
-    </div>
-  );
+// Saves we can't read, with what to do instead.
+function wrongFormat(name: string): string | null {
+  if (/\.webarchive$/i.test(name)) return "That's a Safari Web Archive. Save the page again with File → Save As…, set Format to Page Source, and upload that .html file.";
+  if (/\.mht(ml)?$/i.test(name)) return "That's a single-file (.mhtml) save, which leaves out the product details. Save the page again as \"Webpage, Complete\" and upload the .html file.";
+  if (/\.(zip|rar|7z)$/i.test(name)) return "Upload the .html file itself, not a zip.";
+  if (!/\.html?$/i.test(name)) return "Please upload the .html file your browser saved. The guide below shows how.";
+  return null;
 }
 
 function FileImport({ onData, onError }: { onData: (p: ImportPayload) => void; onError: (e: string | null) => void }) {
   const [busy, setBusy] = useState(false);
+  const [over, setOver] = useState(false);
   async function onFile(file: File | undefined) {
     if (!file) return;
     onError(null);
-    if (file.size > 15 * 1024 * 1024) return onError("That file is too big. Save just the web page (Ctrl+S / Cmd+S), not a video or archive.");
+    const format = wrongFormat(file.name);
+    if (format) return onError(format);
+    if (file.size > 15 * 1024 * 1024) return onError("That file is too big for a saved web page. Save the page again (Ctrl+S / Cmd+S) and upload the .html file.");
     setBusy(true);
     try {
       const [html, picker] = await Promise.all([file.text(), loadPicker()]);
@@ -163,7 +72,7 @@ function FileImport({ onData, onError }: { onData: (p: ImportPayload) => void; o
       const canonical = doc.querySelector('meta[property="og:url"]')?.getAttribute("content") ?? "";
       const result = picker.pick(doc, canonical.startsWith(SUPERPROFILE) ? canonical : "");
       if (result.error) {
-        onError("That file isn't a saved Superprofile product page. Open your product page on superprofile.bio, press Ctrl+S (Cmd+S on a Mac), and upload the .html file it saves.");
+        onError("That file isn't a saved Superprofile product page. Open the product page itself (superprofile.bio/vp/…), save it as shown below, and upload the .html file.");
       } else {
         const parsed = importPayloadSchema.safeParse(result);
         if (parsed.success) onData(parsed.data);
@@ -176,15 +85,28 @@ function FileImport({ onData, onError }: { onData: (p: ImportPayload) => void; o
     }
   }
   return (
-    <div className="space-y-5 rounded-3xl border border-hairline bg-canvas p-6 sm:p-8">
-      <Step n={1} title="Save your Superprofile page">
-        <p>Open your product page on superprofile.bio, wait for it to load, then press <b>Ctrl+S</b> (<b>Cmd+S</b> on a Mac) and save it as a web page.</p>
+    <div className="space-y-6 rounded-3xl border border-hairline bg-canvas p-6 sm:p-8">
+      <Step n={1} title="Save your Superprofile page as a .html file">
+        <SaveSteps className="mt-3" />
       </Step>
       <Step n={2} title="Upload the .html file">
-        <label className={cx(buttonClass.secondary, "mt-3 h-11 cursor-pointer px-5", busy && "pointer-events-none opacity-60")}>
-          {busy ? "Reading…" : "Choose .html file"}
-          <input type="file" accept=".html,.htm,text/html" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} disabled={busy} />
+        <label
+          onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+          onDragLeave={() => setOver(false)}
+          onDrop={(e) => { e.preventDefault(); setOver(false); onFile(e.dataTransfer.files[0]); }}
+          className={cx(
+            "mt-3 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition",
+            over ? "border-primary bg-primary-soft" : "border-hairline hover:border-primary/50",
+            busy && "pointer-events-none opacity-60",
+          )}
+        >
+          <span className={cx(buttonClass.secondary, "h-11 px-5")}>{busy ? "Reading…" : "Choose .html file"}</span>
+          <span className="text-[13px] text-muted">or drop it here</span>
+          <input type="file" accept=".html,.htm,text/html" className="sr-only" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} disabled={busy} />
         </label>
+      </Step>
+      <Step n={3} title="Check what we found, then create your draft">
+        <p>Nothing goes live. You get a draft page to finish: upload your file, check the price, and publish when you&apos;re ready.</p>
       </Step>
     </div>
   );

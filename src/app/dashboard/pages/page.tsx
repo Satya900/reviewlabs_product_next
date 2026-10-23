@@ -29,7 +29,7 @@ export default async function PagesList() {
           <Panel title="New page" aside={!hasCreatorPlan(profile) ? <span className="text-[13px] text-muted">{used} of {FREE_PAGE_LIMIT} on Free</span> : undefined}>
             <NewPageForm />
             <p className="mt-3 text-[14px] text-body">
-              Moving from Superprofile? <Link href="/dashboard/pages/import" className="link">Import a page in one click</Link>
+              Moving from Superprofile? <Link href="/dashboard/pages/import" className="link">Import your page from a saved file</Link>
             </p>
           </Panel>
         );

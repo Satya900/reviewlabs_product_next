@@ -12,6 +12,7 @@ const pageContent: Record<string, string> = {
   "/pricing": "Pricing",
   "/features": "Features",
   "/compare/superprofile": "Compare Superprofile",
+  "/import": "Import from Superprofile",
 };
 
 // Fires a conversion the server already sent (same event ID), then clears it.

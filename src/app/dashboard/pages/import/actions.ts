@@ -44,7 +44,7 @@ async function copyImages(urls: string[], creatorId: string): Promise<{ map: Map
 }
 
 // Creates a DRAFT product page from a Superprofile page the creator owns.
-// The data was read in the creator's own browser (bookmarklet or saved page);
+// The data was read in the creator's own browser (a saved .html page);
 // it is re-validated and re-cleaned here, never trusted as-is.
 export async function importFromSuperprofile(raw: unknown, ownsPage: boolean): Promise<ImportResult> {
   const profile = await requireCreator();
