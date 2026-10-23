@@ -1,3 +1,4 @@
+import { STAGE_LABEL, type Stage } from "@/lib/follow-up";
 import type { Order } from "@/lib/types";
 
 // Quote every cell and neutralise spreadsheet formulas (CSV injection).
@@ -53,7 +54,7 @@ export function ordersToCsv(orders: (Order & { creator_email?: string })[], incl
     o.offer_title ?? "",
     o.offer_title ? rupees(o.offer_price_paise ?? 0) : "",
     rupees(o.amount_paise),
-    o.status,
+    ("stage" in o && typeof o.stage === "string" ? STAGE_LABEL[o.stage as Stage] ?? o.status : o.status),
     o.razorpay_payment_id ?? "",
     o.paid_at ? istFmt.format(new Date(o.paid_at)) : "",
     Object.entries(o.form_responses ?? {}).map(([k, v]) => `${k}: ${v}`).join("; "),

@@ -15,6 +15,7 @@ import { TestimonialsPanel } from "./testimonials-panel";
 import { FaqsPanel } from "./faqs-panel";
 import { OfferPanel } from "./offer-panel";
 import { PoliciesPanel } from "./policies-panel";
+import { PageTabs } from "./page-tabs";
 import { hasCreatorPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -54,6 +55,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
           <a href={publicUrl} target="_blank" className={buttonClass.secondary}>View live page</a>
         )}
       </div>
+      <PageTabs pageId={page.id} active="edit" />
       {page.status === "live" && (
         <Notice tone="good">
           Share this link: <span className="num select-all break-all">{publicUrl}</span>

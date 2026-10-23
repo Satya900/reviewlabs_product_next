@@ -18,6 +18,7 @@ export default function Privacy() {
           <li>Technical data: IP address, browser type, and Meta cookies (_fbp, _fbc) if the creator has set up Meta tracking.</li>
         </ul>
         <p>We never see or store your card number, CVV, UPI PIN or bank login. Razorpay handles those.</p>
+        <p>Your details are saved when you start checkout, before you pay. If you don&apos;t finish the purchase or the payment fails, the creator can see your details and may contact you about that order.</p>
       </Clause>
       <Clause n={2} title="What we collect from lead magnet visitors">
         <ul>
@@ -42,7 +43,7 @@ export default function Privacy() {
       </Clause>
       <Clause n={5} title="Who we share it with">
         <ul>
-          <li>The creator whose product you bought or whose lead magnet you filled in: your name, email, phone and answers.</li>
+          <li>The creator whose product you bought, started to buy, or whose lead magnet you filled in: your name, email, phone and answers.</li>
           <li>Razorpay, to process payments and refunds.</li>
           <li>Supabase, which hosts our database and file storage.</li>
           <li>Our email provider, to send receipts, download links and verification codes.</li>
