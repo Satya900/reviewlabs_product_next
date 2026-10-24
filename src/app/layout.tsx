@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-face", weight: ["500"], display: "swap" });
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <NavigationProgress />
         </Suspense>
         {children}
+        <Analytics />
       </body>
     </html>
   );
