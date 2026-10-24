@@ -225,8 +225,8 @@ export async function addPageLink(input: { pageId: string; label: string; url: s
   const labelProblem = linkLabelError(label);
   if (labelProblem) return { error: labelProblem };
   const supabase = await createClient();
-  const { count } = await supabase.from("page_links").select("id", { count: "exact", head: true }).eq("page_id", input.pageId);
-  const { error } = await supabase.from("page_links").insert({ page_id: input.pageId, label, url, position: count ?? 0 });
+  const { data: last } = await supabase.from("page_links").select("position").eq("page_id", input.pageId).order("position", { ascending: false }).limit(1).maybeSingle();
+  const { error } = await supabase.from("page_links").insert({ page_id: input.pageId, label, url, position: (last?.position ?? -1) + 1 });
   if (error) {
     if (error.message.includes("page_link_limit")) return { error: `A product can have up to ${MAX_LINKS} links.` };
     if (error.code === "42501" || /row-level security/i.test(error.message)) return { error: "Invalid page" };

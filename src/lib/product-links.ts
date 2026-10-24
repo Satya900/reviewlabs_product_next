@@ -19,7 +19,9 @@ export function cleanLinkUrl(input: string): string | null {
   if (url.protocol !== "https:" || url.username || url.password) return null;
   const host = url.hostname.toLowerCase();
   if (!host.includes(".") || host.endsWith(".") || host === "localhost" || /^[\d.]+$/.test(host) || host.startsWith("[")) return null;
-  return url.toString();
+  // Percent-encoding (e.g. Hindi in the path) can make it longer than what was typed.
+  const clean = url.toString();
+  return clean.length <= 2000 ? clean : null;
 }
 
 export function linkLabelError(label: string): string | null {
