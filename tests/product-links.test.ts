@@ -13,6 +13,9 @@ test("refuses unsafe or non-public links", () => {
     assert.equal(cleanLinkUrl(bad), null, bad);
   }
   assert.equal(cleanLinkUrl("https://x.com/" + "a".repeat(2000)), null);
+  // Short as typed, but over 2,000 characters once percent-encoded.
+  assert.equal(cleanLinkUrl("https://x.com/" + "आ".repeat(300)), null);
+  assert.ok(cleanLinkUrl("https://x.com/" + "आ".repeat(50)));
 });
 
 test("labels", () => {
