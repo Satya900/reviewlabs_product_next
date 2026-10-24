@@ -27,6 +27,7 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
   const hasFiles = files.length > 0;
   const [status, setStatus] = useState(initialStatus);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
+  const [links, setLinks] = useState<{ id: string; label: string; url: string }[]>([]);
   const [timedOut, setTimedOut] = useState(false);
   const purchaseFired = useRef(false);
 
@@ -42,6 +43,7 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
         if (data) {
           setStatus(data.status);
           setDownloadToken(data.downloadToken);
+          setLinks(Array.isArray(data.links) ? data.links : []);
           // "failed" can be a stale earlier attempt, so keep polling until paid or timeout.
           if (["paid", "partially_refunded", "refunded"].includes(data.status)) return;
         }
@@ -99,12 +101,25 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
               </ul>
             </div>
           )}
+          {links.length > 0 && (
+            <div>
+              <p className="text-[16px] font-semibold">Your links</p>
+              <ul className="mt-3 divide-y divide-hairline-soft rounded-2xl border border-hairline">
+                {links.map((l) => (
+                  <li key={l.id} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <span className="min-w-0 break-words text-[15px] font-medium">{l.label}</span>
+                    <a href={l.url} target="_blank" rel="noopener noreferrer" className={cx(buttonClass.primary, "h-10 shrink-0 text-[14px]")}>Open</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {thankYouMessage && <p className="whitespace-pre-wrap rounded-2xl bg-surface-soft p-4 text-[15px] text-ink">{thankYouMessage}</p>}
           <p className="text-[14px] text-muted">
-            {hasFiles
-              ? "We've also emailed the files to you. Your links never expire, so you can come back any time."
+            {hasFiles || links.length
+              ? `We've also emailed ${hasFiles && links.length ? "your files and links" : hasFiles ? "the files" : "your links"} to you. You can come back any time.`
               : "We've emailed you a confirmation."}
-            {hasFiles && downloadToken && (
+            {(hasFiles || links.length > 0) && downloadToken && (
               <> <Link href={`/d/${downloadToken}`} className="link">Open your downloads page</Link></>
             )}
           </p>

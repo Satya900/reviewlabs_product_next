@@ -14,3 +14,17 @@ export async function orderFiles(order: { page_id: string; offer_id: string | nu
   ]);
   return [...((main ?? []) as DeliverableFile[]), ...((extra ?? []) as DeliverableFile[])];
 }
+
+export type DeliverableLink = { id: string; label: string; url: string };
+
+// The product's links (migration 0023). Only call this for paid orders: the
+// URL is what the buyer paid for.
+export async function orderLinks(order: { page_id: string }): Promise<DeliverableLink[]> {
+  const { data } = await createAdminClient()
+    .from("page_links")
+    .select("id, label, url")
+    .eq("page_id", order.page_id)
+    .order("position")
+    .order("created_at");
+  return (data ?? []) as DeliverableLink[];
+}

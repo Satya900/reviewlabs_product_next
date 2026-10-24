@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Notice, buttonClass } from "@/components/ui";
-import { orderFiles } from "@/lib/order-files";
+import { orderFiles, orderLinks } from "@/lib/order-files";
 import { ResendForm } from "./resend-form";
 
 export const metadata = { title: "Your downloads", robots: { index: false } };
@@ -32,9 +32,9 @@ export default async function DownloadPage({ params, searchParams }: PageProps<"
     (grant.expires_at === null || new Date(grant.expires_at) > new Date()) &&
     grant.download_count < grant.max_downloads;
 
-  const { data: files } = active
-    ? { data: await orderFiles({ page_id: order!.page_id, offer_id: order!.offer_id ?? null }) }
-    : { data: null };
+  const [files, links] = active
+    ? await Promise.all([orderFiles({ page_id: order!.page_id, offer_id: order!.offer_id ?? null }), orderLinks({ page_id: order!.page_id })])
+    : [null, null];
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-6">
@@ -59,7 +59,17 @@ export default async function DownloadPage({ params, searchParams }: PageProps<"
               </li>
             ))}
           </ul>
-          {!files?.length && <p className="px-8 py-6 text-[15px] text-body">The creator hasn&apos;t attached files to this product yet.</p>}
+          {(links ?? []).length > 0 && (
+            <ul className="divide-y divide-hairline-soft border-t border-hairline-soft px-4">
+              {(links ?? []).map((l) => (
+                <li key={l.id} className="flex items-center justify-between gap-4 px-4 py-4">
+                  <span className="min-w-0 break-words text-[15px] font-medium">{l.label}</span>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer" className={`${buttonClass.primary} h-10 shrink-0 text-[14px]`}>Open</a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!files?.length && !links?.length && <p className="px-8 py-6 text-[15px] text-body">The creator hasn&apos;t added files or links to this product yet.</p>}
           <p className="border-t border-hairline-soft px-8 py-4 text-[13px] text-muted">Bookmark this page or keep your receipt email to come back later.</p>
         </section>
       ) : (
