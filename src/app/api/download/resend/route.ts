@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { sendEmail } from "@/lib/email";
 import { downloadLinksEmail } from "@/lib/fulfilment";
-import { orderFiles } from "@/lib/order-files";
+import { orderFiles, orderLinks } from "@/lib/order-files";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
@@ -35,7 +35,8 @@ export async function POST(request: Request) {
     const grant = Array.isArray(order.download_grants) ? order.download_grants[0] : order.download_grants;
     if (!grant) continue;
     if (grant.last_resent_at && now - new Date(grant.last_resent_at).getTime() < RESEND_COOLDOWN_MS) continue;
-    if (!(await orderFiles(order)).length) continue;
+    const [files, links] = await Promise.all([orderFiles(order), orderLinks(order)]);
+    if (!files.length && !links.length) continue;
 
     await admin
       .from("download_grants")

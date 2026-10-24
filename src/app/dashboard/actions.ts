@@ -14,6 +14,7 @@ import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
 import { hasCreatorPlan } from "@/lib/plans";
 import { htmlToText, sanitizeDescription } from "@/lib/rich-text";
 import { rupeesToPaise } from "@/lib/money";
+import { MAX_LINKS, cleanLinkUrl, linkLabelError, suggestLinkLabel } from "@/lib/product-links";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -210,6 +211,35 @@ export async function deleteFile(fileId: string, pageId: string) {
     await supabase.storage.from("product-files").remove([file.storage_path]);
     await supabase.from("page_files").delete().eq("id", fileId);
   }
+  revalidatePath(`/dashboard/pages/${pageId}`);
+}
+
+// Links buyers get instead of (or as well as) files: Notion, Drive, Canva,
+// course logins, group invites. RLS limits these to the creator's own pages.
+export async function addPageLink(input: { pageId: string; label: string; url: string }): Promise<ActionState> {
+  await requireCreator();
+  if (!z.uuid().safeParse(input.pageId).success) return { error: "Invalid page" };
+  const url = cleanLinkUrl(input.url ?? "");
+  if (!url) return { error: "Enter a full https:// link, like https://notion.so/your-template" };
+  const label = (input.label ?? "").trim() || suggestLinkLabel(url);
+  const labelProblem = linkLabelError(label);
+  if (labelProblem) return { error: labelProblem };
+  const supabase = await createClient();
+  const { count } = await supabase.from("page_links").select("id", { count: "exact", head: true }).eq("page_id", input.pageId);
+  const { error } = await supabase.from("page_links").insert({ page_id: input.pageId, label, url, position: count ?? 0 });
+  if (error) {
+    if (error.message.includes("page_link_limit")) return { error: `A product can have up to ${MAX_LINKS} links.` };
+    if (error.code === "42501" || /row-level security/i.test(error.message)) return { error: "Invalid page" };
+    return { error: error.message };
+  }
+  revalidatePath(`/dashboard/pages/${input.pageId}`);
+  return { ok: "Link added" };
+}
+
+export async function deletePageLink(linkId: string, pageId: string) {
+  await requireCreator();
+  const supabase = await createClient();
+  await supabase.from("page_links").delete().eq("id", linkId);
   revalidatePath(`/dashboard/pages/${pageId}`);
 }
 

@@ -14,6 +14,7 @@ export type ProductViewData = {
   descriptionHtml: string;
   descriptionText: string;
   files: { file_name: string; size_bytes: number }[];
+  linkLabels?: string[];
   testimonials?: TestimonialCard[];
   faqs?: FaqItem[];
   policies?: { sellerName: string; supportEmail: string | null; refundPolicy: string; terms: string };
@@ -68,7 +69,7 @@ export function ProductView({ data, checkout, buttonLabel, preview }: { data: Pr
               <div className="mt-6 whitespace-pre-wrap text-[16px] leading-relaxed text-body">{data.descriptionText}</div>
             ) : null}
           </div>
-          {data.files.length > 0 && (
+          {(data.files.length > 0 || (data.linkLabels ?? []).length > 0) && (
             <div className="rounded-3xl bg-canvas p-6 @lg:p-8">
               <h2 className="text-[18px] font-semibold">What you get</h2>
               <ul className="mt-4 divide-y divide-hairline-soft">
@@ -81,6 +82,17 @@ export function ProductView({ data, checkout, buttonLabel, preview }: { data: Pr
                       <span className="truncate">{f.file_name}</span>
                     </span>
                     <span className="num shrink-0 text-[13px] text-muted">{formatSize(f.size_bytes)}</span>
+                  </li>
+                ))}
+                {(data.linkLabels ?? []).map((label, i) => (
+                  <li key={`link-${i}`} className="flex items-center justify-between gap-4 py-3 text-[15px]">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft">
+                        <svg viewBox="0 0 24 24" className="size-4 text-primary" aria-hidden><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+                      </span>
+                      <span className="truncate">{label}</span>
+                    </span>
+                    <span className="shrink-0 text-[13px] text-muted">Link</span>
                   </li>
                 ))}
               </ul>

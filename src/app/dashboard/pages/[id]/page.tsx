@@ -9,6 +9,7 @@ import type { Faq, Offer, OfferFile, PageField, PageFile, PaymentPage, Testimoni
 import { PageDetailsForm } from "./page-details-form";
 import { FieldsEditor } from "./fields-editor";
 import { FilesManager } from "./files-manager";
+import { LinksManager, type PageLink } from "./links-manager";
 import { DeletePageButton } from "./delete-page-button";
 import { TrackingPanel } from "./tracking-panel";
 import { TestimonialsPanel } from "./testimonials-panel";
@@ -28,9 +29,10 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
   const { data: page } = await supabase.from("payment_pages").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle<PaymentPage>();
   if (!page) notFound();
   const admin = createAdminClient();
-  const [{ data: fields }, { data: files }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
+  const [{ data: fields }, { data: files }, { data: links }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
     supabase.from("page_fields").select("*").eq("page_id", id).order("position"),
     supabase.from("page_files").select("*").eq("page_id", id).order("created_at"),
+    supabase.from("page_links").select("id, label, url").eq("page_id", id).order("position").order("created_at"),
     // Tokens never leave the server; only whether one is saved.
     admin.from("page_pixel_settings").select("pixel_id, test_event_code, capi_token_encrypted").eq("page_id", id).maybeSingle(),
     admin.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle(),
@@ -72,9 +74,13 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         faqs={(faqs ?? []) as Faq[]}
         offer={offer && offer.active && hasCreatorPlan(profile) ? offer : null}
       >
-        <Panel title="Files buyers receive">
-          <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment.</p>
+        <Panel title="What buyers receive">
+          <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment. Add files, links, or both.</p>
+          <p className="mb-2 text-[14px] font-semibold">Files</p>
           <FilesManager creatorId={profile.id} pageId={page.id} files={(files ?? []) as PageFile[]} />
+          <p className="mb-1 mt-5 text-[14px] font-semibold">Links</p>
+          <p className="mb-2 text-[13px] text-muted">Notion or Canva templates, Google Drive folders, course logins, Telegram or WhatsApp groups. Buyers only see them after paying.</p>
+          <LinksManager pageId={page.id} links={(links ?? []) as PageLink[]} />
         </Panel>
         <Panel title="Additional offer">
           {hasCreatorPlan(profile) ? (

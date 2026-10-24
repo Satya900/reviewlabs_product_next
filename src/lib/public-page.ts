@@ -16,9 +16,11 @@ export const getPublicPage = cache(async (slug: string) => {
     .maybeSingle<PaymentPage>();
   if (!page) return null;
 
-  const [{ data: fields }, { data: files }, pixel, { data: testimonials }, { data: faqs }, { data: offer }, hasPlan] = await Promise.all([
+  const [{ data: fields }, { data: files }, { data: links }, pixel, { data: testimonials }, { data: faqs }, { data: offer }, hasPlan] = await Promise.all([
     admin.from("page_fields").select("*").eq("page_id", page.id).order("position"),
     admin.from("page_files").select("id, file_name, size_bytes").eq("page_id", page.id).order("created_at"),
+    // Names only: the URLs are what buyers pay for.
+    admin.from("page_links").select("label").eq("page_id", page.id).order("position").order("created_at"),
     resolvePixelRow({ creatorId: page.creator_id, pageId: page.id }),
     admin.from("page_testimonials").select("*").eq("page_id", page.id).order("position").order("created_at"),
     admin.from("page_faqs").select("*").eq("page_id", page.id).order("position").order("created_at"),
@@ -31,6 +33,7 @@ export const getPublicPage = cache(async (slug: string) => {
     page,
     fields: (fields ?? []) as PageField[],
     files: (files ?? []) as { id: string; file_name: string; size_bytes: number }[],
+    linkLabels: (links ?? []).map((l) => l.label as string),
     testimonials: (testimonials ?? []) as Testimonial[],
     faqs: (faqs ?? []) as Faq[],
     // Additional offers are a Creator plan feature.
