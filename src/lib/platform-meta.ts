@@ -13,27 +13,40 @@ export const platformEventIds = {
   registration: (creatorId: string) => `reg_${creatorId}`,
   subscribe: (subscriptionId: string) => `sub_${subscriptionId}`,
   lifetime: (orderId: string) => `lifetime_${orderId}`,
+  firstPage: (creatorId: string) => `page_${creatorId}`,
 };
 
 // Browser details from a request made by the creator's own browser.
 export function trackingFromRequest(request: Request, sourceUrl?: string): Tracking {
+  return trackingFromHeaders(request.headers, sourceUrl);
+}
+
+export function trackingFromHeaders(headers: Headers, sourceUrl?: string): Tracking {
   const cookies = Object.fromEntries(
-    (request.headers.get("cookie") ?? "").split(/;\s*/).filter(Boolean).map((c) => {
+    (headers.get("cookie") ?? "").split(/;\s*/).filter(Boolean).map((c) => {
       const i = c.indexOf("=");
-      return [c.slice(0, i), decodeURIComponent(c.slice(i + 1))];
+      return [c.slice(0, i), safeDecode(c.slice(i + 1))];
     }),
   );
   return {
     fbp: cookies._fbp,
     fbc: cookies._fbc,
-    client_ip: clientIp(request.headers),
-    user_agent: request.headers.get("user-agent") ?? undefined,
-    source_url: sourceUrl ?? request.headers.get("referer") ?? env.appUrl(),
+    client_ip: clientIp(headers),
+    user_agent: headers.get("user-agent") ?? undefined,
+    source_url: sourceUrl ?? headers.get("referer") ?? env.appUrl(),
   };
 }
 
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 type PlatformEvent = {
-  eventName: Extract<MetaEventName, "CompleteRegistration" | "Subscribe" | "Purchase">;
+  eventName: Extract<MetaEventName, "CompleteRegistration" | "Subscribe" | "Purchase" | "PublishPage">;
   eventId: string;
   creatorId: string;
   tracking?: Tracking;
@@ -41,7 +54,8 @@ type PlatformEvent = {
 };
 
 // Sends a server event to our pixel once per event ID. The first caller claims
-// the meta_events row, so the verify route and the webhook never both send it.
+// the meta_events row, so two requests (or the webhook and reconcile) never
+// both send it.
 // Without META_CAPI_TOKEN only the browser Pixel reports these events.
 export async function sendPlatformEvent(event: PlatformEvent): Promise<void> {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -56,14 +70,14 @@ export async function sendPlatformEvent(event: PlatformEvent): Promise<void> {
     .maybeSingle();
   if (!claimed) return;
 
-  const { data: profile } = await admin.from("profiles").select("email").eq("id", event.creatorId).maybeSingle();
+  const { data: profile } = await admin.from("profiles").select("email, name").eq("id", event.creatorId).maybeSingle();
   const result = await postMetaEvent(
     { pixelId, token, testCode: process.env.META_TEST_EVENT_CODE || null },
     {
       eventName: event.eventName,
       eventId: event.eventId,
       tracking: event.tracking ?? { source_url: env.appUrl() },
-      buyer: { email: profile?.email ?? undefined },
+      buyer: { email: profile?.email ?? undefined, name: profile?.name ?? undefined },
       customData: event.customData,
     },
   );
@@ -74,8 +88,16 @@ export async function sendPlatformEvent(event: PlatformEvent): Promise<void> {
     .eq("id", claimed.id);
 }
 
+// Sent when the signup form creates the account (email verification comes
+// later and is often done on another device, which loses the ad click).
 export function sendRegistrationEvent(creatorId: string, tracking?: Tracking) {
-  return sendPlatformEvent({ eventName: "CompleteRegistration", eventId: platformEventIds.registration(creatorId), creatorId, tracking, customData: { content_name: "Creator signup", status: "verified" } });
+  return sendPlatformEvent({ eventName: "CompleteRegistration", eventId: platformEventIds.registration(creatorId), creatorId, tracking, customData: { content_name: "Creator signup" } });
+}
+
+// A creator's first live product page: the sign they're actually using
+// Reviewlabs. Custom event; in Ads Manager, make a custom conversion from it.
+export function sendFirstPageEvent(creatorId: string, tracking?: Tracking) {
+  return sendPlatformEvent({ eventName: "PublishPage", eventId: platformEventIds.firstPage(creatorId), creatorId, tracking, customData: { content_name: "First live page" } });
 }
 
 // First charge of a Creator subscription. Renewals aren't sent; Meta should

@@ -2,7 +2,9 @@
 
 import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -11,6 +13,8 @@ import { decrypt, encrypt } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import { sendMetaEvent } from "@/lib/meta";
 import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
+import { platformEventIds, sendFirstPageEvent, trackingFromHeaders } from "@/lib/platform-meta";
+import { PLATFORM_EVENT_COOKIE } from "@/lib/platform-pixel";
 import { hasCreatorPlan } from "@/lib/plans";
 import { htmlToText, sanitizeDescription } from "@/lib/rich-text";
 import { rupeesToPaise } from "@/lib/money";
@@ -63,7 +67,7 @@ const pageSchema = z.object({
 });
 
 export async function updatePage(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  const profile = await requireCreator();
   const parsed = pageSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -102,6 +106,23 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
     }
   }
   if (error) return { error: error.code === "23505" ? "That slug is taken, try another" : planLimitMessage(error.message) ?? error.message };
+
+  // A creator's first live page tells our ads who actually uses Reviewlabs.
+  // Sent once per creator (the event ID is per creator); the cookie fires the
+  // browser Pixel half with the same ID.
+  if (input.status === "live" && !profile.is_admin) {
+    const eventId = platformEventIds.firstPage(profile.id);
+    const { count: sent } = await createAdminClient()
+      .from("meta_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_name", "PublishPage")
+      .eq("event_id", eventId);
+    if (!sent) {
+      const tracking = trackingFromHeaders(await headers());
+      after(() => sendFirstPageEvent(profile.id, tracking).catch((e) => console.warn("[page] first page event:", e)));
+      (await cookies()).set(PLATFORM_EVENT_COOKIE, `PublishPage:${eventId}`, { path: "/", maxAge: 600, sameSite: "lax" });
+    }
+  }
 
   revalidatePath(`/dashboard/pages/${input.id}`);
   revalidatePath("/dashboard/pages");
