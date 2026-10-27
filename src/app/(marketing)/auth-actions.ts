@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
@@ -11,6 +11,8 @@ import { getProfile } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { PLATFORM_EVENT_COOKIE } from "@/lib/platform-pixel";
+import { platformEventIds, sendRegistrationEvent, trackingFromHeaders } from "@/lib/platform-meta";
 
 export type AuthState = { error?: string; ok?: string; unverifiedEmail?: string; sentTo?: string } | null;
 
@@ -65,6 +67,12 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   }
   const user = { id: created.user.id, email: parsed.data.email, name: parsed.data.name };
   after(() => sendVerificationEmail(user).catch((e) => console.error("[signup] verification email", (e as Error).message)));
+  // The signup is our ads' conversion, sent now while we still have the ad
+  // click (_fbc) from this browser. The cookie lets the next page fire the
+  // browser Pixel half with the same event ID, so Meta counts it once.
+  const tracking = trackingFromHeaders(await headers());
+  after(() => sendRegistrationEvent(user.id, tracking).catch((e) => console.warn("[signup] registration event:", e)));
+  (await cookies()).set(PLATFORM_EVENT_COOKIE, `CompleteRegistration:${platformEventIds.registration(user.id)}`, { path: "/", maxAge: 600, sameSite: "lax" });
   // Step 2: the bank account for payouts (skippable), then the dashboard.
   redirect("/dashboard/setup/payouts?welcome=1");
 }

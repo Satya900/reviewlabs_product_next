@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 import type { Order, Tracking } from "@/lib/types";
 import { creatorHasPlan } from "@/lib/plans-server";
 
-export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase" | "Lead" | "CompleteRegistration" | "Subscribe";
+export type MetaEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Purchase" | "Lead" | "CompleteRegistration" | "Subscribe" | "PublishPage";
 
 type Buyer = { email?: string; phone?: string; name?: string };
 

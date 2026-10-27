@@ -21,7 +21,9 @@ function firePendingEvent(pixelId: string) {
   if (!match) return;
   document.cookie = `${PLATFORM_EVENT_COOKIE}=; path=/; max-age=0`;
   const [event, eventId] = decodeURIComponent(match[1]).split(":");
-  if (event === "CompleteRegistration" && eventId) trackPixel(pixelId, event, { content_name: "Creator signup", status: "verified" }, eventId);
+  if (!eventId) return;
+  if (event === "CompleteRegistration") trackPixel(pixelId, event, { content_name: "Creator signup" }, eventId);
+  if (event === "PublishPage") trackPixel(pixelId, event, { content_name: "First live page" }, eventId, true);
 }
 
 // pageViews: PageView (and ViewContent on key pages) on every route change.

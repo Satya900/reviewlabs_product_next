@@ -55,9 +55,10 @@ export function initPixel(pixelId: string): Promise<void> {
   return ready;
 }
 
-export function trackPixel(pixelId: string | null, event: string, data: Record<string, unknown>, eventId: string) {
+// custom: an event that isn't one of Meta's standard events.
+export function trackPixel(pixelId: string | null, event: string, data: Record<string, unknown>, eventId: string, custom = false) {
   if (!pixelId || !window.fbq) return;
-  window.fbq("trackSingle", pixelId, event, data, { eventID: eventId });
+  window.fbq(custom ? "trackSingleCustom" : "trackSingle", pixelId, event, data, { eventID: eventId });
 }
 
 function readCookie(name: string): string | undefined {
