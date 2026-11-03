@@ -139,7 +139,7 @@ function Preview({ payload, creatorPlan, onReset }: { payload: ImportPayload; cr
     ["Testimonials", String(plan.testimonials.length)],
     ["FAQs", String(plan.faqs.length)],
     ["Checkout questions", plan.fields.length ? plan.fields.map((f) => f.label).join(", ") : "None besides name, email and phone"],
-    ["Add-on offer", plan.offer ? `${plan.offer.title} · ${formatPaise(plan.offer.pricePaise)}${creatorPlan ? "" : " (needs Creator plan, will be skipped)"}` : "None"],
+    ["Add-on offer", plan.offer ? `${plan.offer.title} · ${formatPaise(plan.offer.pricePaise)}${creatorPlan ? "" : " (needs a plan, will be skipped)"}` : "None"],
     ["Refund policy and terms", plan.refundPolicy || plan.terms ? [plan.refundPolicy && "Refund policy", plan.terms && "Terms"].filter(Boolean).join(" and ") : "None"],
   ];
 

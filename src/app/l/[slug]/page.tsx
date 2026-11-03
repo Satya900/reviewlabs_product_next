@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicLeadMagnet } from "@/lib/lead-magnet-data";
-import { creatorHasPlan } from "@/lib/plans-server";
+import { creatorTier } from "@/lib/plans-server";
+import { StorePaused } from "@/components/store-paused";
 import { COVER_PRESETS } from "@/lib/lead-magnets";
 import { LeadMagnetCard } from "@/components/lead-magnet-card";
 
@@ -22,7 +23,8 @@ export default async function LeadMagnetPage({ params }: PageProps<"/l/[slug]">)
   const { slug } = await params;
   const data = await getPublicLeadMagnet(slug);
   if (!data) notFound();
-  const hasPlan = await creatorHasPlan(data.magnet.creator_id);
+  const tier = await creatorTier(data.magnet.creator_id);
+  if (tier === "none") return <StorePaused name={data.form.creatorName} />;
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 sm:py-16" style={{ background: COVER_PRESETS[data.magnet.cover_preset] }}>
       {data.magnet.cover_image_url && (
@@ -31,7 +33,7 @@ export default async function LeadMagnetPage({ params }: PageProps<"/l/[slug]">)
       )}
       <div className="relative flex w-full flex-col items-center">
         <LeadMagnetCard data={data.form} files={data.files} />
-        {!hasPlan && <Link href="/" className="mt-6 rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur">Made with Reviewlabs</Link>}
+        {tier === "trial" && <Link href="/" className="mt-6 rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur">Made with Reviewlabs</Link>}
       </div>
     </main>
   );

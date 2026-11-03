@@ -78,9 +78,6 @@ export async function importFromSuperprofile(raw: unknown, ownsPage: boolean): P
     .select("id")
     .single();
   if (error || !page) {
-    if (error?.message.includes("free_plan_page_limit")) {
-      return { error: "The Free plan includes one product page. Upgrade to Creator in Plan and billing to import more pages." };
-    }
     return { error: error?.message ?? "Couldn't create the page" };
   }
 
@@ -138,11 +135,11 @@ export async function importFromSuperprofile(raw: unknown, ownsPage: boolean): P
   if (fieldsError) notes.push("Checkout questions couldn't be imported. Add them in the editor.");
   for (const e of [testimonialsError, faqsError, fieldsError]) if (e) console.error("[import]", e.message);
 
-  // 4. The add-on offer (a Creator plan feature).
+  // 4. The add-on offer (needs a plan or the trial).
   let offerImported = false;
   if (plan.offer) {
     if (!offerAllowed) {
-      notes.push("The add-on offer was skipped. Add-on offers are part of the Creator plan.");
+      notes.push("The add-on offer was skipped. Choose a plan in Plan and billing to use add-on offers.");
     } else {
       const { error: offerError } = await supabase.from("page_offers").insert({
         page_id: page.id,

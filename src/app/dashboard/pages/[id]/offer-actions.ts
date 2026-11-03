@@ -27,7 +27,7 @@ function refresh(pageId: string) {
 // One add-on per page; RLS makes sure the page belongs to this creator.
 export async function saveOffer(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const profile = await requireCreator();
-  if (!hasCreatorPlan(profile)) return { error: "Additional offers are part of the Creator plan." };
+  if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use additional offers." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;

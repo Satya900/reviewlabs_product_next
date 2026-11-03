@@ -4,6 +4,7 @@ import { decrypt } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import { buildDm, pickAutomation, pickPublicReply, withinReplyWindow, type AutomationRule, type CommentEvent } from "@/lib/autodm";
 import { isTokenProblem, mediaComments, recentMedia, replyToComment, sendPrivateReply } from "@/lib/instagram";
+import { creatorHasPro } from "@/lib/plans-server";
 
 // Answers comments on a creator's Instagram posts. Called from the webhook
 // (instant) and from the sync (a fallback that reads recent comments).
@@ -56,11 +57,13 @@ async function markTokenBroken(accountId: string, message: string) {
   await createAdminClient().from("instagram_accounts").update({ status: "error", last_error: message }).eq("id", accountId);
 }
 
-export type CommentResult = "no_account" | "no_match" | "duplicate" | "skipped" | "sent" | "failed";
+export type CommentResult = "no_account" | "no_plan" | "no_match" | "duplicate" | "skipped" | "sent" | "failed";
 
 export async function handleComment(event: CommentEvent): Promise<CommentResult> {
   const account = await loadAccount(event.igUserId);
   if (!account) return "no_account";
+  // AutoDM is a Pro feature (the trial includes it).
+  if (!(await creatorHasPro(account.creator_id))) return "no_plan";
   const db = createAdminClient();
 
   const { data: rows } = await db
@@ -145,7 +148,7 @@ export async function handleComment(event: CommentEvent): Promise<CommentResult>
 export async function syncAccount(creatorId: string): Promise<{ checked: number; sent: number }> {
   const db = createAdminClient();
   const { data: acct } = await db.from("instagram_accounts").select("id, ig_user_id").eq("creator_id", creatorId).maybeSingle();
-  if (!acct) return { checked: 0, sent: 0 };
+  if (!acct || !(await creatorHasPro(creatorId))) return { checked: 0, sent: 0 };
   const account = await loadAccount(acct.ig_user_id);
   if (!account) return { checked: 0, sent: 0 };
 

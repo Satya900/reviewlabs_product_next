@@ -12,6 +12,7 @@ import { cleanLinkUrl } from "@/lib/product-links";
 import { unsubscribeWebhooks } from "@/lib/instagram";
 import { syncAccount } from "@/lib/autodm-runner";
 import { rateLimit } from "@/lib/rate-limit";
+import { hasProPlan } from "@/lib/plans";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -34,6 +35,7 @@ const mediaSchema = z.array(z.object({ id: z.string().regex(/^\d{5,30}$/), thumb
 
 export async function saveAutomation(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const profile = await requireCreator();
+  if (!hasProPlan(profile)) return { error: "AutoDM is part of the Pro plan. Choose Pro in Plan and billing to use it." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -119,6 +121,7 @@ export async function disconnectInstagram() {
 // "Check now": read recent comments and answer any the webhook missed.
 export async function syncNow(): Promise<ActionState> {
   const profile = await requireCreator();
+  if (!hasProPlan(profile)) return { error: "AutoDM is part of the Pro plan." };
   if (!(await rateLimit(`autodm-sync:${profile.id}`, 6, 600))) return { error: "Checked a few times already. Try again in a few minutes." };
   try {
     const { checked, sent } = await syncAccount(profile.id);

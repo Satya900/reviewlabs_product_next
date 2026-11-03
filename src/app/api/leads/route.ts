@@ -5,6 +5,7 @@ import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { codeHash, runLeadTasks } from "@/lib/lead-delivery";
 import { phoneDigits, type LeadQuestion } from "@/lib/lead-magnets";
+import { creatorHasPlan } from "@/lib/plans-server";
 
 const schema = z.object({
   magnetId: z.uuid(),
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     .eq("status", "live")
     .maybeSingle();
   if (!magnet) return NextResponse.json({ error: "This form isn't available" }, { status: 404 });
+  if (!(await creatorHasPlan(magnet.creator_id))) return NextResponse.json({ error: "This form isn't taking sign-ups right now." }, { status: 403 });
 
   let phone = "";
   if (magnet.collect_phone) {

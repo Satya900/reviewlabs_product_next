@@ -39,6 +39,8 @@ export async function POST(request: Request) {
     .eq("status", "live")
     .maybeSingle<PaymentPage>();
   if (!page) return NextResponse.json({ error: "This page is not available" }, { status: 404 });
+  // No plan or trial: the creator's store is offline.
+  if (!(await creatorHasPlan(page.creator_id))) return NextResponse.json({ error: "This store isn't taking orders right now." }, { status: 403 });
 
   const { data: fields } = await admin.from("page_fields").select("*").eq("page_id", page.id).order("position");
 

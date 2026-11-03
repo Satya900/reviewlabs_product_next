@@ -21,7 +21,7 @@ const schema = z.object({
 
 export async function createCoupon(_prev: CouponState, formData: FormData): Promise<CouponState> {
   const profile = await requireCreator();
-  if (!hasCreatorPlan(profile)) return { error: "Coupons are part of the Creator plan." };
+  if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use coupons." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;

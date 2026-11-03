@@ -6,12 +6,14 @@ export const site = {
   legalName: "Veyrn Labs",
   founder: "Satyabrata Mohanty",
   supportEmail: "satyabrata@veyrnlabs.com",
-  creatorPlanPaise: 29900,
-  creatorYearlyPaise: 299900,
-  creatorIntroPaise: 9900,
-  creatorLifetimePaise: 499900, // one-time payment, Creator for good
+  // Plan prices, GST included. Yearly = 10 months.
+  creatorMonthlyPaise: 79900,
+  creatorYearlyPaise: 799000,
+  proMonthlyPaise: 199900,
+  proYearlyPaise: 1999000,
+  trialDays: 7,
   refundWindowDays: 7,
-  policiesUpdated: "18 October 2026",
+  policiesUpdated: "4 November 2026",
 };
 
 export const legalLinks = [

@@ -163,9 +163,10 @@ export async function addAdjustment(_prev: ActionState, formData: FormData): Pro
   return { ok: "Adjustment added" };
 }
 
-const grantSchema = z.object({ creator_id: z.uuid(), days: z.coerce.number().int().min(1).max(3650) });
+const grantSchema = z.object({ creator_id: z.uuid(), days: z.coerce.number().int().min(1).max(3650), tier: z.enum(["creator", "pro"]).default("creator") });
 
-// Gives a creator the Creator plan without a Razorpay subscription (comps, partners).
+// Gives a creator Creator or Pro without a Razorpay subscription (comps,
+// partners, or moving someone between plans by hand).
 export async function grantCreatorPlan(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const parsed = grantSchema.safeParse(Object.fromEntries(formData));
@@ -173,17 +174,18 @@ export async function grantCreatorPlan(_prev: ActionState, formData: FormData): 
   const until = new Date(Date.now() + parsed.data.days * 86_400_000).toISOString();
   const { error } = await createAdminClient()
     .from("profiles")
-    .update({ plan: "creator", plan_status: "active", plan_current_period_end: until })
+    .update({ plan: parsed.data.tier, plan_status: "active", plan_current_period_end: until })
     .eq("id", parsed.data.creator_id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
   revalidatePath("/admin");
-  return { ok: `Creator plan active until ${until.slice(0, 10)}` };
+  return { ok: `${parsed.data.tier === "pro" ? "Pro" : "Creator"} plan active until ${until.slice(0, 10)}` };
 }
 
 const feeSchema = z.object({ creator_id: z.uuid(), fee: z.string().trim() });
 
-// Custom plan deals: a fixed fee rate for one creator. Empty = standard 6% / 4%.
+// Custom plan deals: a platform fee for one creator, on top of Razorpay's
+// charge. Empty = the standard 0%.
 export async function setCreatorFee(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const parsed = feeSchema.safeParse(Object.fromEntries(formData));
@@ -197,7 +199,7 @@ export async function setCreatorFee(_prev: ActionState, formData: FormData): Pro
   const { error } = await createAdminClient().from("profiles").update({ commission_bps: bps }).eq("id", parsed.data.creator_id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/creators/${parsed.data.creator_id}`);
-  return { ok: bps === null ? "Back to standard fees (6% Free / 4% Creator)" : `Custom fee set to ${bps / 100}% per sale` };
+  return { ok: bps === null ? "Back to the standard 0% platform fee" : `Custom platform fee set to ${bps / 100}% per sale` };
 }
 
 export async function revokeCreatorPlan(creatorId: string): Promise<ActionState> {
@@ -206,7 +208,7 @@ export async function revokeCreatorPlan(creatorId: string): Promise<ActionState>
   if (error) return { error: error.message };
   revalidatePath(`/admin/creators/${creatorId}`);
   revalidatePath("/admin");
-  return { ok: "Moved to Free. Pages beyond the oldest live one are now drafts." };
+  return { ok: "Plan ended. Their store is offline unless they are still in their trial." };
 }
 
 const refundSchema = z.object({

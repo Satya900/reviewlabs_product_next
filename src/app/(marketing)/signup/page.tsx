@@ -10,8 +10,8 @@ export default async function SignupPage() {
   if (await getProfile()) redirect("/dashboard");
   return (
     <AuthCard
-      title="Start selling for free"
-      sub="Create your account and start building your first product page straight away."
+      title="Start your 7-day free trial"
+      sub="Every feature, including AutoDM. No card needed. Build your first product page straight away."
       footer={<>Already have an account? <Link href="/login" className="link">Log in</Link></>}
     >
       <SignupForm />

@@ -18,7 +18,7 @@ const IMPORTED = [
   "Testimonials, with their names, ratings and photos",
   "FAQs",
   "Your own checkout questions (name, email and phone are always asked)",
-  "Add-on offer, saved switched off until you add its file (Creator plan)",
+  "Add-on offer, saved switched off until you add its file",
   "Refund policy and terms",
 ];
 
@@ -41,7 +41,7 @@ export default function ImportGuide() {
         sub="Save your product page from your browser, upload the file to Reviewlabs, and get a ready-to-finish draft with your text, prices, images, testimonials, FAQs and policies. No copying and pasting."
       >
         <div className="flex flex-wrap gap-3 pt-2">
-          <Link href="/signup" className={buttonClass.hero}>Start free</Link>
+          <Link href="/signup" className={buttonClass.hero}>Start free trial</Link>
           <Link href="/dashboard/pages/import" className={cx(buttonClass.secondary, "h-14 px-8")}>I have an account, import now</Link>
         </div>
       </PageHero>
@@ -127,7 +127,7 @@ export default function ImportGuide() {
             {[
               ["Upload your product file", "PDFs, ZIPs, sheets, presets: whatever buyers get. Up to 10 MB files are also attached to the receipt email."],
               ["Check the price", "We read it from the saved page. If it was missing (for example from a Safari save), type it in."],
-              ["Turn on the add-on offer", "If you had one, upload its file and switch it on. Add-on offers are part of the Creator plan."],
+              ["Turn on the add-on offer", "If you had one, upload its file and switch it on."],
               ["Preview and set it Live", "Look it over on the phone preview, then set the page to Live and share the link."],
             ].map(([t, b]) => (
               <li key={t} className="flex gap-4 rounded-2xl border border-hairline p-5">
@@ -169,7 +169,7 @@ export default function ImportGuide() {
           </div>
           <Faq
             items={[
-              { q: "Is it free?", a: "Yes, on every plan. The Free plan includes one product page, so a Free account can import one page. The Creator plan has unlimited pages, and add-on offers come over too." },
+              { q: "Is it free?", a: "Yes. Importing is included on every plan and during the free trial, with no limit on how many pages you bring over. Add-on offers come over too." },
               { q: "Can I do it on my phone?", a: "Not yet. Phone browsers save web pages in a format that leaves out the product details, so please save the page on a laptop or desktop. You can finish and publish the draft from your phone afterwards." },
               { q: "Can I import someone else's page?", a: "No. Only import pages you own. You confirm this before every import, and you need the rights to the text, images and testimonials you bring over." },
               { q: "Why save the page instead of pasting the link?", a: "Superprofile's pages are protected against automated access, and we respect that. Saving the page from your own browser, where you can already see it, means we never visit Superprofile on your behalf and never need your Superprofile login." },
@@ -182,7 +182,7 @@ export default function ImportGuide() {
         </div>
       </Section>
 
-      <CtaBand title="Move your first page today." sub="Free to start. Your draft is ready in about a minute." primary={{ href: "/signup", label: "Start free" }} secondary={{ href: "/compare/superprofile", label: "Compare with Superprofile" }} />
+      <CtaBand title="Move your first page today." sub="7-day free trial. Your draft is ready in about a minute." primary={{ href: "/signup", label: "Start free trial" }} secondary={{ href: "/compare/superprofile", label: "Compare with Superprofile" }} />
 
       <p className="mx-auto max-w-[1200px] px-5 pb-10 text-[12px] text-muted sm:px-8">
         Superprofile is a trademark of its owner. Reviewlabs is not affiliated with or endorsed by Superprofile.

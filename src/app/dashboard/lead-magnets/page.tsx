@@ -106,7 +106,7 @@ export default async function LeadMagnetsPage({ searchParams }: PageProps<"/dash
 
       {error && (
         <p className="rounded-2xl bg-[#fff1f1] px-4 py-3 text-[14px] text-down">
-          {error === "limit" ? <>The Free plan includes one lead magnet. <Link href="/dashboard/billing" className="link">Upgrade to Creator</Link> for unlimited.</> : "Couldn't create a lead magnet. Please try again."}
+          Couldn&apos;t create a lead magnet. Please try again.
         </p>
       )}
 

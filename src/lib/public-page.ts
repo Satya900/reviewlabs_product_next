@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Faq, Offer, PageField, PaymentPage, Testimonial } from "@/lib/types";
-import { creatorHasPlan } from "@/lib/plans-server";
+import { creatorTier } from "@/lib/plans-server";
 
 // Everything the public page needs, without exposing storage paths or secrets.
 export const getPublicPage = cache(async (slug: string) => {
@@ -15,7 +15,7 @@ export const getPublicPage = cache(async (slug: string) => {
     .maybeSingle<PaymentPage>();
   if (!page) return null;
 
-  const [{ data: fields }, { data: files }, { data: links }, { data: testimonials }, { data: faqs }, { data: offer }, hasPlan] = await Promise.all([
+  const [{ data: fields }, { data: files }, { data: links }, { data: testimonials }, { data: faqs }, { data: offer }, tier] = await Promise.all([
     admin.from("page_fields").select("*").eq("page_id", page.id).order("position"),
     admin.from("page_files").select("id, file_name, size_bytes").eq("page_id", page.id).order("created_at"),
     // Names only: the URLs are what buyers pay for.
@@ -23,8 +23,9 @@ export const getPublicPage = cache(async (slug: string) => {
     admin.from("page_testimonials").select("*").eq("page_id", page.id).order("position").order("created_at"),
     admin.from("page_faqs").select("*").eq("page_id", page.id).order("position").order("created_at"),
     admin.from("page_offers").select("id, page_id, headline, title, description, image_url, price_paise, compare_at_paise, active").eq("page_id", page.id).eq("active", true).maybeSingle<Offer>(),
-    creatorHasPlan(page.creator_id),
+    creatorTier(page.creator_id),
   ]);
+  const hasPlan = tier !== "none";
   const { data: seller } = await admin.from("profiles").select("name").eq("id", page.creator_id).maybeSingle();
 
   return {
@@ -34,8 +35,11 @@ export const getPublicPage = cache(async (slug: string) => {
     linkLabels: (links ?? []).map((l) => l.label as string),
     testimonials: (testimonials ?? []) as Testimonial[],
     faqs: (faqs ?? []) as Faq[],
-    // Additional offers are a Creator plan feature.
+    // Additional offers need a plan or the trial.
     offer: hasPlan ? offer ?? null : null,
     sellerName: (seller?.name as string | null) || "the seller",
+    // Without a plan or trial the store is offline: the page shows but takes no
+    // orders. (Paid buyers' thank-you and download pages keep working.)
+    storeLive: hasPlan,
   };
 });
