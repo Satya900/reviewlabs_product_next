@@ -41,7 +41,7 @@ export default function ImportGuide() {
         sub="Save your product page from your browser, upload the file to Reviewlabs, and get a ready-to-finish draft with your text, prices, images, testimonials, FAQs and policies. No copying and pasting."
       >
         <div className="flex flex-wrap gap-3 pt-2">
-          <Link href="/signup" className={buttonClass.hero}>Start free trial</Link>
+          <Link href="/signup" className={buttonClass.hero}>Get started</Link>
           <Link href="/dashboard/pages/import" className={cx(buttonClass.secondary, "h-14 px-8")}>I have an account, import now</Link>
         </div>
       </PageHero>
@@ -169,7 +169,7 @@ export default function ImportGuide() {
           </div>
           <Faq
             items={[
-              { q: "Is it free?", a: "Yes. Importing is included on every plan and during the free trial, with no limit on how many pages you bring over. Add-on offers come over too." },
+              { q: "Does importing cost extra?", a: "No. Importing is included on every plan, with no limit on how many pages you bring over. Add-on offers come over too." },
               { q: "Can I do it on my phone?", a: "Not yet. Phone browsers save web pages in a format that leaves out the product details, so please save the page on a laptop or desktop. You can finish and publish the draft from your phone afterwards." },
               { q: "Can I import someone else's page?", a: "No. Only import pages you own. You confirm this before every import, and you need the rights to the text, images and testimonials you bring over." },
               { q: "Why save the page instead of pasting the link?", a: "Superprofile's pages are protected against automated access, and we respect that. Saving the page from your own browser, where you can already see it, means we never visit Superprofile on your behalf and never need your Superprofile login." },
@@ -182,7 +182,7 @@ export default function ImportGuide() {
         </div>
       </Section>
 
-      <CtaBand title="Move your first page today." sub="7-day free trial. Your draft is ready in about a minute." primary={{ href: "/signup", label: "Start free trial" }} secondary={{ href: "/compare/superprofile", label: "Compare with Superprofile" }} />
+      <CtaBand title="Move your first page today." sub="Your draft is ready in about a minute." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/compare/superprofile", label: "Compare with Superprofile" }} />
 
       <p className="mx-auto max-w-[1200px] px-5 pb-10 text-[12px] text-muted sm:px-8">
         Superprofile is a trademark of its owner. Reviewlabs is not affiliated with or endorsed by Superprofile.

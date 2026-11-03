@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { Badge, EmptyState, PageTitle, Panel } from "@/components/ui";
@@ -7,7 +7,7 @@ import type { PaymentPage } from "@/lib/types";
 import { NewPageForm } from "./new-page-form";
 
 export default async function PagesList() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data: pages } = await supabase
     .from("payment_pages")

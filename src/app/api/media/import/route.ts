@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/auth";
+import { currentTier } from "@/lib/plans";
 import { copyImageToStorage } from "@/lib/media-copy";
 import { rateLimit } from "@/lib/rate-limit";
 import { isAllowedImageSrc } from "@/lib/rich-text";
@@ -14,6 +15,7 @@ const schema = z.object({ url: z.url().max(4000) });
 export async function POST(request: Request) {
   const profile = await getProfile();
   if (!profile) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  if (currentTier(profile) === "none") return NextResponse.json({ error: "Choose a plan to upload images." }, { status: 403 });
   if (!(await rateLimit(`media-import:${profile.id}`, 60, 600))) {
     return NextResponse.json({ error: "Too many images at once. Try again in a few minutes." }, { status: 429 });
   }

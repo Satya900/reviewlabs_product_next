@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { currentTier, hasCreatorPlan, hasProPlan, platformFeePercent, priceLabel, trialDaysLeft, yearlySaving } from "../src/lib/plans.ts";
+import { currentTier, hasCreatorPlan, isNewAccount, hasProPlan, platformFeePercent, priceLabel, trialDaysLeft, yearlySaving } from "../src/lib/plans.ts";
 
 const now = Date.parse("2026-11-04T12:00:00Z");
 const day = 86_400_000;
@@ -54,4 +54,13 @@ test("prices: yearly is 10 months", () => {
   assert.equal(priceLabel("pro", "year"), "₹19,990");
   assert.equal(yearlySaving("creator"), "₹1,598");
   assert.equal(yearlySaving("pro"), "₹3,998");
+});
+
+test("hard paywall: a new account has no plan until it pays", () => {
+  assert.equal(currentTier(base, now), "none");
+  assert.equal(isNewAccount(base), true);
+  assert.equal(isNewAccount({ ...base, plan_status: "created" }), true); // abandoned checkout
+  assert.equal(isNewAccount({ ...base, trial_ends_at: iso(now - day) }), false); // old trial ended
+  assert.equal(isNewAccount({ ...base, plan_status: "expired" }), false); // plan ended
+  assert.equal(isNewAccount({ ...base, is_admin: true }), false);
 });

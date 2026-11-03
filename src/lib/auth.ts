@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { currentTier } from "@/lib/plans";
 
 export type Profile = {
   id: string;
@@ -47,6 +48,14 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
 export async function requireCreator(): Promise<Profile> {
   const profile = await getProfile();
   if (!profile) redirect("/login");
+  return profile;
+}
+
+// Everything in the dashboard except Plan and billing needs a paid plan
+// (or a trial granted before the paywall).
+export async function requirePlan(): Promise<Profile> {
+  const profile = await requireCreator();
+  if (currentTier(profile) === "none") redirect("/dashboard/billing");
   return profile;
 }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { hasCreatorPlan } from "@/lib/plans";
@@ -44,7 +44,7 @@ function Stat({ label, value, values, hint }: { label: string; value: string; va
 }
 
 export default async function LeadMagnetsPage({ searchParams }: PageProps<"/dashboard/lead-magnets">) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const { tab = "published", error } = await searchParams;
   const supabase = await createClient();
   const days = lastDays();

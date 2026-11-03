@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { Badge, Notice, Panel, PageTitle, Stat } from "@/components/ui";
@@ -11,7 +11,7 @@ function thirtyDaysAgo() {
 
 export default async function DashboardHome({ searchParams }: PageProps<"/dashboard">) {
   const { password } = await searchParams;
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const since = thirtyDaysAgo();
 

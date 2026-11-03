@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { Badge } from "@/components/ui";
@@ -15,7 +15,7 @@ export const metadata = { title: "Payments" };
 // One product's checkouts: who paid, who left, who failed, with follow-ups.
 export default async function PagePayments({ params: routeParams, searchParams }: PageProps<"/dashboard/pages/[id]/payments">) {
   const { id } = await routeParams;
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data: page } = await supabase.from("payment_pages").select("id, title, status").eq("id", id).eq("creator_id", profile.id).maybeSingle();
   if (!page) notFound();

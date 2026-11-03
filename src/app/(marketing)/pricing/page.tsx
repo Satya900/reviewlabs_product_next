@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckList, CtaBand, Faq, Icon, PageHero, Section, SectionHead } from "@/components/marketing";
 import { buttonClass, cx, tableClass } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
-import { creatorFeatures, GATEWAY_FEE_LABEL, planMatrix, priceLabel, proFeatures, TRIAL_DAYS, yearlySaving, type PlanCell, type Tier } from "@/lib/plans";
+import { creatorFeatures, GATEWAY_FEE_LABEL, planMatrix, priceLabel, proFeatures, yearlySaving, type PlanCell, type Tier } from "@/lib/plans";
 
 export const metadata = { title: "Pricing" };
 
@@ -41,7 +41,7 @@ export default function Pricing() {
       <PageHero
         kicker="Pricing"
         title="0% platform fee. Keep what you sell."
-        sub={`Two simple plans, and we never take a cut of your sales. The only deduction is Razorpay's payment charge (${GATEWAY_FEE_LABEL}), passed on at cost. Try everything free for ${TRIAL_DAYS} days, no card needed. All prices include GST.`}
+        sub={`Two simple plans, and we never take a cut of your sales. The only deduction is Razorpay's payment charge (${GATEWAY_FEE_LABEL}), passed on at cost. All prices include GST.`}
       />
 
       <Section className="pt-4 md:pt-8">
@@ -52,7 +52,7 @@ export default function Pricing() {
             <p className="mt-1 text-[15px] text-body">Everything you need to sell digital products.</p>
             <Prices tier="creator" />
             <p className="mt-4 text-[15px] text-body"><b className="text-ink">0%</b> platform fee on every sale</p>
-            <Link href="/signup" className={cx(buttonClass.secondary, "mt-6 h-12 w-full")}>Start {TRIAL_DAYS}-day free trial</Link>
+            <Link href="/signup" className={cx(buttonClass.secondary, "mt-6 h-12 w-full")}>Get started</Link>
             <div className="mt-8"><CheckList items={creatorFeatures} /></div>
           </div>
 
@@ -67,7 +67,7 @@ export default function Pricing() {
               <p className="mt-1 text-[15px] text-on-dark-soft">Turn Instagram comments into sales, automatically.</p>
               <Prices tier="pro" dark />
               <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">0%</b> platform fee on every sale</p>
-              <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Start {TRIAL_DAYS}-day free trial</Link>
+              <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Get started</Link>
               <div className="mt-8"><CheckList dark items={proFeatures} /></div>
             </div>
           </div>
@@ -92,7 +92,6 @@ export default function Pricing() {
             </div>
           </div>
         </div>
-        <p className="mt-6 text-center text-[14px] text-body">Every new account starts with a {TRIAL_DAYS}-day free trial of everything, including AutoDM. No card needed.</p>
       </Section>
 
       <Section>
@@ -162,8 +161,7 @@ export default function Pricing() {
           <SectionHead kicker="Questions" title="Pricing, answered." />
           <Faq
             items={[
-              { q: "How does the free trial work?", a: `Every new account gets ${TRIAL_DAYS} days of everything, including AutoDM, with no card needed. Choose a plan any time during the trial; billing only starts when the trial ends, so you don't lose any days.` },
-              { q: "What happens when the trial ends?", a: "If you haven't chosen a plan, your store goes offline: buyers can't open your product pages, storefront or lead magnets. Nothing is deleted. Choose a plan and everything is back online straight away, exactly as you left it." },
+              { q: "Is there a free trial?", a: "No. Create your account, choose Creator or Pro, and your dashboard unlocks straight away. You can cancel any time." },
               { q: "Do you take a cut of my sales?", a: `No. The platform fee is 0% on both plans. The only deduction is Razorpay's payment charge (${GATEWAY_FEE_LABEL}: about 2% plus 18% GST), which we pass on at exactly what Razorpay charges us. You see it on every sale in your earnings.` },
               { q: "What's the difference between Creator and Pro?", a: "Creator has everything you need to sell: unlimited products and lead magnets, your storefront, coupons, an add-on offer at checkout, analytics and payouts. Pro adds AutoDM: when someone comments a keyword on your Instagram post, they get a DM with your link automatically." },
               { q: "Do plan prices include GST?", a: `Yes. ${priceLabel("creator", "month")} a month or ${priceLabel("creator", "year")} a year for Creator, and ${priceLabel("pro", "month")} a month or ${priceLabel("pro", "year")} a year for Pro, are the full amounts you pay.` },
@@ -178,7 +176,7 @@ export default function Pricing() {
         </div>
       </Section>
 
-      <CtaBand title="Put your first product online today." sub={`${TRIAL_DAYS}-day free trial. No card needed.`} primary={{ href: "/signup", label: "Start free trial" }} secondary={{ href: "/custom", label: "Custom plan" }} />
+      <CtaBand title="Put your first product online today." sub="0% platform fee. Cancel any time." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/custom", label: "Custom plan" }} />
     </>
   );
 }

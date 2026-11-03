@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat, buttonClass, tableClass } from "@/components/ui";
@@ -19,7 +19,7 @@ function dayRange(days: number): string[] {
 const pct = (n: number, d: number) => (d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "n/a");
 
 export default async function AnalyticsPage({ searchParams }: PageProps<"/dashboard/analytics">) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasCreatorPlan(profile)) {
     return (
       <>

@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { htmlToText, sanitizeDescription } from "@/lib/rich-text";
 import { rupeesToPaise } from "@/lib/money";
@@ -26,7 +26,7 @@ function slugify(input: string) {
 // ---------------------------------------------------------------- pages
 
 export async function createPage(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return { error: "Give your page a title" };
 
@@ -55,7 +55,7 @@ const pageSchema = z.object({
 });
 
 export async function updatePage(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = pageSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -101,7 +101,7 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
 }
 
 export async function deletePage(pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { count } = await supabase.from("orders").select("id", { count: "exact", head: true }).eq("page_id", pageId);
   if (count) {
@@ -127,7 +127,7 @@ const fieldSchema = z.object({
 });
 
 export async function addField(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = fieldSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -155,7 +155,7 @@ export async function addField(_prev: ActionState, formData: FormData): Promise<
 }
 
 export async function deleteField(fieldId: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("page_fields").delete().eq("id", fieldId);
   revalidatePath(`/dashboard/pages/${pageId}`);
@@ -173,7 +173,7 @@ const fileSchema = z.object({
 
 // Files are uploaded straight from the browser to Storage; this records them.
 export async function registerFile(input: z.infer<typeof fileSchema>): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const parsed = fileSchema.safeParse(input);
   if (!parsed.success) return { error: "Invalid file" };
   const file = parsed.data;
@@ -196,7 +196,7 @@ export async function registerFile(input: z.infer<typeof fileSchema>): Promise<A
 }
 
 export async function deleteFile(fileId: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { data: file } = await supabase.from("page_files").select("storage_path").eq("id", fileId).single();
   if (file) {
@@ -209,7 +209,7 @@ export async function deleteFile(fileId: string, pageId: string) {
 // Links buyers get instead of (or as well as) files: Notion, Drive, Canva,
 // course logins, group invites. RLS limits these to the creator's own pages.
 export async function addPageLink(input: { pageId: string; label: string; url: string }): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   if (!z.uuid().safeParse(input.pageId).success) return { error: "Invalid page" };
   const url = cleanLinkUrl(input.url ?? "");
   if (!url) return { error: "Enter a full https:// link, like https://notion.so/your-template" };
@@ -229,7 +229,7 @@ export async function addPageLink(input: { pageId: string; label: string; url: s
 }
 
 export async function deletePageLink(linkId: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("page_links").delete().eq("id", linkId);
   revalidatePath(`/dashboard/pages/${pageId}`);
@@ -243,7 +243,7 @@ const profileSchema = z.object({
 });
 
 export async function updateProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const nullIfEmpty = (v: string) => v || null;

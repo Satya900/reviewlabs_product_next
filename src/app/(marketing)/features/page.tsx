@@ -274,7 +274,7 @@ export default function Features() {
         </div>
       </Section>
 
-      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/signup", label: "Start free trial" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/pricing", label: "See pricing" }} />
     </>
   );
 }

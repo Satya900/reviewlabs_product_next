@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { Badge, EmptyState, Notice, PageTitle, Panel, Stat, buttonClass, tableClass } from "@/components/ui";
@@ -27,7 +27,7 @@ function since(days: number) {
 }
 
 export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard/autodm">) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const { ig, saved } = await searchParams;
   const supabase = await createClient();
   const [{ data: account }, { data: automations }, { data: events }] = await Promise.all([

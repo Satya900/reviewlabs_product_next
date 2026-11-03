@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { loadLeadResponses } from "@/lib/lead-responses";
 import { PageTitle, buttonClass, inputClass, tableClass, cx } from "@/components/ui";
 
@@ -9,7 +9,7 @@ export const metadata = { title: "Responses" };
 const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
 export default async function ResponsesPage({ params, searchParams }: PageProps<"/dashboard/lead-magnets/[id]/responses">) {
-  await requireCreator();
+  await requirePlan();
   const { id } = await params;
   const { q } = await searchParams;
   const search = typeof q === "string" ? q : "";

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckList, CtaBand, Faq, FeatureCard, Kicker, Section, SectionHead, Steps } from "@/components/marketing";
 import { HeroMockups } from "@/components/hero-mockups";
 import { buttonClass, cx } from "@/components/ui";
-import { priceLabel, TRIAL_DAYS } from "@/lib/plans";
+import { priceLabel } from "@/lib/plans";
 import { site } from "@/lib/site";
 
 const sellables = [
@@ -37,14 +37,14 @@ export default function Home() {
               Add a link-in-bio storefront, free lead magnets and Instagram AutoDM to grow. 0% platform fee on every sale.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className={buttonClass.hero}>Start {TRIAL_DAYS}-day free trial</Link>
+              <Link href="/signup" className={buttonClass.hero}>Get started</Link>
               <Link href="/how-it-works" className={cx(buttonClass.outlineDark, "h-14 px-8")}>See how it works</Link>
             </div>
             <dl className="grid max-w-lg grid-cols-3 gap-4 border-t border-dark-line pt-6">
               {[
                 ["0%", "platform fee per sale"],
                 ["Seconds", "from payment to file"],
-                [`${TRIAL_DAYS} days`, "free trial, no card"],
+                [priceLabel("creator", "month"), "a month, GST included"],
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt className="num text-[22px] text-white sm:text-[26px]">{value}</dt>
@@ -288,9 +288,9 @@ export default function Home() {
             </p>
             <p className="mt-2 text-[15px] text-on-dark-soft">Creator is {priceLabel("creator", "month")}/month and Pro, with Instagram AutoDM, is {priceLabel("pro", "month")}/month. Yearly plans get 2 months free. All prices include GST, and we never take a cut of your sales.</p>
             <div className="mt-8">
-              <CheckList dark items={[`${TRIAL_DAYS}-day free trial of everything, no card needed`, "Creator: unlimited products, storefront, coupons, analytics", "Pro: everything in Creator plus AutoDM"]} />
+              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, coupons, analytics", "Pro: everything in Creator plus AutoDM"]} />
             </div>
-            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start free trial</Link>
+            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Get started</Link>
           </div>
           <div className="rounded-3xl border border-hairline bg-canvas p-8">
             <p className="text-[16px] font-semibold">A ₹499 sale, worked out</p>
@@ -315,7 +315,7 @@ export default function Home() {
               { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, a link-in-bio storefront, free lead magnets to collect emails, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
-              { q: "What does it cost?", a: `Creator is ${priceLabel("creator", "month")} a month (${priceLabel("creator", "year")} a year) and Pro, which adds Instagram AutoDM, is ${priceLabel("pro", "month")} a month (${priceLabel("pro", "year")} a year), GST included. There's 0% platform fee on sales; Razorpay's payment charge (about 2.36%) is passed on at cost. Every account starts with a ${TRIAL_DAYS}-day free trial, no card needed.` },
+              { q: "What does it cost?", a: `Creator is ${priceLabel("creator", "month")} a month (${priceLabel("creator", "year")} a year) and Pro, which adds Instagram AutoDM, is ${priceLabel("pro", "month")} a month (${priceLabel("pro", "year")} a year), GST included. There's 0% platform fee on sales; Razorpay's payment charge (about 2.36%) is passed on at cost.` },
               { q: "How do I get paid?", a: "Add your bank account once, with a cancelled cheque. Then request a payout from Earnings whenever you have ₹500 or more available (sales become available 24 hours after they happen). We review it and send it to your bank, and each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
               { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Both plans include unlimited lead magnets." },
@@ -328,8 +328,8 @@ export default function Home() {
 
       <CtaBand
         title="Put your first product online this week."
-        sub={`${TRIAL_DAYS}-day free trial, no card needed. Your first page can be live in minutes.`}
-        primary={{ href: "/signup", label: "Start free trial" }}
+        sub="0% platform fee. Your first page can be live in minutes."
+        primary={{ href: "/signup", label: "Get started" }}
         secondary={{ href: "/pricing", label: "See pricing" }}
       />
     </>

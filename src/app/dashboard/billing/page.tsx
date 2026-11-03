@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
-import { creatorFeatures, currentTier, GATEWAY_FEE_LABEL, planName, platformFeePercent, priceLabel, proFeatures, trialDaysLeft, yearlySaving, type Tier } from "@/lib/plans";
+import { creatorFeatures, currentTier, isNewAccount, GATEWAY_FEE_LABEL, planName, platformFeePercent, priceLabel, proFeatures, trialDaysLeft, yearlySaving, type Tier } from "@/lib/plans";
 import { Notice, PageTitle, Panel, tableClass } from "@/components/ui";
 import { CheckList } from "@/components/marketing";
 import { CancelButton, PlanPicker, type PlanCard } from "./billing-client";
@@ -45,7 +45,11 @@ export default async function BillingPage() {
           <b>Free trial: {daysLeft} day{daysLeft === 1 ? "" : "s"} left</b> (until {trialEnd}). You have every feature, including AutoDM. Choose a plan to keep your store live after that.
         </Notice>
       )}
-      {tier === "none" && !profile.is_admin && (
+      {tier === "none" && isNewAccount(profile) ? (
+        <Notice tone="info">
+          <b>Choose a plan to get started.</b> Your plan unlocks your dashboard: product pages, lead magnets, your storefront and payouts. 0% platform fee on every sale.
+        </Notice>
+      ) : tier === "none" && !profile.is_admin && (
         <Notice tone="bad">
           <b>Your store is offline.</b> {profile.plan_status === "none" || profile.plan === "free" ? "Your free trial has ended." : "Your plan has ended."} Buyers can&apos;t open your pages, storefront or lead magnets until you choose a plan. Nothing has been deleted: everything comes back the moment you subscribe.
         </Notice>

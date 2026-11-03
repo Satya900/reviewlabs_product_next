@@ -39,7 +39,7 @@ export default function About() {
         </div>
       </Section>
 
-      <CtaBand title="Sell digital products? Come try it." primary={{ href: "/signup", label: "Start free trial" }} />
+      <CtaBand title="Sell digital products? Come try it." primary={{ href: "/signup", label: "Get started" }} />
     </>
   );
 }

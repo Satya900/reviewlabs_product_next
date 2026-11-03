@@ -1,4 +1,4 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { Badge, EmptyState, PageTitle, Panel, tableClass } from "@/components/ui";
@@ -18,7 +18,7 @@ function currentTime() {
 }
 
 export default async function CouponsPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasCreatorPlan(profile)) {
     return (
       <>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeCode } from "@/lib/coupons";
 import { rupeesToPaise } from "@/lib/money";
@@ -20,7 +20,7 @@ const schema = z.object({
 });
 
 export async function createCoupon(_prev: CouponState, formData: FormData): Promise<CouponState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use coupons." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -53,14 +53,14 @@ export async function createCoupon(_prev: CouponState, formData: FormData): Prom
 }
 
 export async function setCouponActive(id: string, active: boolean) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("coupons").update({ active }).eq("id", id);
   revalidatePath("/dashboard/coupons");
 }
 
 export async function deleteCoupon(id: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   // Used coupons stay for the record; they can only be switched off.
   await supabase.from("coupons").delete().eq("id", id).eq("used_count", 0);

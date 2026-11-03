@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PageTitle } from "@/components/ui";
 import { AutomationForm } from "../automation-form";
@@ -12,7 +12,7 @@ export const metadata = { title: "Edit automation" };
 
 export default async function EditAutomationPage({ params }: PageProps<"/dashboard/autodm/[id]">) {
   const { id } = await params;
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data: a } = await supabase.from("dm_automations").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle();
   if (!a) notFound();

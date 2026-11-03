@@ -1,4 +1,4 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat } from "@/components/ui";
@@ -12,7 +12,7 @@ import { RequestPayout } from "./request-payout";
 import type { LedgerEntry, Payout } from "@/lib/types";
 
 export default async function EarningsPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const [{ data: balance }, { data: entries }, { data: payouts }, { data: requests }] = await Promise.all([
     supabase.from("creator_balances").select("*").eq("creator_id", profile.id).maybeSingle(),

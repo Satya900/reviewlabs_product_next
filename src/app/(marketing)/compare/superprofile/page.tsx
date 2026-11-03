@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CheckList, CtaBand, Faq, Icon, PageHero, Section, SectionHead } from "@/components/marketing";
 import { buttonClass, cx } from "@/components/ui";
-import { GATEWAY_FEE_LABEL, PLAN_PRICES, priceLabel, TRIAL_DAYS } from "@/lib/plans";
+import { GATEWAY_FEE_LABEL, PLAN_PRICES, priceLabel } from "@/lib/plans";
 import { superprofile as sp } from "@/lib/competitors";
 import { site } from "@/lib/site";
 import { SavingsCalculator } from "./savings-calculator";
@@ -20,7 +20,6 @@ const yes = <Icon name="check" className="mx-auto size-5 text-up" />;
 export default function CompareSuperprofile() {
   const migrateHref = `mailto:${site.supportEmail}?subject=${encodeURIComponent("Free migration from Superprofile")}&body=${encodeURIComponent("Hi, I sell on Superprofile and want to move to Reviewlabs.\n\nMy Superprofile link: \nInstagram: \nWhat I sell: ")}`;
   const rows: Row[] = [
-    { label: "Free trial", us: <span className="font-medium">{TRIAL_DAYS} days of everything, no card needed</span>, them: null },
     { label: "Paid plan", us: `Creator ${priceLabel("creator", "month")}/month, Pro (with AutoDM) ${priceLabel("pro", "month")}/month, GST included; yearly gets 2 months free`, them: sp.indiaCreatorPrice },
     { label: "Platform fee per sale", us: <span className="font-medium">0%. Razorpay&apos;s charge ({GATEWAY_FEE_LABEL}) passed on at cost</span>, them: sp.indiaFeePerSale },
     { label: "Instagram AutoDM", us: "On Pro: comment a keyword, get the link by DM", them: yes },
@@ -33,7 +32,7 @@ export default function CompareSuperprofile() {
     { label: "Payouts", us: "On request from ₹500, to your bank, with UTR", them: sp.payouts },
     { label: "Import your Superprofile pages", us: <><span className="font-medium">Upload a saved page, get a draft in a minute.</span> <Link href="/import" className="link">How it works</Link></>, them: null },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
-  ].filter((r) => r.them !== null || ["Free trial", "Platform fee per sale", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
+  ].filter((r) => r.them !== null || ["Platform fee per sale", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
 
   return (
     <>
@@ -43,7 +42,7 @@ export default function CompareSuperprofile() {
         sub={`Both let you sell digital products from one link. Reviewlabs takes 0% of your sales, costs ${priceLabel("creator", "month")}/month (${priceLabel("pro", "month")} with AutoDM) and shows every rupee in a ledger. Here's an honest look at both.`}
       >
         <div className="flex flex-wrap gap-3 pt-2">
-          <Link href="/signup" className={buttonClass.hero}>Start free trial</Link>
+          <Link href="/signup" className={buttonClass.hero}>Get started</Link>
           <Link href="/import" className={cx(buttonClass.secondary, "h-14 px-8")}>Import your page</Link>
         </div>
       </PageHero>
@@ -89,7 +88,6 @@ export default function CompareSuperprofile() {
               items={[
                 "0% platform fee: we never take a cut of your sales",
                 `${priceLabel("creator", "month")}/month, or ${priceLabel("pro", "month")}/month with Instagram AutoDM`,
-                `Try everything free for ${TRIAL_DAYS} days, no card needed`,
                 "Every sale, fee, refund and payout as a line in your ledger",
                 "Files attached to the email, lifetime links buyers can resend themselves",
                 "Import a Superprofile page yourself in a minute, or we move everything for you, free",
@@ -153,7 +151,7 @@ export default function CompareSuperprofile() {
         </div>
       </Section>
 
-      <CtaBand title="Try it on one product first." sub={`${TRIAL_DAYS}-day free trial. Import it yourself in a minute, or we'll move it over for you.`} primary={{ href: "/signup", label: "Start free trial" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Try it on one product first." sub="Import it yourself in a minute, or we'll move it over for you, free." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/pricing", label: "See pricing" }} />
 
       <p className="mx-auto max-w-[1200px] px-5 pb-10 text-[12px] text-muted sm:px-8">
         Superprofile is a trademark of its owner. Reviewlabs is not affiliated with or endorsed by Superprofile. This comparison uses information from Superprofile&apos;s public website as of {sp.checkedOn}.

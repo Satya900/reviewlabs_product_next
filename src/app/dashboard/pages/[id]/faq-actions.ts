@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "../../actions";
 
@@ -19,7 +19,7 @@ function refresh(pageId: string) {
 
 // RLS limits every write to FAQs on the creator's own pages.
 export async function saveFaq(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const { id, page_id, question, answer } = parsed.data;
@@ -38,14 +38,14 @@ export async function saveFaq(_prev: ActionState, formData: FormData): Promise<A
 }
 
 export async function deleteFaq(id: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("page_faqs").delete().eq("id", id).eq("page_id", pageId);
   refresh(pageId);
 }
 
 export async function moveFaq(id: string, pageId: string, direction: "up" | "down") {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { data } = await supabase.from("page_faqs").select("id").eq("page_id", pageId).order("position").order("created_at");
   const list = data ?? [];

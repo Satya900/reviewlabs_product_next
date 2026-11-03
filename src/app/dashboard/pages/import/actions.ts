@@ -1,7 +1,7 @@
 "use server";
 
 import crypto from "node:crypto";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { hasCreatorPlan } from "@/lib/plans";
 import { rateLimit } from "@/lib/rate-limit";
@@ -47,7 +47,7 @@ async function copyImages(urls: string[], creatorId: string): Promise<{ map: Map
 // The data was read in the creator's own browser (a saved .html page);
 // it is re-validated and re-cleaned here, never trusted as-is.
 export async function importFromSuperprofile(raw: unknown, ownsPage: boolean): Promise<ImportResult> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!ownsPage) return { error: "Please confirm this is your own Superprofile page." };
   if (!(await rateLimit(`superprofile-import:${profile.id}`, 10, 3600))) {
     return { error: "You've imported a lot of pages in the last hour. Please try again later." };

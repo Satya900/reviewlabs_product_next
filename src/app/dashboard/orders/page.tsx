@@ -1,4 +1,4 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { PageTitle } from "@/components/ui";
@@ -11,7 +11,7 @@ export const metadata = { title: "Orders" };
 
 // Every checkout across all products, with follow-up buttons.
 export default async function OrdersPage({ searchParams }: PageProps<"/dashboard/orders">) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const params = browserParams(await searchParams);
   const supabase = await createClient();
   const [data, { data: products }] = await Promise.all([

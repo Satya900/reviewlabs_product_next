@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { hasCreatorPlan } from "@/lib/plans";
 import { rupeesToPaise } from "@/lib/money";
@@ -26,7 +26,7 @@ function refresh(pageId: string) {
 
 // One add-on per page; RLS makes sure the page belongs to this creator.
 export async function saveOffer(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use additional offers." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -64,7 +64,7 @@ export async function saveOffer(_prev: ActionState, formData: FormData): Promise
 // An add-on buyers have paid for is switched off instead of deleted, so their
 // bonus files keep downloading.
 export async function deleteOffer(offerId: string, pageId: string): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { count } = await supabase
     .from("orders")
@@ -94,7 +94,7 @@ const fileSchema = z.object({
 
 // Files are uploaded straight from the browser to storage; this records them.
 export async function registerOfferFile(input: z.infer<typeof fileSchema>): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const parsed = fileSchema.safeParse(input);
   if (!parsed.success) return { error: "Invalid file" };
   const f = parsed.data;
@@ -117,7 +117,7 @@ export async function registerOfferFile(input: z.infer<typeof fileSchema>): Prom
 }
 
 export async function deleteOfferFile(fileId: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { data: file } = await supabase.from("offer_files").select("storage_path").eq("id", fileId).single();
   if (file) {

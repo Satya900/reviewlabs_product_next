@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { PageTitle, Panel } from "@/components/ui";
 import { PayoutSetup } from "./payout-setup";
 
@@ -7,7 +7,7 @@ export const metadata = { title: "Add your bank account" };
 
 // Step 2 of signup: the bank account payouts go to. Can be skipped.
 export default async function PayoutSetupPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (profile.payout_bank_submitted_at) redirect("/dashboard?welcome=1");
   return (
     <>

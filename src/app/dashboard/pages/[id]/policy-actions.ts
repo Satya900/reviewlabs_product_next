@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "../../actions";
 
@@ -15,7 +15,7 @@ const schema = z.object({
 
 // RLS restricts the update to the creator's own pages.
 export async function savePolicies(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const { page_id, support_email, refund_policy, terms } = parsed.data;

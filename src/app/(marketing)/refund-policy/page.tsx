@@ -45,7 +45,6 @@ export default function RefundPolicy() {
         <p>
           Plan payments (Creator {formatPaise(site.creatorMonthlyPaise)} monthly or {formatPaise(site.creatorYearlyPaise)} yearly; Pro {formatPaise(site.proMonthlyPaise)} monthly or {formatPaise(site.proYearlyPaise)} yearly) are not
           refundable for a period that has started, except for a duplicate or mistaken charge. Creators can cancel any time and won&apos;t be charged for the next period.
-          Every account starts with a free {site.trialDays}-day trial, so creators can try everything before paying.
           Individual product pages may carry the seller&apos;s own refund policy, which applies to purchases on that page.
           Free downloads from lead magnets involve no payment, so there is nothing to refund.
         </p>

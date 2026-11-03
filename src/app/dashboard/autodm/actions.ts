@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decrypt } from "@/lib/crypto";
@@ -34,7 +34,7 @@ const schema = z.object({
 const mediaSchema = z.array(z.object({ id: z.string().regex(/^\d{5,30}$/), thumb: z.string().max(2000).optional(), caption: z.string().max(300).optional() })).max(50);
 
 export async function saveAutomation(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasProPlan(profile)) return { error: "AutoDM is part of the Pro plan. Choose Pro in Plan and billing to use it." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -88,14 +88,14 @@ export async function saveAutomation(_prev: ActionState, formData: FormData): Pr
 }
 
 export async function setAutomationActive(id: string, active: boolean) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("dm_automations").update({ active }).eq("id", id);
   revalidatePath("/dashboard/autodm");
 }
 
 export async function deleteAutomation(id: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("dm_automations").delete().eq("id", id);
   revalidatePath("/dashboard/autodm");
@@ -104,7 +104,7 @@ export async function deleteAutomation(id: string) {
 
 // Removes the Instagram connection, its token and every automation and log.
 export async function disconnectInstagram() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const db = createAdminClient();
   const { data: account } = await db.from("instagram_accounts").select("id, ig_user_id").eq("creator_id", profile.id).maybeSingle();
   if (account) {
@@ -120,7 +120,7 @@ export async function disconnectInstagram() {
 
 // "Check now": read recent comments and answer any the webhook missed.
 export async function syncNow(): Promise<ActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!hasProPlan(profile)) return { error: "AutoDM is part of the Pro plan." };
   if (!(await rateLimit(`autodm-sync:${profile.id}`, 6, 600))) return { error: "Checked a few times already. Try again in a few minutes." };
   try {

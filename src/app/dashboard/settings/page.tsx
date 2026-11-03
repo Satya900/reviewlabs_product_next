@@ -1,9 +1,9 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { PageTitle, Panel } from "@/components/ui";
 import { BankAccountSettings, ProfileForm } from "./forms";
 
 export default async function SettingsPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
 
   return (
     <>

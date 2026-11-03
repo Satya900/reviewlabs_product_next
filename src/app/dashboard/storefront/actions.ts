@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAllowedImageSrc } from "@/lib/rich-text";
@@ -17,7 +17,7 @@ function refresh(handle?: string | null) {
 
 // Live check while typing. Never reveals anything beyond "taken".
 export async function checkHandle(raw: string): Promise<{ ok: boolean; message: string }> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const handle = raw.trim().toLowerCase();
   if (!HANDLE_PATTERN.test(handle)) return { ok: false, message: "3 to 30 characters: letters, numbers, dots and underscores" };
   if (RESERVED_HANDLES.has(handle)) return { ok: false, message: "That name is reserved" };
@@ -35,7 +35,7 @@ const schema = z.object({
 });
 
 export async function saveStorefront(_prev: StorefrontState, formData: FormData): Promise<StorefrontState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -76,14 +76,14 @@ export async function saveStorefront(_prev: StorefrontState, formData: FormData)
 }
 
 export async function setPageVisible(pageId: string, visible: boolean) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   await supabase.from("payment_pages").update({ storefront_visible: visible }).eq("id", pageId).eq("creator_id", profile.id);
   refresh(profile.handle);
 }
 
 export async function movePage(pageId: string, direction: "up" | "down") {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data } = await supabase
     .from("payment_pages")

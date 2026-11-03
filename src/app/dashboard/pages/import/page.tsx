@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { PageTitle } from "@/components/ui";
 import { hasCreatorPlan } from "@/lib/plans";
 import { Importer } from "./importer";
@@ -7,7 +7,7 @@ import { Importer } from "./importer";
 export const metadata = { title: "Import from Superprofile" };
 
 export default async function ImportPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const creator = hasCreatorPlan(profile);
 
   return (

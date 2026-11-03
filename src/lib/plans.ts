@@ -3,9 +3,9 @@ import { site } from "./site.ts";
 // Plan rules shared by server and UI. The database enforces the same rules
 // (creator_plan_tier and friends), so the UI is never the only guard.
 //
-// No free plan: every creator starts with a 7-day trial with every feature.
-// Creator unlocks selling; Pro adds AutoDM. Without a plan or trial the
-// creator's store is offline. No platform fee on sales; Razorpay's charge is
+// No free plan and no trial for new accounts: nothing works until they pay.
+// Creator unlocks selling; Pro adds AutoDM. Trials granted before the paywall
+// still run to their end. Without a plan or trial the creator's store is offline. No platform fee on sales; Razorpay's charge is
 // passed on at cost.
 
 export type Tier = "creator" | "pro";
@@ -59,6 +59,11 @@ export function hasProPlan(p: PlanFields, now = Date.now()): boolean {
   return t === "pro" || t === "trial";
 }
 
+// Never had a plan or a trial (an abandoned checkout still counts as new).
+export function isNewAccount(p: PlanFields): boolean {
+  return !p.is_admin && !p.trial_ends_at && p.plan === "free" && (p.plan_status === "none" || p.plan_status === "created");
+}
+
 // Whole days left in the trial (rounded up), or null when not on a trial.
 export function trialDaysLeft(p: PlanFields, now = Date.now()): number | null {
   if (currentTier(p, now) !== "trial" || !p.trial_ends_at) return null;
@@ -108,7 +113,6 @@ export const planMatrix: { group: string; rows: { feature: string; creator: Plan
     rows: [
       { feature: "Monthly (GST included)", creator: `${priceLabel("creator", "month")}/month`, pro: `${priceLabel("pro", "month")}/month` },
       { feature: "Yearly (2 months free)", creator: `${priceLabel("creator", "year")}/year`, pro: `${priceLabel("pro", "year")}/year` },
-      { feature: "Free trial, no card needed", creator: `${TRIAL_DAYS} days`, pro: `${TRIAL_DAYS} days` },
       { feature: "Platform fee per sale", creator: "0%", pro: "0%" },
       { feature: "Payment gateway charge (Razorpay, at cost)", creator: GATEWAY_FEE_LABEL, pro: GATEWAY_FEE_LABEL },
     ],
