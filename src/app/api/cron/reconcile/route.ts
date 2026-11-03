@@ -6,6 +6,8 @@ import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { isAuthorizedCron } from "@/lib/cron";
 import { fetchSubscription, grantLifetime, syncSubscription } from "@/lib/billing";
 import { syncOpenPayouts } from "@/lib/payouts";
+import { syncAllAccounts } from "@/lib/autodm-runner";
+import { env } from "@/lib/env";
 
 export const maxDuration = 60;
 
@@ -26,7 +28,7 @@ export async function GET(request: Request) {
 async function reconcile() {
   const admin = createAdminClient();
   const now = Date.now();
-  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, errors: 0 };
+  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, autodmSent: 0, errors: 0 };
 
   // 1. Unpaid orders 10 minutes to 3 days old: ask Razorpay what happened.
   const { data: pending } = await admin
@@ -156,7 +158,19 @@ async function reconcile() {
     console.error("[reconcile] payouts:", e);
   }
 
-  // 7. Housekeeping: rate-limit windows older than a day are useless.
+  // 7. Instagram comments a webhook missed (AutoDM).
+  if (env.autodmEnabled()) {
+    try {
+      const dm = await syncAllAccounts(20_000);
+      summary.autodmSent = dm.sent;
+      summary.errors += dm.errors;
+    } catch (e) {
+      summary.errors++;
+      console.error("[reconcile] autodm:", e);
+    }
+  }
+
+  // 8. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return summary;

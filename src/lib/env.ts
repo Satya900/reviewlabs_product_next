@@ -22,6 +22,15 @@ export const env = {
   razorpayxKeySecret: () => required("RAZORPAYX_KEY_SECRET"),
   razorpayxWebhookSecret: () => required("RAZORPAYX_WEBHOOK_SECRET"),
   encryptionKey: () => required("ENCRYPTION_KEY"),
+  // Meta app for Instagram AutoDM (Instagram API with Unified Login).
+  metaAppId: () => required("META_APP_ID"),
+  metaAppSecret: () => required("META_APP_SECRET"),
+  metaLoginConfigId: () => required("META_LOGIN_CONFIG_ID"),
+  instagramWebhookVerifyToken: () => required("INSTAGRAM_WEBHOOK_VERIFY_TOKEN"),
+  metaGraphVersion: () => process.env.META_GRAPH_VERSION ?? "v26.0",
+  // Tests point this at a local stand-in for Meta's API.
+  metaGraphBase: () => process.env.META_GRAPH_BASE ?? "https://graph.facebook.com",
+  autodmEnabled: () => Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET && process.env.META_LOGIN_CONFIG_ID),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,
   emailFrom: () => process.env.EMAIL_FROM ?? "Reviewlabs <no-reply@reviewlabs.space>",

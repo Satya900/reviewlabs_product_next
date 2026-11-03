@@ -32,7 +32,12 @@ export default function Privacy() {
         <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them).</p>
         <p>If you set up a storefront, your handle, photo, bio and social links are shown publicly. If you ask about a custom plan, we keep the details you send us so we can reply.</p>
       </Clause>
-      <Clause n={4} title="Why we use it">
+      <Clause n={4} title="Instagram (AutoDM)">
+        <p>If a creator connects their Instagram professional account for AutoDM, we receive from Meta an access token for that account (stored encrypted), its username, name and profile photo, and their recent posts so they can choose which ones to automate.</p>
+        <p>When someone comments on that creator&apos;s posts, Meta tells us the comment text, the commenter&apos;s Instagram username and ID, and the post. If the comment matches one of the creator&apos;s automations, we send the commenter the creator&apos;s message in an Instagram DM and keep a record of it: the comment, the username, whether the DM was sent and whether its link was opened. Comments that match no automation are not stored.</p>
+        <p>We use this only to send the creator&apos;s automatic replies and to show them their results. We never post, follow, like or message anyone else on a creator&apos;s behalf. A creator can disconnect at any time from the AutoDM page, which deletes the token, their automations and these records. People who comment can ask us to delete their records by writing to {site.supportEmail}; see also our <a href="/data-deletion">data deletion page</a>.</p>
+      </Clause>
+      <Clause n={5} title="Why we use it">
         <ul>
           <li>To process your payment and deliver the files you bought.</li>
           <li>To send receipts, download links and verification codes by email.</li>
@@ -41,22 +46,23 @@ export default function Privacy() {
           <li>To meet legal and tax record-keeping duties.</li>
         </ul>
       </Clause>
-      <Clause n={5} title="Who we share it with">
+      <Clause n={6} title="Who we share it with">
         <ul>
           <li>The creator whose product you bought, started to buy, or whose lead magnet you filled in: your name, email, phone and answers.</li>
           <li>Razorpay, to process payments and refunds.</li>
           <li>Supabase, which hosts our database and file storage.</li>
           <li>Our email provider, to send receipts, download links and verification codes.</li>
+          <li>Meta (Instagram), for creators who use AutoDM: we send the creator&apos;s replies through Instagram&apos;s API.</li>
         </ul>
         <p>We do not sell personal data.</p>
       </Clause>
-      <Clause n={6} title="How long we keep it">
+      <Clause n={7} title="How long we keep it">
         <p>We keep order and payment records for 8 years, as Indian tax law requires. Other data is deleted when it is no longer needed, or when you ask us to delete it and the law allows it.</p>
       </Clause>
-      <Clause n={7} title="Your rights">
-        <p>You can ask to see, correct or delete your personal data, or withdraw consent for tracking, by writing to {site.supportEmail}. We reply within 30 days.</p>
+      <Clause n={8} title="Your rights">
+        <p>You can ask to see, correct or delete your personal data, or withdraw your consent, by writing to {site.supportEmail}. We reply within 30 days.</p>
       </Clause>
-      <Clause n={8} title="Contact">
+      <Clause n={9} title="Contact">
         <p>
           Questions or complaints about your data: write to <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.
           We acknowledge complaints within 48 hours.

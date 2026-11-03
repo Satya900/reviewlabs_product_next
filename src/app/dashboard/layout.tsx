@@ -11,6 +11,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     { href: "/dashboard/pages", label: "Payment pages" },
     { href: "/dashboard/lead-magnets", label: "Lead magnets" },
     { href: "/dashboard/storefront", label: "Storefront" },
+    { href: "/dashboard/autodm", label: "AutoDM" },
     { href: "/dashboard/orders", label: "Orders" },
     { href: "/dashboard/analytics", label: "Analytics" },
     { href: "/dashboard/coupons", label: "Coupons" },
