@@ -45,8 +45,6 @@ export type PageFile = {
 };
 
 export type Tracking = {
-  fbp?: string;
-  fbc?: string;
   client_ip?: string;
   user_agent?: string;
   source_url?: string;

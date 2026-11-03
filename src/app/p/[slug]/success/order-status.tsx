@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { buttonClass, cx } from "@/components/ui";
-import { initPixel, trackPixel } from "@/components/meta-pixel";
 
 type Props = {
   orderId: string;
@@ -12,7 +11,6 @@ type Props = {
   amountLabel: string;
   thankYouMessage: string;
   files: { id: string; file_name: string; size_bytes: number }[];
-  pixel: { pixelId: string | null; eventId: string; data: Record<string, unknown> };
   retryHref: string;
 };
 
@@ -23,13 +21,12 @@ function formatSize(bytes: number) {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-export function OrderStatusView({ orderId, initialStatus, title, amountLabel, thankYouMessage, files, pixel, retryHref }: Props) {
+export function OrderStatusView({ orderId, initialStatus, title, amountLabel, thankYouMessage, files, retryHref }: Props) {
   const hasFiles = files.length > 0;
   const [status, setStatus] = useState(initialStatus);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
   const [links, setLinks] = useState<{ id: string; label: string; url: string }[]>([]);
   const [timedOut, setTimedOut] = useState(false);
-  const purchaseFired = useRef(false);
 
   const isPaid = status === "paid" || status === "partially_refunded";
 
@@ -59,19 +56,6 @@ export function OrderStatusView({ orderId, initialStatus, title, amountLabel, th
       stopped = true;
     };
   }, [orderId]);
-
-  // Browser half of the Purchase event; the server sends the same eventId via CAPI.
-  useEffect(() => {
-    if (!isPaid || !pixel.pixelId || purchaseFired.current) return;
-    purchaseFired.current = true;
-    const key = `purchase_sent_${orderId}`;
-    try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-    } catch {}
-    initPixel(pixel.pixelId);
-    trackPixel(pixel.pixelId, "Purchase", pixel.data, pixel.eventId);
-  }, [isPaid, orderId, pixel]);
 
   if (isPaid) {
     return (

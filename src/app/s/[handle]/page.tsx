@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefront } from "@/lib/storefront-data";
 import { StorefrontView } from "@/components/storefront-view";
-import { StorefrontPixel } from "@/components/storefront-pixel";
 
 // Served at /@handle (see the rewrite in next.config.ts).
 export async function generateMetadata({ params }: PageProps<"/s/[handle]">): Promise<Metadata> {
@@ -24,7 +23,6 @@ export default async function StorefrontPage({ params }: PageProps<"/s/[handle]"
   if (!data) notFound();
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,#eef3ff_0%,#f7f7f7_45%)]">
-      <StorefrontPixel pixelId={data.pixelId} />
       <StorefrontView data={data} />
     </main>
   );

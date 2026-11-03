@@ -163,7 +163,6 @@ export default function Home() {
           <FeatureCard icon="star" title="Testimonials and FAQ">Show reviews from happy buyers and answer common questions right on the page.</FeatureCard>
           <FeatureCard icon="tag" title="Coupons" badge="Creator">Percent or flat discounts, limited by date or number of uses, for one page or all of them.</FeatureCard>
           <FeatureCard icon="gift" title="Additional offer" badge="Creator">A one-tick add-on at checkout that raises the value of every order.</FeatureCard>
-          <FeatureCard icon="target" title="Meta Pixel and CAPI" badge="Creator">Purchases and leads reach Meta from the browser and the server, so your ads get credit even with ad blockers on.</FeatureCard>
         </div>
       </Section>
 
@@ -230,7 +229,7 @@ export default function Home() {
                   "Razorpay confirms every payment, no screenshots",
                   "The file goes out on its own, at 3 am too",
                   "Every sale, fee and refund is a line in your ledger",
-                  "Meta receives the purchase with your ad attribution",
+                  "Built-in analytics show views, checkouts and sales for every page",
                   "Free lead magnets grow a list you can sell to later",
                 ]}
               />
@@ -291,7 +290,7 @@ export default function Home() {
             </p>
             <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month, {priceLabels.yearly}/year or {priceLabels.lifetime} once for lifetime, with fees down to {CREATOR_FEE_PERCENT}%. All prices include GST.</p>
             <div className="mt-8">
-              <CheckList dark items={["Free: one page, one lead magnet, your storefront", "Creator: unlimited pages and lead magnets, 4% fees", "Creator: coupons, add-on offers, analytics, Meta, CSV"]} />
+              <CheckList dark items={["Free: one page, one lead magnet, your storefront", "Creator: unlimited pages and lead magnets, 4% fees", "Creator: coupons, add-on offers, analytics, CSV"]} />
             </div>
             <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start for free</Link>
           </div>
@@ -321,7 +320,6 @@ export default function Home() {
               { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway and GST included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month, ${priceLabels.yearly} a year, or ${priceLabels.lifetime} once for lifetime access, GST included, with unlimited pages and the growth tools.` },
               { q: "How do I get paid?", a: "Add your bank account once, with a cancelled cheque. Then request a payout from Earnings whenever you have ₹500 or more available (sales become available 24 hours after they happen). We review it and send it to your bank, and each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
-              { q: "Can I track sales in Meta Ads Manager?", a: "Yes, on the Creator plan. Add your Pixel ID in settings, for your whole account or per page, and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events. Add a Conversions API token too and every event is also sent from our server with a matching event ID, so ad blockers don't hide your sales." },
               { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Free includes one lead magnet; Creator has unlimited." },
               { q: "I already sell on Superprofile. Can I move my products?", a: "Yes. Save your product page from your browser and upload it in Payment pages → Import from Superprofile. In about a minute you get a draft with your text, prices, images, testimonials, FAQs and policies. Imports from other platforms are in development, and until then we'll move your products for you, free." },
               { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your bank account for payouts, and publish your page." },

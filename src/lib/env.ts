@@ -25,7 +25,6 @@ export const env = {
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,
   emailFrom: () => process.env.EMAIL_FROM ?? "Reviewlabs <no-reply@reviewlabs.space>",
-  metaGraphVersion: () => process.env.META_GRAPH_VERSION ?? "v24.0",
   // 0 or unset = lifetime access (links never expire).
   downloadTtlDays: (): number | null => {
     const days = Number(process.env.DOWNLOAD_LINK_TTL_DAYS ?? 0);

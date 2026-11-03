@@ -90,7 +90,7 @@ async function reconcile() {
     if (items.length < 100) break;
   }
 
-  // 3. Paid orders whose receipt or Meta Purchase event didn't go out.
+  // 3. Paid orders whose receipt didn't go out.
   const { data: unsentReceipts } = await admin
     .from("orders")
     .select("id")
@@ -98,19 +98,7 @@ async function reconcile() {
     .is("receipt_sent_at", null)
     .lt("paid_at", new Date(now - 5 * 60_000).toISOString())
     .limit(50);
-  const { data: failedEvents } = await admin
-    .from("meta_events")
-    .select("order_id")
-    .eq("event_name", "Purchase")
-    .eq("status", "failed")
-    .lt("attempts", 5)
-    .limit(50);
-
-  const retry = new Set<string>([
-    ...(unsentReceipts ?? []).map((o) => o.id as string),
-    ...(failedEvents ?? []).map((e) => e.order_id as string).filter(Boolean),
-  ]);
-  for (const orderId of retry) {
+  for (const { id: orderId } of unsentReceipts ?? []) {
     summary.postPaymentRetried++;
     await runPostPaymentTasks(orderId);
   }

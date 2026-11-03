@@ -44,13 +44,12 @@ export function hasCreatorPlan(p: PlanFields, now = Date.now()): boolean {
   return !p.plan_current_period_end || new Date(p.plan_current_period_end).getTime() > now - GRACE_MS;
 }
 
-export type PremiumFeature = "coupons" | "analytics" | "meta" | "csv" | "pages" | "offer";
+export type PremiumFeature = "coupons" | "analytics" | "csv" | "pages" | "offer";
 
 export const premiumCopy: Record<PremiumFeature, { title: string; body: string }> = {
   pages: { title: "More product pages", body: "The Free plan includes one product page. Creator gives you unlimited pages." },
   coupons: { title: "Coupons", body: "Run launch discounts and limited-time offers with percent or flat coupons." },
   analytics: { title: "Analytics", body: "See views, checkouts, sales and conversion for every page." },
-  meta: { title: "Meta Pixel and Conversions API", body: "Send every view, checkout and purchase to Meta so your ads optimise for real sales." },
   csv: { title: "CSV export", body: "Download all your orders as a spreadsheet for your accountant." },
   offer: { title: "Additional offer", body: "Add a one-click bonus at checkout so buyers can add it to their order. A simple way to raise every order's value." },
 };
@@ -61,7 +60,6 @@ export const creatorFeatures = [
   "Coupons and discount codes",
   "Additional offer (order bump) at checkout",
   "Analytics: views, checkouts, sales and conversion",
-  "Meta Pixel and Conversions API, per account or per page",
   "CSV export of orders",
   "Storefront without Reviewlabs branding",
 ];
@@ -123,8 +121,6 @@ export const planMatrix: { group: string; rows: { feature: string; free: PlanCel
     rows: [
       { feature: "Orders and earnings ledger", free: true, creator: true },
       { feature: "Analytics: views, checkouts, sales, conversion", free: false, creator: true },
-      { feature: "Meta Pixel and Conversions API (Purchase and Lead events)", free: false, creator: true },
-      { feature: "Separate pixel per product page", free: false, creator: true },
       { feature: "CSV export of orders", free: false, creator: true },
     ],
   },

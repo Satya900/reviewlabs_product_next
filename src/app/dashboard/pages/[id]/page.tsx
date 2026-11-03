@@ -11,7 +11,6 @@ import { FieldsEditor } from "./fields-editor";
 import { FilesManager } from "./files-manager";
 import { LinksManager, type PageLink } from "./links-manager";
 import { DeletePageButton } from "./delete-page-button";
-import { TrackingPanel } from "./tracking-panel";
 import { TestimonialsPanel } from "./testimonials-panel";
 import { FaqsPanel } from "./faqs-panel";
 import { OfferPanel } from "./offer-panel";
@@ -19,7 +18,6 @@ import { PoliciesPanel } from "./policies-panel";
 import { PageTabs } from "./page-tabs";
 import { hasCreatorPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function EditPage({ params }: PageProps<"/dashboard/pages/[id]">) {
   const { id } = await params;
@@ -28,14 +26,10 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
 
   const { data: page } = await supabase.from("payment_pages").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle<PaymentPage>();
   if (!page) notFound();
-  const admin = createAdminClient();
-  const [{ data: fields }, { data: files }, { data: links }, { data: ownPixel }, { data: accountPixel }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
+  const [{ data: fields }, { data: files }, { data: links }, { data: testimonials }, { data: faqs }, { data: offer }] = await Promise.all([
     supabase.from("page_fields").select("*").eq("page_id", id).order("position"),
     supabase.from("page_files").select("*").eq("page_id", id).order("created_at"),
     supabase.from("page_links").select("id, label, url").eq("page_id", id).order("position").order("created_at"),
-    // Tokens never leave the server; only whether one is saved.
-    admin.from("page_pixel_settings").select("pixel_id, test_event_code, capi_token_encrypted").eq("page_id", id).maybeSingle(),
-    admin.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle(),
     supabase.from("page_testimonials").select("*").eq("page_id", id).order("position").order("created_at"),
     supabase.from("page_faqs").select("*").eq("page_id", id).order("position").order("created_at"),
     supabase.from("page_offers").select("*").eq("page_id", id).maybeSingle<Offer>(),
@@ -43,7 +37,6 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
   const { data: offerFiles } = offer
     ? await supabase.from("offer_files").select("*").eq("offer_id", offer.id).order("created_at")
     : { data: [] as OfferFile[] };
-  const accountPixelId = accountPixel?.pixel_id ?? null;
   const publicUrl = `${env.appUrl()}/p/${page.slug}`;
 
   return (
@@ -104,17 +97,6 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         <Panel title="Checkout questions">
           <p className="mb-3 text-[13px]">Name, email and phone are always asked.</p>
           <FieldsEditor pageId={page.id} fields={(fields ?? []) as PageField[]} />
-        </Panel>
-        <Panel title="Meta tracking">
-          {hasCreatorPlan(profile) ? (
-            <TrackingPanel
-              pageId={page.id}
-              own={ownPixel ? { pixelId: ownPixel.pixel_id, testEventCode: ownPixel.test_event_code ?? "", hasToken: Boolean(ownPixel.capi_token_encrypted) } : null}
-              accountPixelId={accountPixelId}
-            />
-          ) : (
-            <UpgradeCard feature="meta" compact />
-          )}
         </Panel>
         <Panel title="Delete page">
           <DeletePageButton pageId={page.id} />

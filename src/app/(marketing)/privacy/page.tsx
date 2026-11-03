@@ -15,7 +15,7 @@ export default function Privacy() {
           <li>Name, email address and phone number you enter at checkout.</li>
           <li>Answers to any extra questions the creator added to the page.</li>
           <li>Order details: product, amount, time, and the payment ID Razorpay gives us.</li>
-          <li>Technical data: IP address, browser type, and Meta cookies (_fbp, _fbc) if the creator has set up Meta tracking.</li>
+          <li>Technical data: IP address, browser type and the page you came from, used for fraud checks and the creator&apos;s sales analytics.</li>
         </ul>
         <p>We never see or store your card number, CVV, UPI PIN or bank login. Razorpay handles those.</p>
         <p>Your details are saved when you start checkout, before you pay. If you don&apos;t finish the purchase or the payment fails, the creator can see your details and may contact you about that order.</p>
@@ -24,12 +24,12 @@ export default function Privacy() {
         <ul>
           <li>Your name and email address, and your phone number and answers if the creator asks for them.</li>
           <li>If the creator turned on email verification, a one-time code that we store only as a hash. It stops working after 10 minutes and is deleted once used.</li>
-          <li>The same technical data as buyers, including Meta cookies if the creator uses Meta tracking.</li>
+          <li>The same technical data as buyers.</li>
         </ul>
         <p>The creator receives these details because you asked for their free resource and agreed to receive updates from them.</p>
       </Clause>
       <Clause n={3} title="What we collect from creators">
-        <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them), and your Meta Pixel settings. Your Meta access token is stored encrypted.</p>
+        <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them).</p>
         <p>If you set up a storefront, your handle, photo, bio and social links are shown publicly. If you ask about a custom plan, we keep the details you send us so we can reply.</p>
       </Clause>
       <Clause n={4} title="Why we use it">
@@ -47,8 +47,6 @@ export default function Privacy() {
           <li>Razorpay, to process payments and refunds.</li>
           <li>Supabase, which hosts our database and file storage.</li>
           <li>Our email provider, to send receipts, download links and verification codes.</li>
-          <li>Meta, for our own ads: on our website and when creators sign up, publish their first page or buy a plan, we use the Meta Pixel and send a creator&apos;s email and name as a one-way hash, plus IP and browser details, so we can measure our ads. When someone arrives from a Meta ad, we store the ad click in the _fbc cookie for 90 days.</li>
-          <li>Meta, only if the creator turned on tracking. We send your email, phone and name as one-way hashes, plus your IP and browser details, so Meta can measure the creator&apos;s ads.</li>
         </ul>
         <p>We do not sell personal data.</p>
       </Clause>

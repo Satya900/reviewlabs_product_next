@@ -30,7 +30,6 @@ export default function CompareSuperprofile() {
     { label: "Line-by-line earnings ledger", us: "Every sale, fee, refund and payout", them: null },
     { label: "Link-in-bio storefront", us: yes, them: yes },
     { label: "Lead magnets", us: "Unlimited on Creator, email verification codes", them: yes },
-    { label: "Meta Pixel and Conversions API", us: "Account-wide or per page", them: yes },
     { label: "Payouts", us: "On request from ₹500, to your bank, with UTR", them: sp.payouts },
     { label: "Import your Superprofile pages", us: <><span className="font-medium">Upload a saved page, get a draft in a minute.</span> <Link href="/import" className="link">How it works</Link></>, them: null },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
@@ -149,7 +148,6 @@ export default function CompareSuperprofile() {
               { q: "Will my buyers lose access?", a: "No. People who bought on Superprofile keep their access there. New buyers get their files from Reviewlabs, instantly and by email." },
               { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your bank account and request payouts from your balance, with the UTR in your ledger." },
               { q: "How often are payouts?", a: "Whenever you like. Request a payout from Earnings once you have ₹500 or more available (sales become available 24 hours after they happen), and we send it to your bank. Every payout shows in your ledger with its UTR." },
-              { q: "Can I keep my Meta Pixel?", a: `Yes, on Creator. Paste your Pixel ID and we send PageView, ViewContent, InitiateCheckout, Purchase and Lead events. Add a Conversions API token too and they're also sent from our server, so ad blockers don't hide sales.` },
               { q: "Is the lifetime plan really one payment?", a: `Yes. ${priceLabels.lifetime} once gives you Creator for as long as Reviewlabs runs, with no renewals.` },
             ]}
           />

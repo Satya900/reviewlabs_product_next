@@ -107,7 +107,6 @@ export function PageDetailsForm({ creatorId, appUrl, page, files, fields, testim
             preview
             page={{ id: page.id, slug: draft.slug, title: draft.title, amountPaise, currency: "INR", buttonLabel: draft.button_label || "Buy now" }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
-            pixelId={null}
             offer={offer ? { id: offer.id, headline: offer.headline, title: offer.title, description: offer.description, imageUrl: offer.image_url, pricePaise: offer.price_paise, compareAtPaise: offer.compare_at_paise } : null}
           />
         }

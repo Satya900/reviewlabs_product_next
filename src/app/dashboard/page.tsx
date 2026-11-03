@@ -36,7 +36,7 @@ export default async function DashboardHome({ searchParams }: PageProps<"/dashbo
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-dark p-6 text-white">
           <div>
             <p className="text-[17px] font-semibold">You&apos;re on the Free plan</p>
-            <p className="mt-1 text-[14px] text-on-dark-soft">One product page, {FREE_FEE_PERCENT}% per sale. Creator cuts fees to {CREATOR_FEE_PERCENT}% and unlocks unlimited pages, coupons, analytics, Meta tracking and CSV export.</p>
+            <p className="mt-1 text-[14px] text-on-dark-soft">One product page, {FREE_FEE_PERCENT}% per sale. Creator cuts fees to {CREATOR_FEE_PERCENT}% and unlocks unlimited pages, coupons, analytics and CSV export.</p>
           </div>
           <Link href="/dashboard/billing" className={buttonClass.primary}>See Creator plan</Link>
         </div>

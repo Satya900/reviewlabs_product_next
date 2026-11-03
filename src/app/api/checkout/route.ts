@@ -1,9 +1,8 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay } from "@/lib/razorpay";
 import { env } from "@/lib/env";
-import { eventIds, sendInitiateCheckoutEvent } from "@/lib/meta";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { applyCoupon } from "@/lib/coupons";
@@ -16,8 +15,6 @@ const schema = z.object({
   email: z.email().max(200),
   phone: z.string().trim().regex(/^\+?[0-9\s-]{8,16}$/, "Invalid phone number"),
   responses: z.record(z.string(), z.string().max(2000)).default({}),
-  fbp: z.string().max(200).optional(),
-  fbc: z.string().max(400).optional(),
   sourceUrl: z.url().max(2000).optional(),
   couponCode: z.string().trim().max(40).optional(),
   offerId: z.uuid().optional(),
@@ -109,8 +106,6 @@ export async function POST(request: Request) {
       offer_price_paise: offer?.price_paise ?? 0,
       currency: page.currency,
       tracking: {
-        fbp: input.fbp,
-        fbc: input.fbc,
         source_url: input.sourceUrl,
         client_ip: clientIp(request.headers),
         user_agent: request.headers.get("user-agent") ?? undefined,
@@ -139,7 +134,6 @@ export async function POST(request: Request) {
   }
 
   await admin.from("orders").update({ razorpay_order_id: razorpayOrderId }).eq("id", order.id);
-  after(() => sendInitiateCheckoutEvent(order));
 
   return NextResponse.json({
     orderId: order.id,
@@ -147,6 +141,5 @@ export async function POST(request: Request) {
     amount: amountPaise,
     currency: page.currency,
     keyId: env.razorpayKeyId(),
-    initiateCheckoutEventId: eventIds.initiateCheckout(order.id),
   });
 }

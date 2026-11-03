@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cx, inputClass, textareaClass } from "@/components/ui";
-import { getMetaCookies, initPixel, newEventId, trackPixel } from "@/components/meta-pixel";
 import { COVER_PRESETS, type LeadFormData } from "@/lib/lead-magnets";
 
 type Done = { token: string; responseId: string };
@@ -17,7 +16,7 @@ const label = "mb-1.5 block text-[14px] font-medium text-ink";
 const star = <span className="text-down"> *</span>;
 
 // The lead magnet form. `preview` renders the same card inert for the builder.
-export function LeadMagnetCard({ data, files = [], preview, previewDone, pixelId, compact }: { data: LeadFormData; files?: FileItem[]; preview?: boolean; previewDone?: boolean; pixelId?: string | null; compact?: boolean }) {
+export function LeadMagnetCard({ data, files = [], preview, previewDone, compact }: { data: LeadFormData; files?: FileItem[]; preview?: boolean; previewDone?: boolean; compact?: boolean }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "" });
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [code, setCode] = useState("");
@@ -29,8 +28,7 @@ export function LeadMagnetCard({ data, files = [], preview, previewDone, pixelId
   useEffect(() => {
     if (preview) return;
     void fetch("/api/leads/view", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ magnetId: data.id }), keepalive: true }).catch(() => {});
-    if (pixelId) void initPixel(pixelId).then(() => trackPixel(pixelId, "PageView", {}, newEventId("pv")));
-  }, [preview, data.id, pixelId]);
+  }, [preview, data.id]);
 
   async function sendCode() {
     const res = await fetch("/api/leads/code", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ magnetId: data.id, email: form.email }) }).catch(() => null);
@@ -42,7 +40,7 @@ export function LeadMagnetCard({ data, files = [], preview, previewDone, pixelId
     const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ magnetId: data.id, ...form, answers, code: withCode, sourceUrl: window.location.href, ...getMetaCookies() }),
+      body: JSON.stringify({ magnetId: data.id, ...form, answers, code: withCode, sourceUrl: window.location.href }),
     }).catch(() => null);
     const json = res ? await res.json().catch(() => ({})) : {};
     if (res?.status === 409 && json.needsCode) {
@@ -51,7 +49,6 @@ export function LeadMagnetCard({ data, files = [], preview, previewDone, pixelId
       return;
     }
     if (!res?.ok || !json.token) throw new Error(json.error ?? "Something went wrong. Please try again.");
-    if (!json.repeat) trackPixel(pixelId ?? null, "Lead", { content_name: data.title, content_ids: [data.id], value: 0, currency: "INR" }, `lead_${json.responseId}`);
     setDone({ token: json.token, responseId: json.responseId });
     setStep("done");
   }
