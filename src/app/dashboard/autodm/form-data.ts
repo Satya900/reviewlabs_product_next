@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decrypt } from "@/lib/crypto";
 import { recentMedia } from "@/lib/instagram";
-import type { MediaOption } from "./automation-form";
+import type { MediaOption } from "./automation-draft";
 
 // What the automation form needs: the creator's recent posts and products.
 // Without a connected Instagram account there's nothing to automate.

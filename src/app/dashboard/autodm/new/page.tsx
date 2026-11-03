@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireCreator } from "@/lib/auth";
 import { PageTitle } from "@/components/ui";
-import { AutomationForm, emptyDraft } from "../automation-form";
+import { AutomationForm } from "../automation-form";
+import { emptyDraft } from "../automation-draft";
 import { loadFormData } from "../form-data";
 
 export const metadata = { title: "New automation" };

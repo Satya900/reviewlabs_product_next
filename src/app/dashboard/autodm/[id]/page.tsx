@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PageTitle } from "@/components/ui";
-import { AutomationForm, type MediaOption } from "../automation-form";
+import { AutomationForm } from "../automation-form";
+import type { MediaOption } from "../automation-draft";
 import { DeleteAutomationButton } from "../autodm-controls";
 import { loadFormData } from "../form-data";
 

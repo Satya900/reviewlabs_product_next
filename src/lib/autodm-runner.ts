@@ -69,10 +69,12 @@ export async function handleComment(event: CommentEvent): Promise<CommentResult>
     .eq("creator_id", account.creator_id)
     .eq("active", true)
     .order("created_at");
-  // Only comments made after the automation was set up: turning one on never
-  // messages people who commented before.
+  // Comments the sync reads back must be newer than the automation, so turning
+  // one on never messages people who commented before. (Instagram's and our
+  // clocks differ by seconds, so this isn't applied to webhook comments,
+  // which are always new.)
   const commentedAt = event.timestamp ? Date.parse(event.timestamp) : Date.now();
-  const eligible = ((rows ?? []) as AutomationRow[]).filter((a) => Date.parse(a.created_at) <= commentedAt);
+  const eligible = ((rows ?? []) as AutomationRow[]).filter((a) => !event.fromSync || Date.parse(a.created_at) <= commentedAt);
   const match = pickAutomation(eligible.map(toRule), {
     commentId: event.commentId,
     mediaId: event.mediaId,
@@ -166,7 +168,7 @@ export async function syncAccount(creatorId: string): Promise<{ checked: number;
       if (!c.text || !c.from?.id) continue;
       if (c.timestamp && !withinReplyWindow(new Date(c.timestamp))) continue;
       checked++;
-      const result = await handleComment({ igUserId: account.ig_user_id, commentId: c.id, mediaId, text: c.text, fromId: c.from.id, fromUsername: c.from.username, timestamp: c.timestamp });
+      const result = await handleComment({ igUserId: account.ig_user_id, commentId: c.id, mediaId, text: c.text, fromId: c.from.id, fromUsername: c.from.username, timestamp: c.timestamp, fromSync: true });
       if (result === "sent") sent++;
     }
   }

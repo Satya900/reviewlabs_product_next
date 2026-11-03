@@ -103,6 +103,9 @@ export type CommentEvent = {
   fromId: string;
   fromUsername?: string;
   timestamp?: string;
+  // Read back by the sync, so it may be from before an automation existed.
+  // Webhook comments are always new.
+  fromSync?: boolean;
 };
 
 type CommentValue = { id?: string; text?: string; from?: { id?: string; username?: string }; media?: { id?: string } };
