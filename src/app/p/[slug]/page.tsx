@@ -6,6 +6,7 @@ import { CheckoutForm } from "./checkout-form";
 import { ProductView } from "@/components/product-view";
 import { faqJsonLd } from "@/lib/faq";
 import { sanitizeDescription } from "@/lib/rich-text";
+import { StorePaused } from "@/components/store-paused";
 
 export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -22,6 +23,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
   const { slug } = await params;
   const data = await getPublicPage(slug);
   if (!data) notFound();
+  if (!data.storeLive) return <StorePaused name={data.sellerName === "the seller" ? null : data.sellerName} />;
   const { page, fields, files, linkLabels, testimonials, faqs, offer, sellerName } = data;
 
   return (

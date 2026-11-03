@@ -2,8 +2,7 @@ import Link from "next/link";
 import { CheckList, CtaBand, Faq, FeatureCard, Kicker, Section, SectionHead, Steps } from "@/components/marketing";
 import { HeroMockups } from "@/components/hero-mockups";
 import { buttonClass, cx } from "@/components/ui";
-import { formatPaise } from "@/lib/money";
-import { CREATOR_FEE_PERCENT, CREATOR_PRICE_PAISE, FREE_FEE_PERCENT, priceLabels } from "@/lib/plans";
+import { priceLabel } from "@/lib/plans";
 import { site } from "@/lib/site";
 
 const sellables = [
@@ -21,7 +20,6 @@ const sellables = [
   "Workout plans",
 ];
 
-const plan = formatPaise(CREATOR_PRICE_PAISE).replace(".00", "");
 
 export default function Home() {
   return (
@@ -36,17 +34,17 @@ export default function Home() {
             <h1 className="display text-[44px] sm:text-[64px] lg:text-[80px]">Sell your ebook from a single link.</h1>
             <p className="max-w-xl text-[18px] text-on-dark-soft sm:text-[20px]">
               Make a payment page in about five minutes. Buyers pay with UPI or card and the file lands in their inbox.
-              Add a link-in-bio storefront and free lead magnets to grow your list. Start free, one all-inclusive fee per sale, GST included.
+              Add a link-in-bio storefront, free lead magnets and Instagram AutoDM to grow. 0% platform fee on every sale.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className={buttonClass.hero}>Start for free</Link>
+              <Link href="/signup" className={buttonClass.hero}>Get started</Link>
               <Link href="/how-it-works" className={cx(buttonClass.outlineDark, "h-14 px-8")}>See how it works</Link>
             </div>
             <dl className="grid max-w-lg grid-cols-3 gap-4 border-t border-dark-line pt-6">
               {[
-                ["₹0", "to start selling"],
+                ["0%", "platform fee per sale"],
                 ["Seconds", "from payment to file"],
-                [`${FREE_FEE_PERCENT}%→${CREATOR_FEE_PERCENT}%`, "all-in fee per sale"],
+                [priceLabel("creator", "month"), "a month, GST included"],
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt className="num text-[22px] text-white sm:text-[26px]">{value}</dt>
@@ -256,13 +254,13 @@ export default function Home() {
               <p className="text-[14px] text-body">Balance</p>
               <Kicker>Ledger</Kicker>
             </div>
-            <p className="num mt-2 text-[36px] tracking-tight">₹1,398.61</p>
+            <p className="num mt-2 text-[36px] tracking-tight">₹1,410.06</p>
             <ul className="mt-6 divide-y divide-hairline-soft">
               {[
                 { label: "Sale: Notion budget template", meta: "Today, 9:42 pm", amount: "+₹299.00", up: true },
-                { label: "Fees 4% (includes payment gateway)", meta: "Today, 9:42 pm", amount: "−₹11.96", up: false },
+                { label: "Razorpay charge (at cost)", meta: "Today, 9:42 pm", amount: "−₹7.06", up: false },
                 { label: "Sale: 30-day content calendar (coupon DIWALI20)", meta: "Today, 6:10 pm", amount: "+₹399.20", up: true },
-                { label: "Fees 4% (includes payment gateway)", meta: "Today, 6:10 pm", amount: "−₹15.97", up: false },
+                { label: "Razorpay charge (at cost)", meta: "Today, 6:10 pm", amount: "−₹9.42", up: false },
                 { label: "Payout to UPI · UTR 4521…", meta: "Yesterday", amount: "−₹2,000.00", up: false },
               ].map((row) => (
                 <li key={row.label + row.meta + row.amount} className="flex items-center justify-between gap-4 py-3.5">
@@ -280,29 +278,29 @@ export default function Home() {
 
       {/* Pricing teaser */}
       <Section tone="soft">
-        <SectionHead center kicker="Pricing" title="Start free. Upgrade when you grow." />
+        <SectionHead center kicker="Pricing" title="0% platform fee. Keep what you sell." />
         <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
           <div className="rounded-3xl bg-dark p-8 text-white">
-            <p className="text-[16px] font-semibold">Free, then Creator</p>
+            <p className="text-[16px] font-semibold">Creator and Pro</p>
             <p className="mt-4 flex items-baseline gap-2">
-              <span className="display text-[64px]">₹0</span>
-              <span className="text-on-dark-soft">to start</span>
+              <span className="display text-[64px]">{priceLabel("creator", "month")}</span>
+              <span className="text-on-dark-soft">/ month</span>
             </p>
-            <p className="mt-2 text-[15px] text-on-dark-soft">One product page free at {FREE_FEE_PERCENT}% per sale. Creator is {plan}/month, {priceLabels.yearly}/year or {priceLabels.lifetime} once for lifetime, with fees down to {CREATOR_FEE_PERCENT}%. All prices include GST.</p>
+            <p className="mt-2 text-[15px] text-on-dark-soft">Creator is {priceLabel("creator", "month")}/month and Pro, with Instagram AutoDM, is {priceLabel("pro", "month")}/month. Yearly plans get 2 months free. All prices include GST, and we never take a cut of your sales.</p>
             <div className="mt-8">
-              <CheckList dark items={["Free: one page, one lead magnet, your storefront", "Creator: unlimited pages and lead magnets, 4% fees", "Creator: coupons, add-on offers, analytics, CSV"]} />
+              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, coupons, analytics", "Pro: everything in Creator plus AutoDM"]} />
             </div>
-            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start for free</Link>
+            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Get started</Link>
           </div>
           <div className="rounded-3xl border border-hairline bg-canvas p-8">
             <p className="text-[16px] font-semibold">A ₹499 sale, worked out</p>
             <dl className="mt-6 space-y-4 text-[15px]">
               <div className="flex justify-between"><dt className="text-body">Buyer pays</dt><dd className="num">₹499.00</dd></div>
-              <div className="flex justify-between"><dt className="text-body">Free plan fee ({FREE_FEE_PERCENT}%)</dt><dd className="num">−₹29.94</dd></div>
-              <div className="flex justify-between"><dt className="text-body">Creator plan fee ({CREATOR_FEE_PERCENT}%)</dt><dd className="num">−₹19.96</dd></div>
-              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep on Creator</dt><dd className="num text-up">₹479.04</dd></div>
+              <div className="flex justify-between"><dt className="text-body">Reviewlabs platform fee</dt><dd className="num text-up">₹0.00</dd></div>
+              <div className="flex justify-between"><dt className="text-body">Razorpay charge (about 2.36%, at cost)</dt><dd className="num">−₹11.78</dd></div>
+              <div className="flex justify-between border-t border-hairline pt-4 font-semibold"><dt>You keep</dt><dd className="num text-up">₹487.22</dd></div>
             </dl>
-            <p className="mt-6 text-[13px] text-muted">One fee, nothing else. Razorpay&apos;s payment gateway charge is included.</p>
+            <p className="mt-6 text-[13px] text-muted">We take nothing from your sales. Razorpay&apos;s payment charge is passed on at exactly what it costs.</p>
             <Link href="/pricing" className={cx(buttonClass.secondary, "mt-8 w-full")}>See full pricing</Link>
           </div>
         </div>
@@ -317,10 +315,10 @@ export default function Home() {
               { q: `What is ${site.name}?`, a: `A tool for selling digital files in India. You get a payment page per product, Razorpay checkout, automatic delivery by email, a link-in-bio storefront, free lead magnets to collect emails, and a dashboard for orders, earnings and analytics.` },
               { q: "Who is it for?", a: "Creators, coaches, designers, teachers and anyone with something useful to sell as a file. You don't need a website or any technical setup." },
               { q: "How fast does the buyer get the file?", a: "Usually within seconds. As soon as Razorpay confirms the payment, the download button appears on the thank-you page and the receipt email goes out." },
-              { q: "What does it cost?", a: `Starting is free, with a ${FREE_FEE_PERCENT}% all-inclusive fee per sale (payment gateway and GST included). The Creator plan cuts that to ${CREATOR_FEE_PERCENT}% and costs ${plan} a month, ${priceLabels.yearly} a year, or ${priceLabels.lifetime} once for lifetime access, GST included, with unlimited pages and the growth tools.` },
+              { q: "What does it cost?", a: `Creator is ${priceLabel("creator", "month")} a month (${priceLabel("creator", "year")} a year) and Pro, which adds Instagram AutoDM, is ${priceLabel("pro", "month")} a month (${priceLabel("pro", "year")} a year), GST included. There's 0% platform fee on sales; Razorpay's payment charge (about 2.36%) is passed on at cost.` },
               { q: "How do I get paid?", a: "Add your bank account once, with a cancelled cheque. Then request a payout from Earnings whenever you have ₹500 or more available (sales become available 24 hours after they happen). We review it and send it to your bank, and each payout shows in your ledger with its UTR number, so you can match it with your bank statement." },
               { q: "What if a buyer loses the download link?", a: "Access never expires. They enter their email on the download page and we send their links again." },
-              { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Free includes one lead magnet; Creator has unlimited." },
+              { q: "Can I collect emails without selling anything?", a: "Yes. Create a lead magnet: a free file people get for their name and email. You can turn on email verification codes, add your own questions, and export the leads as CSV. Both plans include unlimited lead magnets." },
               { q: "I already sell on Superprofile. Can I move my products?", a: "Yes. Save your product page from your browser and upload it in Payment pages → Import from Superprofile. In about a minute you get a draft with your text, prices, images, testimonials, FAQs and policies. Imports from other platforms are in development, and until then we'll move your products for you, free." },
               { q: "Do I need a website or a company?", a: "No. Create an account, verify your email, add your bank account for payouts, and publish your page." },
             ]}
@@ -330,8 +328,8 @@ export default function Home() {
 
       <CtaBand
         title="Put your first product online this week."
-        sub="Free to start. Your first page can be live in minutes."
-        primary={{ href: "/signup", label: "Start for free" }}
+        sub="0% platform fee. Your first page can be live in minutes."
+        primary={{ href: "/signup", label: "Get started" }}
         secondary={{ href: "/pricing", label: "See pricing" }}
       />
     </>

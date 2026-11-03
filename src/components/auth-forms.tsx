@@ -64,7 +64,7 @@ export function SignupForm() {
         <PasswordInput name="password" autoComplete="new-password" />
       </Field>
       <FormMessage state={state} />
-      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Creating account" : "Create free account"}</Button>
+      <Button loading={pending} type="submit" className="h-12 w-full" disabled={pending}>{pending ? "Creating account" : "Create account"}</Button>
       <p className="text-center text-[13px] text-muted">
         By creating an account you agree to our <Link href="/terms" className="link">terms</Link> and <Link href="/privacy" className="link">privacy policy</Link>.
       </p>

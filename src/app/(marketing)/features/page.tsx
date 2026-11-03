@@ -108,7 +108,7 @@ export default function Features() {
           "Pick your handle, upload a photo, add up to nine social links",
           "Feature one product at the top, reorder or hide the rest",
           "Live preview while you edit",
-          "No Reviewlabs badge on the Creator plan",
+          "No Reviewlabs badge once you're on a plan",
         ]}
         mock={
           <MockFrame className="mx-auto w-full max-w-sm">
@@ -162,7 +162,7 @@ export default function Features() {
         icon="target"
         kicker="Grow"
         title="See what sells, then sell more of it."
-        sub="On the Creator plan: track every page from first view to paid order, and run discount codes for launches."
+        sub="Track every page from first view to paid order, and run discount codes for launches."
         items={[
           "Page views, checkouts, sales and conversion per page",
           "Coupons: percent or flat, with expiry dates and use limits",
@@ -201,8 +201,8 @@ export default function Features() {
         sub="Every sale, fee, refund and payout is a separate line, and your balance is their total. When we pay you, the UTR number is right there."
         items={[
           "Request a payout any time from ₹500, sent to your bank account",
-          "One all-inclusive fee per sale (6% Free, 4% Creator), gateway and GST included",
-          "Download orders as CSV for your accountant (Creator)",
+          "0% platform fee; Razorpay's charge passed on at cost, line by line",
+          "Download orders as CSV for your accountant",
           "Refunds handled for you and recorded in the ledger",
         ]}
         mock={
@@ -210,7 +210,7 @@ export default function Features() {
             <p className="text-[14px] text-body">Balance owed to you</p>
             <p className="num mt-1 text-[32px]">₹8,940.50</p>
             <ul className="mt-5 divide-y divide-hairline-soft">
-              {[["Sale", "+₹349.00", true], ["Fees 4% (gateway and GST included)", "−₹13.96", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
+              {[["Sale", "+₹349.00", true], ["Razorpay charge (at cost)", "−₹8.24", false], ["Refund", "−₹349.00", false], ["Payout · UTR 6610…", "−₹5,000.00", false]].map(([k, v, up]) => (
                 <li key={String(k) + String(v)} className="flex justify-between py-3 text-[14px]">
                   <span>{k}</span>
                   <span className={cx("num", up ? "text-up" : "text-ink")}>{v}</span>
@@ -274,7 +274,7 @@ export default function Features() {
         </div>
       </Section>
 
-      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/signup", label: "Start for free" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Ready when you are." sub="Tell us what you sell and we will set you up." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/pricing", label: "See pricing" }} />
     </>
   );
 }

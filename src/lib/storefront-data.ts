@@ -1,11 +1,11 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { creatorHasPlan } from "@/lib/plans-server";
+import { creatorTier } from "@/lib/plans-server";
 import type { StorefrontData } from "@/components/storefront-view";
 
 // Public storefront data. Only safe profile fields and live, visible pages.
-export const getStorefront = cache(async (handle: string): Promise<(StorefrontData & { creatorId: string }) | null> => {
+export const getStorefront = cache(async (handle: string): Promise<(StorefrontData & { creatorId: string; storeLive: boolean }) | null> => {
   const clean = handle.toLowerCase();
   if (!/^[a-z0-9_.]{3,30}$/.test(clean)) return null;
   const admin = createAdminClient();
@@ -16,7 +16,7 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
     .maybeSingle();
   if (!profile) return null;
 
-  const [{ data: pages }, { data: magnets }, hasPlan] = await Promise.all([
+  const [{ data: pages }, { data: magnets }, tier] = await Promise.all([
     admin
       .from("payment_pages")
       .select("id, slug, title, amount_paise, cover_image_url")
@@ -32,7 +32,7 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
       .eq("status", "live")
       .eq("storefront_visible", true)
       .order("created_at", { ascending: false }),
-    creatorHasPlan(profile.id),
+    creatorTier(profile.id),
   ]);
 
   return {
@@ -43,7 +43,9 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
     avatarUrl: profile.avatar_url,
     socials: (profile.social_links ?? {}) as Record<string, string>,
     featuredId: profile.featured_page_id,
-    showBranding: !hasPlan,
+    // "Made with Reviewlabs" during the free trial.
+    showBranding: tier === "trial",
+    storeLive: tier !== "none",
     products: [
       ...(pages ?? []).map((p) => ({ id: p.id, href: `/p/${p.slug}`, title: p.title, amountPaise: p.amount_paise, isFree: false, cover: p.cover_image_url })),
       ...(magnets ?? []).map((m) => ({ id: m.id, href: `/l/${m.slug}`, title: m.title, amountPaise: 0, isFree: true, cover: m.cover_image_url })),

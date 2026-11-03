@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CheckList, CtaBand, Faq, Icon, PageHero, Section, SectionHead } from "@/components/marketing";
 import { buttonClass, cx } from "@/components/ui";
-import { CREATOR_FEE_PERCENT, CREATOR_LIFETIME_PAISE, CREATOR_PRICE_PAISE, FREE_FEE_PERCENT, priceLabels } from "@/lib/plans";
+import { GATEWAY_FEE_LABEL, PLAN_PRICES, priceLabel } from "@/lib/plans";
 import { superprofile as sp } from "@/lib/competitors";
 import { site } from "@/lib/site";
 import { SavingsCalculator } from "./savings-calculator";
@@ -20,10 +20,9 @@ const yes = <Icon name="check" className="mx-auto size-5 text-up" />;
 export default function CompareSuperprofile() {
   const migrateHref = `mailto:${site.supportEmail}?subject=${encodeURIComponent("Free migration from Superprofile")}&body=${encodeURIComponent("Hi, I sell on Superprofile and want to move to Reviewlabs.\n\nMy Superprofile link: \nInstagram: \nWhat I sell: ")}`;
   const rows: Row[] = [
-    { label: "Start selling in India for free", us: <span className="font-medium">Yes, on the Free plan</span>, them: sp.indiaSellingNeedsPaidPlan ? "Needs a paid plan" : null },
-    { label: "Paid plan", us: `${priceLabels.monthly}/month (${priceLabels.intro} first month), ${priceLabels.yearly}/year, GST included`, them: sp.indiaCreatorPrice },
-    { label: "Lifetime option", us: <span className="font-medium">{priceLabels.lifetime} once, no renewals</span>, them: null },
-    { label: "Fee per sale", us: `${CREATOR_FEE_PERCENT}% on Creator, ${FREE_FEE_PERCENT}% on Free, payment gateway and GST included`, them: sp.indiaFeePerSale },
+    { label: "Paid plan", us: `Creator ${priceLabel("creator", "month")}/month, Pro (with AutoDM) ${priceLabel("pro", "month")}/month, GST included; yearly gets 2 months free`, them: sp.indiaCreatorPrice },
+    { label: "Platform fee per sale", us: <span className="font-medium">0%. Razorpay&apos;s charge ({GATEWAY_FEE_LABEL}) passed on at cost</span>, them: sp.indiaFeePerSale },
+    { label: "Instagram AutoDM", us: "On Pro: comment a keyword, get the link by DM", them: yes },
     { label: "UPI, cards and netbanking", us: yes, them: yes },
     { label: "Instant download after payment", us: yes, them: yes },
     { label: "Files attached to the delivery email", us: "Up to 10 MB", them: null },
@@ -33,17 +32,17 @@ export default function CompareSuperprofile() {
     { label: "Payouts", us: "On request from ₹500, to your bank, with UTR", them: sp.payouts },
     { label: "Import your Superprofile pages", us: <><span className="font-medium">Upload a saved page, get a draft in a minute.</span> <Link href="/import" className="link">How it works</Link></>, them: null },
     { label: "Free migration, done for you", us: "We move your products and files", them: null },
-  ].filter((r) => r.them !== null || ["Lifetime option", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
+  ].filter((r) => r.them !== null || ["Platform fee per sale", "Files attached to the delivery email", "Line-by-line earnings ledger", "Import your Superprofile pages", "Free migration, done for you"].includes(r.label));
 
   return (
     <>
       <PageHero
         kicker="Compare"
         title="Reviewlabs vs Superprofile"
-        sub={`Both let you sell digital products from one link. Reviewlabs lets you start selling for ₹0, costs ${priceLabels.monthly}/month (or ${priceLabels.lifetime} once, for life) and shows every rupee in a ledger. Here's an honest look at both.`}
+        sub={`Both let you sell digital products from one link. Reviewlabs takes 0% of your sales, costs ${priceLabel("creator", "month")}/month (${priceLabel("pro", "month")} with AutoDM) and shows every rupee in a ledger. Here's an honest look at both.`}
       >
         <div className="flex flex-wrap gap-3 pt-2">
-          <Link href="/signup" className={buttonClass.hero}>Start free</Link>
+          <Link href="/signup" className={buttonClass.hero}>Get started</Link>
           <Link href="/import" className={cx(buttonClass.secondary, "h-14 px-8")}>Import your page</Link>
         </div>
       </PageHero>
@@ -77,7 +76,7 @@ export default function CompareSuperprofile() {
       <Section tone="soft">
         <SectionHead kicker="Do the maths" title="What would you keep?" sub="Enter your own numbers. We don't guess what you pay today." />
         <div className="mt-10">
-          <SavingsCalculator creatorFee={CREATOR_FEE_PERCENT} creatorPlan={CREATOR_PRICE_PAISE / 100} lifetime={CREATOR_LIFETIME_PAISE / 100} />
+          <SavingsCalculator gatewayPercent={2.36} creatorPlan={PLAN_PRICES.creator.month / 100} proPlan={PLAN_PRICES.pro.month / 100} />
         </div>
       </Section>
 
@@ -87,9 +86,8 @@ export default function CompareSuperprofile() {
             <SectionHead kicker="Why creators switch" title="Built for selling files in India." />
             <CheckList
               items={[
-                "Start selling for ₹0. Upgrade only when it pays for itself",
-                `${priceLabels.monthly}/month, or ${priceLabels.lifetime} once and never pay a plan again`,
-                `One all-inclusive fee: ${CREATOR_FEE_PERCENT}% on Creator, payment gateway and GST already covered`,
+                "0% platform fee: we never take a cut of your sales",
+                `${priceLabel("creator", "month")}/month, or ${priceLabel("pro", "month")}/month with Instagram AutoDM`,
                 "Every sale, fee, refund and payout as a line in your ledger",
                 "Files attached to the email, lifetime links buyers can resend themselves",
                 "Import a Superprofile page yourself in a minute, or we move everything for you, free",
@@ -100,7 +98,6 @@ export default function CompareSuperprofile() {
             <p className="text-[18px] font-semibold">Where Superprofile may suit you better</p>
             <p className="text-[15px] text-body">We&apos;d rather you pick the right tool. Superprofile offers things we don&apos;t yet:</p>
             <ul className="space-y-2 text-[15px] text-body">
-              <li>• Instagram AutoDM automation</li>
               <li>• Courses and paid communities</li>
               <li>• Selling in multiple currencies</li>
             </ul>
@@ -148,13 +145,13 @@ export default function CompareSuperprofile() {
               { q: "Will my buyers lose access?", a: "No. People who bought on Superprofile keep their access there. New buyers get their files from Reviewlabs, instantly and by email." },
               { q: "Do I need my own payment gateway?", a: "No. Payments go through our Razorpay account. You add your bank account and request payouts from your balance, with the UTR in your ledger." },
               { q: "How often are payouts?", a: "Whenever you like. Request a payout from Earnings once you have ₹500 or more available (sales become available 24 hours after they happen), and we send it to your bank. Every payout shows in your ledger with its UTR." },
-              { q: "Is the lifetime plan really one payment?", a: `Yes. ${priceLabels.lifetime} once gives you Creator for as long as Reviewlabs runs, with no renewals.` },
+              { q: "Do you take a cut of my sales?", a: `No. The platform fee is 0%. Razorpay's payment charge (${GATEWAY_FEE_LABEL}) is passed on at exactly what it costs, and you see it on every sale.` },
             ]}
           />
         </div>
       </Section>
 
-      <CtaBand title="Try it on one product first." sub="Free to start. Import it yourself in a minute, or we'll move it over for you." primary={{ href: "/signup", label: "Start free" }} secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Try it on one product first." sub="Import it yourself in a minute, or we'll move it over for you, free." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/pricing", label: "See pricing" }} />
 
       <p className="mx-auto max-w-[1200px] px-5 pb-10 text-[12px] text-muted sm:px-8">
         Superprofile is a trademark of its owner. Reviewlabs is not affiliated with or endorsed by Superprofile. This comparison uses information from Superprofile&apos;s public website as of {sp.checkedOn}.

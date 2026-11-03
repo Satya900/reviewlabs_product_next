@@ -7,6 +7,7 @@ import { isAuthorizedCron } from "@/lib/cron";
 import { fetchSubscription, grantLifetime, syncSubscription } from "@/lib/billing";
 import { syncOpenPayouts } from "@/lib/payouts";
 import { syncAllAccounts } from "@/lib/autodm-runner";
+import { sendTrialEmails } from "@/lib/trial-emails";
 import { env } from "@/lib/env";
 
 export const maxDuration = 60;
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
 async function reconcile() {
   const admin = createAdminClient();
   const now = Date.now();
-  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, autodmSent: 0, errors: 0 };
+  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, autodmSent: 0, trialEmails: 0, errors: 0 };
 
   // 1. Unpaid orders 10 minutes to 3 days old: ask Razorpay what happened.
   const { data: pending } = await admin
@@ -105,12 +106,12 @@ async function reconcile() {
     await runPostPaymentTasks(orderId);
   }
 
-  // 4. Creator plans past their paid period (missed renewal or cancel webhook):
+  // 4. Paid plans past their paid period (missed renewal or cancel webhook):
   //    ask Razorpay for the real state.
   const { data: lapsed } = await admin
     .from("profiles")
     .select("id, razorpay_subscription_id")
-    .eq("plan", "creator")
+    .in("plan", ["creator", "pro"])
     .eq("is_admin", false)
     .lt("plan_current_period_end", new Date(now - 3600_000).toISOString())
     .limit(50);
@@ -170,7 +171,16 @@ async function reconcile() {
     }
   }
 
-  // 8. Housekeeping: rate-limit windows older than a day are useless.
+  // 8. Free trial ending soon or ended: one email each.
+  try {
+    const t = await sendTrialEmails();
+    summary.trialEmails = t.reminders + t.ended;
+  } catch (e) {
+    summary.errors++;
+    console.error("[reconcile] trial emails:", e);
+  }
+
+  // 9. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return summary;

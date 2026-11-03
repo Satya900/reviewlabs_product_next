@@ -36,7 +36,7 @@ export function discountFor(coupon: Pick<Coupon, "discount_type" | "value">, pri
 export async function applyCoupon(page: { id: string; creator_id: string; amount_paise: number }, rawCode: string): Promise<CouponResult> {
   const code = normalizeCode(rawCode);
   if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { ok: false, error: "That coupon code isn't valid" };
-  // Coupons only work while the seller is on the Creator plan.
+  // Coupons only work while the seller has a plan or is in the trial.
   if (!(await creatorHasPlan(page.creator_id))) return { ok: false, error: "That coupon code isn't valid for this product" };
 
   const { data: coupon } = await createAdminClient()

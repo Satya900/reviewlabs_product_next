@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isAllowedImageSrc } from "@/lib/rich-text";
 import { COVER_KEYS, LEAD_LIMITS, leadSlug, type CoverPreset } from "@/lib/lead-magnets";
@@ -12,9 +12,7 @@ export type LeadActionState = { error?: string; ok?: string } | null;
 
 function limitMessage(message: string) {
   if (message.includes("email_not_verified")) return "Verify your email to publish. Use the link at the top of the page, then publish again.";
-  return message.includes("free_plan_lead_magnet_limit")
-    ? "The Free plan includes one lead magnet. Upgrade to Creator in Plan and billing for unlimited lead magnets."
-    : null;
+  return null;
 }
 
 function refresh(id?: string) {
@@ -23,7 +21,7 @@ function refresh(id?: string) {
 }
 
 export async function createLeadMagnet() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const title = "Get my free guide";
   const { data, error } = await supabase
@@ -58,7 +56,7 @@ const basicsSchema = z.object({
 
 // Step 1: content, cover and questions.
 export async function saveLeadBasics(input: z.input<typeof basicsSchema>): Promise<LeadActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = basicsSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const d = parsed.data;
@@ -106,7 +104,7 @@ const settingsSchema = z.object({
 
 // Step 2: after-submit experience, link and publishing.
 export async function saveLeadSettings(input: z.input<typeof settingsSchema>): Promise<LeadActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const parsed = settingsSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const d = parsed.data;
@@ -144,7 +142,7 @@ export async function saveLeadSettings(input: z.input<typeof settingsSchema>): P
 }
 
 export async function setLeadStatus(id: string, status: "draft" | "live") {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { error } = await supabase.from("lead_magnets").update({ status }).eq("id", id);
   refresh(id);
@@ -153,7 +151,7 @@ export async function setLeadStatus(id: string, status: "draft" | "live") {
 
 // Lead magnets with responses are archived so the leads stay; others are deleted.
 export async function deleteLeadMagnet(id: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { count } = await supabase.from("lead_responses").select("id", { count: "exact", head: true }).eq("magnet_id", id);
   if (count) {
@@ -168,7 +166,7 @@ export async function deleteLeadMagnet(id: string) {
 }
 
 export async function registerLeadFile(input: { magnetId: string; path: string; name: string; size: number; type: string | null }): Promise<LeadActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!input.path.startsWith(`${profile.id}/`)) return { error: "Invalid file path" };
   const supabase = await createClient();
   const { error } = await supabase.from("lead_magnet_files").insert({
@@ -187,7 +185,7 @@ export async function registerLeadFile(input: { magnetId: string; path: string; 
 }
 
 export async function deleteLeadFile(fileId: string, magnetId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { data: file } = await supabase.from("lead_magnet_files").select("storage_path").eq("id", fileId).maybeSingle();
   if (!file) return;

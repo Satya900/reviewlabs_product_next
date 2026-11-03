@@ -59,7 +59,7 @@ export default function HowItWorks() {
         </div>
       </Section>
 
-      <CtaBand title="Want to sell your first file this week?" primary={{ href: "/signup", label: "Start for free" }} secondary={{ href: "/features", label: "See all features" }} />
+      <CtaBand title="Want to sell your first file this week?" primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/features", label: "See all features" }} />
     </>
   );
 }

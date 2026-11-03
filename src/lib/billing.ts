@@ -18,7 +18,10 @@ function noteValue(sub: RazorpaySubscription, key: string): string | undefined {
   return sub.notes && !Array.isArray(sub.notes) ? sub.notes[key] : undefined;
 }
 
-// Records a plan payment (e.g. the intro charge, which arrives through Checkout).
+// Creator or Pro. Subscriptions from before Pro existed are Creator.
+const tierOf = (sub: RazorpaySubscription): "creator" | "pro" => (noteValue(sub, "tier") === "pro" ? "pro" : "creator");
+
+// Records a plan payment that arrives through Checkout (the first charge).
 export async function recordSubscriptionPayment(sub: RazorpaySubscription, payment: { id: string; amount: number; status: string }) {
   const owner = await creatorForSubscription(sub);
   if (!owner || (payment.status !== "captured" && payment.status !== "authorized")) return;
@@ -69,7 +72,7 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
       await admin
         .from("profiles")
         .update({
-          plan: "creator",
+          plan: tierOf(sub),
           // Keep "cancelling" if they already asked to cancel at period end.
           plan_status: owner.plan_status === "cancelling" ? "cancelling" : "active",
           plan_current_period_end: toIso(sub.current_end),
@@ -81,24 +84,25 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
       await admin.from("profiles").update({ plan_status: "past_due" }).eq("id", owner.id);
       return;
     case "authenticated": {
-      // Intro offer: the first-month price was charged when autopay was set up,
-      // and regular billing starts at start_at. Creator runs until then.
+      // Subscribed during the trial: autopay is set up and billing starts at
+      // start_at, the end of the trial. The plan runs until then. (Older
+      // subscriptions did the same for the ₹99 intro month.)
       const startsLater = sub.start_at && sub.start_at * 1000 > Date.now();
-      if (!startsLater || noteValue(sub, "intro") !== "yes") return;
+      const deferred = noteValue(sub, "after_trial") === "yes" || noteValue(sub, "intro") === "yes";
+      if (!startsLater || !deferred) return;
       await admin
         .from("profiles")
         .update({
-          plan: "creator",
+          plan: tierOf(sub),
           plan_status: owner.plan_status === "cancelling" ? "cancelling" : "active",
           plan_current_period_end: toIso(sub.start_at),
-          intro_used: true,
         })
         .eq("id", owner.id);
       return;
     }
     case "cancelled": {
-      // Cancelled before the paid time ran out (e.g. during the intro month):
-      // keep Creator until then; the reconcile job moves them to Free afterwards.
+      // Cancelled before the paid time ran out (e.g. before billing started):
+      // keep the plan until then; the reconcile job ends it afterwards.
       const paidUntil = owner.plan_current_period_end ? new Date(owner.plan_current_period_end).getTime() : 0;
       if (owner.plan_status === "cancelling" && paidUntil > Date.now()) return;
       await admin.rpc("downgrade_to_free", { p_creator_id: owner.id, p_status: "cancelled" });

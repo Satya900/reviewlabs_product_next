@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat, buttonClass, cx, tableClass } from "@/components/ui";
-import { hasCreatorPlan } from "@/lib/plans";
+import { currentTier } from "@/lib/plans";
 
 export default async function AdminCreators() {
   const db = createAdminClient();
@@ -14,7 +14,8 @@ export default async function AdminCreators() {
   const { data: commission } = await db.from("ledger_entries").select("amount_paise").eq("entry_type", "platform_fee");
   const planRevenue = (subPayments ?? []).reduce((s, r) => s + r.amount_paise, 0);
   const commissionRevenue = -(commission ?? []).reduce((s, r) => s + r.amount_paise, 0);
-  const creatorCount = (profiles ?? []).filter((p) => !p.is_admin && hasCreatorPlan(p)).length;
+  const creatorCount = (profiles ?? []).filter((p) => { const t = currentTier(p); return !p.is_admin && (t === "creator" || t === "pro"); }).length;
+  const trialCount = (profiles ?? []).filter((p) => !p.is_admin && currentTier(p) === "trial").length;
   const balanceBy = new Map((balances ?? []).map((b) => [b.creator_id, b]));
   const totalOwed = (balances ?? []).reduce((s, b) => s + Math.max(0, Number(b.balance_paise)), 0);
 
@@ -25,7 +26,7 @@ export default async function AdminCreators() {
         <Link href="/admin/creators/new" className={buttonClass.primary}>Add creator</Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Creator plan subscribers" value={creatorCount} />
+        <Stat label="Paying creators (Creator + Pro)" value={creatorCount} sub={`${trialCount} on free trial`} />
         <Stat label="Plan revenue (all time)" value={formatPaise(planRevenue)} />
         <Stat label="Platform fees earned (net)" value={formatPaise(commissionRevenue)} />
       </div>
@@ -58,7 +59,7 @@ export default async function AdminCreators() {
                       ? <>{p.payout_bank_name?.split(",")[0] ?? "Bank"} · A/c ending {p.payout_account_number.slice(-4)}</>
                       : <span className="font-medium text-accent-yellow">No bank yet</span>}
                   </td>
-                  <td className={tableClass.td}>{p.is_admin ? "Admin" : hasCreatorPlan(p) ? `Creator (${p.plan_status})` : "Free"}</td>
+                  <td className={tableClass.td}>{p.is_admin ? "Admin" : { pro: `Pro (${p.plan_status})`, creator: `Creator (${p.plan_status})`, trial: "Trial", none: "No plan (offline)" }[currentTier(p)]}</td>
                   <td className={tableClass.td}>{formatPaise(Number(b?.gross_sales_paise ?? 0))}</td>
                   <td className={cx(tableClass.td, "num text-right", balance < 0 ? "text-down" : balance > 0 ? "text-up" : "")}>{formatPaise(balance)}</td>
                 </tr>

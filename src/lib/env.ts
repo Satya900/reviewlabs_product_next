@@ -14,8 +14,9 @@ export const env = {
   razorpayKeyId: () => required("NEXT_PUBLIC_RAZORPAY_KEY_ID"),
   razorpayKeySecret: () => required("RAZORPAY_KEY_SECRET"),
   razorpayWebhookSecret: () => required("RAZORPAY_WEBHOOK_SECRET"),
-  razorpayPlanMonthlyId: () => required("RAZORPAY_PLAN_MONTHLY_ID"),
-  razorpayPlanYearlyId: () => required("RAZORPAY_PLAN_YEARLY_ID"),
+  // Razorpay subscription plans (Dashboard > Subscriptions > Plans), one per tier and interval.
+  razorpayPlanId: (tier: "creator" | "pro", interval: "month" | "year") =>
+    required(`RAZORPAY_PLAN_${tier.toUpperCase()}_${interval === "year" ? "YEARLY" : "MONTHLY"}_ID`),
   // RazorpayX (payouts) has its own API keys. Payouts are off until the account number is set.
   razorpayxAccountNumber: () => process.env.RAZORPAYX_ACCOUNT_NUMBER || null,
   razorpayxKeyId: () => required("RAZORPAYX_KEY_ID"),

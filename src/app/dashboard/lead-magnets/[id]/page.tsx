@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { formatPaise } from "@/lib/money";
@@ -10,7 +10,7 @@ export const metadata = { title: "Edit lead magnet" };
 
 export default async function EditLeadMagnet({ params }: PageProps<"/dashboard/lead-magnets/[id]">) {
   const { id } = await params;
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data: magnet } = await supabase.from("lead_magnets").select("*").eq("id", id).maybeSingle<LeadMagnet>();
   if (!magnet || magnet.status === "archived") notFound();

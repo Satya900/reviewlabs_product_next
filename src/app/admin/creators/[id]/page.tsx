@@ -8,7 +8,7 @@ import type { LedgerEntry, Payout } from "@/lib/types";
 import { AdjustmentForm, EmailVerificationControls, FeeForm, PausePayoutsButton, PayNowForm, PayoutForm, PlanForm } from "../../forms";
 import { PayoutsTable } from "@/components/payouts-table";
 import { destinationFor, payoutsEnabled } from "@/lib/payouts";
-import { feePercentFor } from "@/lib/plans";
+import { currentTier, platformFeePercent } from "@/lib/plans";
 import { hasCreatorPlan } from "@/lib/plans";
 import { Badge } from "@/components/ui";
 import { chequeUrl } from "@/lib/payout-requests";
@@ -85,7 +85,7 @@ export default async function AdminCreator({ params }: PageProps<"/admin/creator
           </p>
           {!p.is_admin && <PlanForm creatorId={p.id} onPaidPlan={hasCreatorPlan(p)} hasSubscription={Boolean(p.razorpay_subscription_id)} />}
           <div className="mt-5 border-t border-hairline pt-5">
-            <p className="mb-3 text-[14px] text-body">Current fee: <b className="text-ink">{feePercentFor(p)}%</b> per sale{p.plan_interval ? ` · billed ${p.plan_interval}ly` : ""}</p>
+            <p className="mb-3 text-[14px] text-body">Plan: <b className="text-ink">{currentTier(p)}</b> · platform fee <b className="text-ink">{platformFeePercent(p)}%</b> per sale (plus Razorpay at cost){p.plan_interval ? ` · billed ${p.plan_interval}ly` : ""}</p>
             <FeeForm creatorId={p.id} currentBps={p.commission_bps ?? null} />
           </div>
         </Panel>

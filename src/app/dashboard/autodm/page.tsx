@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { Badge, EmptyState, Notice, PageTitle, Panel, Stat, buttonClass, tableClass } from "@/components/ui";
 import { AutomationToggle, DisconnectButton, SyncNowButton } from "./autodm-controls";
+import { hasProPlan } from "@/lib/plans";
+import { UpgradeCard } from "@/components/upgrade-card";
 
 export const metadata = { title: "AutoDM" };
 
@@ -25,7 +27,7 @@ function since(days: number) {
 }
 
 export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard/autodm">) {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const { ig, saved } = await searchParams;
   const supabase = await createClient();
   const [{ data: account }, { data: automations }, { data: events }] = await Promise.all([
@@ -40,6 +42,7 @@ export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard
       .limit(2000),
   ]);
   const message = typeof ig === "string" ? connectMessages[ig] : null;
+  const pro = hasProPlan(profile);
 
   const all = events ?? [];
   const sent = all.filter((e) => e.status === "sent");
@@ -59,8 +62,14 @@ export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard
       <PageTitle sub="When someone comments a keyword on your post or reel, they get a DM with your link, automatically.">AutoDM</PageTitle>
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
       {saved && <Notice tone="good">Automation saved.</Notice>}
+      {!pro && (
+        <>
+          <UpgradeCard feature="autodm" />
+          {account && <Notice tone="warn">Your automations are paused and no DMs are being sent. They start again as soon as you&apos;re on Pro.</Notice>}
+        </>
+      )}
 
-      {!account ? (
+      {!pro && !account ? null : !account ? (
         <Panel title="Connect your Instagram">
           <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
             <div className="space-y-3 text-[15px] text-body">

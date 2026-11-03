@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isAllowedImageSrc } from "@/lib/rich-text";
 import { FACES } from "@/components/face-avatar";
@@ -24,7 +24,7 @@ function refresh(pageId: string) {
 
 // RLS limits every write to testimonials on the creator's own pages.
 export async function saveTestimonial(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireCreator();
+  await requirePlan();
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -52,7 +52,7 @@ export async function saveTestimonial(_prev: ActionState, formData: FormData): P
 }
 
 export async function deleteTestimonial(id: string, pageId: string) {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   await supabase.from("page_testimonials").delete().eq("id", id).eq("page_id", pageId);
   refresh(pageId);
@@ -60,7 +60,7 @@ export async function deleteTestimonial(id: string, pageId: string) {
 
 // Swaps a testimonial with its neighbour.
 export async function moveTestimonial(id: string, pageId: string, direction: "up" | "down") {
-  await requireCreator();
+  await requirePlan();
   const supabase = await createClient();
   const { data } = await supabase.from("page_testimonials").select("id, position").eq("page_id", pageId).order("position").order("created_at");
   const list = data ?? [];

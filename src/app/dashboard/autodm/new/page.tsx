@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { PageTitle } from "@/components/ui";
 import { AutomationForm } from "../automation-form";
 import { emptyDraft } from "../automation-draft";
@@ -8,7 +8,7 @@ import { loadFormData } from "../form-data";
 export const metadata = { title: "New automation" };
 
 export default async function NewAutomationPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const { media, mediaError, pages } = await loadFormData(profile.id);
   const firstLive = pages.find((p) => p.status === "live");
   return (

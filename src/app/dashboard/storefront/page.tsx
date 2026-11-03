@@ -1,4 +1,4 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { hasCreatorPlan } from "@/lib/plans";
@@ -8,7 +8,7 @@ import { StorefrontEditor } from "./storefront-editor";
 export const metadata = { title: "Storefront" };
 
 export default async function StorefrontSettings() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const { data: magnets } = await supabase
     .from("lead_magnets")

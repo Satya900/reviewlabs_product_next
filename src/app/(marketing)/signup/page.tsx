@@ -10,8 +10,8 @@ export default async function SignupPage() {
   if (await getProfile()) redirect("/dashboard");
   return (
     <AuthCard
-      title="Start selling for free"
-      sub="Create your account and start building your first product page straight away."
+      title="Create your account"
+      sub="Next, choose Creator or Pro. Your dashboard unlocks as soon as you subscribe."
       footer={<>Already have an account? <Link href="/login" className="link">Log in</Link></>}
     >
       <SignupForm />

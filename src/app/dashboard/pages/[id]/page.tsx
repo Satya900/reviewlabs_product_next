@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { paiseToRupeesString } from "@/lib/money";
@@ -21,7 +21,7 @@ import { UpgradeCard } from "@/components/upgrade-card";
 
 export default async function EditPage({ params }: PageProps<"/dashboard/pages/[id]">) {
   const { id } = await params;
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
 
   const { data: page } = await supabase.from("payment_pages").select("*").eq("id", id).eq("creator_id", profile.id).maybeSingle<PaymentPage>();

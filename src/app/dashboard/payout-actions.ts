@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
 import { rupeesToPaise } from "@/lib/money";
@@ -12,7 +12,7 @@ import { emailAdminsNewRequest, lookupIfsc, type IfscInfo } from "@/lib/payout-r
 export type PayoutActionState = { error?: string; ok?: string } | null;
 
 export async function checkIfsc(ifsc: string): Promise<{ info?: IfscInfo; error?: string }> {
-  await requireCreator();
+  await requirePlan();
   try {
     const info = await lookupIfsc(ifsc);
     return info ? { info } : { error: "We couldn't find this IFSC. Check it on your cheque or passbook." };
@@ -30,7 +30,7 @@ export async function saveBankDetails(input: {
   ifsc: string;
   chequePath: string;
 }): Promise<PayoutActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!(await rateLimit(`bank-details:${profile.id}`, 10, 3600))) return { error: "Too many attempts. Please try again in an hour." };
   const problem = bankDetailsError(input);
   if (problem) return { error: problem };
@@ -78,7 +78,7 @@ export async function saveBankDetails(input: {
 }
 
 export async function requestPayout(_prev: PayoutActionState, formData: FormData): Promise<PayoutActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   if (!profile.email_verified_at) return { error: "Verify your email first. Use the link at the top of the page." };
   if (!profile.payout_bank_submitted_at || !profile.payout_account_number || !profile.payout_ifsc || !profile.payout_cheque_path) {
     return { error: "Add your bank account and cancelled cheque in Settings before requesting a payout." };
@@ -114,7 +114,7 @@ export async function requestPayout(_prev: PayoutActionState, formData: FormData
 }
 
 export async function cancelPayoutRequest(id: string): Promise<PayoutActionState> {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const { data } = await createAdminClient()
     .from("payout_requests")
     .update({ status: "cancelled", decided_at: new Date().toISOString() })

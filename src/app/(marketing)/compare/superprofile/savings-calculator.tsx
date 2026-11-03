@@ -7,7 +7,8 @@ import { formatPaise } from "@/lib/money";
 const rupees = (n: number) => formatPaise(Math.round(n * 100)).replace(/\.00$/, "");
 
 // Creators enter what they pay today; we never assume a competitor's numbers.
-export function SavingsCalculator({ creatorFee, creatorPlan, lifetime }: { creatorFee: number; creatorPlan: number; lifetime: number }) {
+// Our cost: the plan plus Razorpay's charge at cost (no platform fee).
+export function SavingsCalculator({ gatewayPercent, creatorPlan, proPlan }: { gatewayPercent: number; creatorPlan: number; proPlan: number }) {
   const [price, setPrice] = useState("499");
   const [sales, setSales] = useState("100");
   const [theirFee, setTheirFee] = useState("");
@@ -17,8 +18,8 @@ export function SavingsCalculator({ creatorFee, creatorPlan, lifetime }: { creat
   const revenue = (Number(price) || 0) * (Number(sales) || 0);
   const ready = theirFee !== "" || theirPlan !== "";
   const nowCost = revenue * ((Number(theirFee) || 0) + (Number(theirGateway) || 0)) / 100 + (Number(theirPlan) || 0);
-  const ourCost = revenue * creatorFee / 100 + creatorPlan;
-  const ourLifetimeCost = revenue * creatorFee / 100;
+  const ourCost = revenue * gatewayPercent / 100 + creatorPlan;
+  const ourProCost = revenue * gatewayPercent / 100 + proPlan;
   const saving = nowCost - ourCost;
 
   const field = (label: string, value: string, set: (v: string) => void, suffix: string, placeholder = "") => (
@@ -53,8 +54,8 @@ export function SavingsCalculator({ creatorFee, creatorPlan, lifetime }: { creat
           <p className="text-[14px] text-on-dark-soft">Monthly sales: <span className="num text-white">{rupees(revenue)}</span></p>
           <dl className="space-y-3 text-[15px]">
             <div className="flex justify-between"><dt className="text-on-dark-soft">You pay today</dt><dd className="num">{ready ? rupees(nowCost) : "Fill in your plan and fee"}</dd></div>
-            <div className="flex justify-between"><dt className="text-on-dark-soft">Reviewlabs Creator ({creatorFee}% + {rupees(creatorPlan)})</dt><dd className="num">{rupees(ourCost)}</dd></div>
-            <div className="flex justify-between"><dt className="text-on-dark-soft">Reviewlabs Lifetime ({creatorFee}%, plan paid once)</dt><dd className="num">{rupees(ourLifetimeCost)}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-on-dark-soft">Reviewlabs Creator ({rupees(creatorPlan)} + Razorpay {gatewayPercent}%)</dt><dd className="num">{rupees(ourCost)}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-on-dark-soft">Reviewlabs Pro, with AutoDM ({rupees(proPlan)} + Razorpay {gatewayPercent}%)</dt><dd className="num">{rupees(ourProCost)}</dd></div>
           </dl>
         </div>
         <div className="mt-6 rounded-2xl bg-dark-elevated p-5">
@@ -63,10 +64,10 @@ export function SavingsCalculator({ creatorFee, creatorPlan, lifetime }: { creat
               <>
                 <p className="text-[14px] text-on-dark-soft">You could keep about</p>
                 <p className="num mt-1 text-[36px] text-up">{rupees(saving)}<span className="text-[16px] text-on-dark-soft"> / month</span></p>
-                <p className="mt-1 text-[13px] text-on-dark-soft">That&apos;s {rupees(saving * 12)} a year on Creator monthly. Lifetime ({rupees(lifetime)} once) saves more after the first year.</p>
+                <p className="mt-1 text-[13px] text-on-dark-soft">That&apos;s {rupees(saving * 12)} a year on Creator monthly. Yearly billing saves 2 more months.</p>
               </>
             ) : (
-              <p className="text-[15px] text-on-dark-soft">At these numbers your current setup costs about the same or less. Lifetime may still work out cheaper over time.</p>
+              <p className="text-[15px] text-on-dark-soft">At these numbers your current setup costs about the same or less. With 0% platform fee, Reviewlabs pulls ahead as your sales grow.</p>
             )
           ) : (
             <p className="text-[15px] text-on-dark-soft">Enter what you pay today to see the difference.</p>

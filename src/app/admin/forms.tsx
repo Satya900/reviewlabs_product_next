@@ -87,11 +87,19 @@ export function PlanForm({ creatorId, onPaidPlan, hasSubscription }: { creatorId
     <div className="space-y-4">
       <form action={action} className="space-y-3">
         <input type="hidden" name="creator_id" value={creatorId} />
-        <Field label="Grant Creator for (days)" hint="For partners or support cases. No Razorpay charge.">
-          <input name="days" defaultValue="30" inputMode="numeric" className={inputClass} />
-        </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Plan">
+            <select name="tier" defaultValue="creator" className={inputClass}>
+              <option value="creator">Creator</option>
+              <option value="pro">Pro (with AutoDM)</option>
+            </select>
+          </Field>
+          <Field label="For (days)" hint="No Razorpay charge.">
+            <input name="days" defaultValue="30" inputMode="numeric" className={inputClass} />
+          </Field>
+        </div>
         <div className="flex items-center gap-3">
-          <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Grant Creator"}</Button>
+          <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Grant plan"}</Button>
           <FormMessage state={state} />
         </div>
       </form>
@@ -102,9 +110,9 @@ export function PlanForm({ creatorId, onPaidPlan, hasSubscription }: { creatorId
             type="button"
             variant="danger"
             disabled={revoking}
-            onClick={() => { if (confirm("Move this creator to Free?")) start(async () => setRevokeState(await revokeCreatorPlan(creatorId))); }}
+            onClick={() => { if (confirm("End this creator's plan? Their store goes offline unless they're still in their trial.")) start(async () => setRevokeState(await revokeCreatorPlan(creatorId))); }}
           >
-            {revoking ? "Moving" : "Move to Free"}
+            {revoking ? "Ending" : "End plan"}
           </Button>
           <FormMessage state={revokeState} />
         </div>
@@ -118,7 +126,7 @@ export function FeeForm({ creatorId, currentBps }: { creatorId: string; currentB
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="creator_id" value={creatorId} />
-      <Field label="Custom fee per sale (%)" hint="For custom plan deals. Leave empty for the standard 6% Free / 4% Creator.">
+      <Field label="Custom platform fee per sale (%)" hint="For custom deals, on top of Razorpay's charge. Leave empty for the standard 0%.">
         <input name="fee" defaultValue={currentBps === null ? "" : String(currentBps / 100)} inputMode="decimal" placeholder="Standard" className={inputClass} />
       </Field>
       <div className="flex items-center gap-3">

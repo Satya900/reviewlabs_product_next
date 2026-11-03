@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
-  if (!(await creatorHasPlan(user.id))) return new Response("CSV export is part of the Creator plan.", { status: 403 });
+  if (!(await creatorHasPlan(user.id))) return new Response("Choose a plan in Plan and billing to export orders.", { status: 403 });
 
   const params = browserParams(Object.fromEntries(new URL(request.url).searchParams));
   const filter = paymentFilter(params.filter);

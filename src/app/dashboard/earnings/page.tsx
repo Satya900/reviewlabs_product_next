@@ -1,8 +1,8 @@
-import { requireCreator } from "@/lib/auth";
+import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat } from "@/components/ui";
-import { feePercentFor } from "@/lib/plans";
+import { GATEWAY_FEE_LABEL, platformFeePercent } from "@/lib/plans";
 import { LedgerTable } from "@/components/ledger-table";
 import { PayoutsTable } from "@/components/payouts-table";
 import { maskAccountNumber } from "@/lib/bank-details";
@@ -12,7 +12,7 @@ import { RequestPayout } from "./request-payout";
 import type { LedgerEntry, Payout } from "@/lib/types";
 
 export default async function EarningsPage() {
-  const profile = await requireCreator();
+  const profile = await requirePlan();
   const supabase = await createClient();
   const [{ data: balance }, { data: entries }, { data: payouts }, { data: requests }] = await Promise.all([
     supabase.from("creator_balances").select("*").eq("creator_id", profile.id).maybeSingle(),
@@ -28,7 +28,7 @@ export default async function EarningsPage() {
 
   return (
     <>
-      <PageTitle sub={`Balance = sales, minus the ${feePercentFor(profile)}% fee (payment gateway and GST included), refunds and payouts already sent.`}>
+      <PageTitle sub={`Balance = sales, minus Razorpay's payment charge (${GATEWAY_FEE_LABEL}, at cost)${platformFeePercent(profile) ? `, your ${platformFeePercent(profile)}% platform fee` : ""}, refunds and payouts already sent.`}>
         Earnings
       </PageTitle>
 
