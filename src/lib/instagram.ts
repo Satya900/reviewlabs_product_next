@@ -35,14 +35,17 @@ async function graph<T>(path: string, init: { method?: string; token?: string; p
 }
 
 // Where the creator logs in with Instagram or Facebook and picks the account.
+// Same parameters as the login URL the App Dashboard generates for the config.
 export function loginUrl(redirectUri: string, state: string): string {
-  const url = new URL(`https://www.facebook.com/${env.metaGraphVersion()}/dialog/oauth`);
+  const url = new URL("https://www.facebook.com/dialog/oauth");
   url.searchParams.set("client_id", env.metaAppId());
-  url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("config_id", env.metaLoginConfigId());
-  url.searchParams.set("response_type", "code");
+  url.searchParams.set("display", "popup");
   url.searchParams.set("override_default_response_type", "true");
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("response_type", "code");
   url.searchParams.set("state", state);
+  url.searchParams.set("prompt", "login");
   return url.toString();
 }
 
