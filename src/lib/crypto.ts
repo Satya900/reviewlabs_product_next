@@ -2,7 +2,7 @@ import "server-only";
 import crypto from "node:crypto";
 import { env } from "@/lib/env";
 
-// AES-256-GCM for secrets stored in the database (e.g. Meta CAPI tokens).
+// AES-256-GCM for secrets stored in the database (e.g. Instagram access tokens).
 function key(): Buffer {
   const k = Buffer.from(env.encryptionKey(), "base64");
   if (k.length !== 32) throw new Error("ENCRYPTION_KEY must be 32 bytes, base64 encoded");

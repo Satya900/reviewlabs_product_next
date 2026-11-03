@@ -26,7 +26,7 @@ const NOT_IMPORTED = [
   ["Your product files", "Superprofile doesn't put them on the page, so you upload them once in the editor."],
   ["Buyers, orders and sales", "Past buyers keep their access on Superprofile. New buyers get their files from Reviewlabs."],
   ["Your login, email, phone and earnings", "We only read the product fields above. Everything else in the saved file is ignored."],
-  ["Coupons and tracking pixels", "Set these up again in a minute: coupons per page, and your Meta Pixel ID in settings."],
+  ["Coupons", "Set these up again in a minute, per page."],
 ] as const;
 
 export default function ImportGuide() {

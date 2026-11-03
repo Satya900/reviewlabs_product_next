@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicPage } from "@/lib/public-page";
-import { eventIds } from "@/lib/meta";
 import { formatPaise } from "@/lib/money";
-import { MetaPixel } from "@/components/meta-pixel";
 import { OrderStatusView } from "./order-status";
 import { orderFiles } from "@/lib/order-files";
 
@@ -24,7 +22,6 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
 
   return (
     <div className="mx-auto w-full max-w-lg py-4">
-      <MetaPixel pixelId={data.pixelId} pageId={data.page.id} trackPageEvents={false} />
       <OrderStatusView
         orderId={order.id}
         initialStatus={order.status}
@@ -32,11 +29,6 @@ export default async function SuccessPage({ params, searchParams }: PageProps<"/
         amountLabel={formatPaise(order.amount_paise)}
         thankYouMessage={data.page.thank_you_message}
         files={(await orderFiles({ page_id: order.page_id, offer_id: order.offer_id })).map(({ id, file_name, size_bytes }) => ({ id, file_name, size_bytes }))}
-        pixel={{
-          pixelId: data.pixelId,
-          eventId: eventIds.purchase(order.id),
-          data: { content_ids: [data.page.id], content_name: order.page_title, content_type: "product", value: order.amount_paise / 100, currency: order.currency },
-        }}
         retryHref={`/p/${slug}`}
       />
     </div>

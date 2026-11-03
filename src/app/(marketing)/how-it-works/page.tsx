@@ -44,7 +44,7 @@ export default function HowItWorks() {
               "An order only counts as paid after Razorpay confirms it to our server",
               "If the buyer closes the tab mid-payment, they still get their file once the money arrives",
               "A background check asks Razorpay about orders that haven't settled",
-              "Receipts and Meta events are sent once, even when updates arrive twice",
+              "Receipts are sent once, even when updates arrive twice",
               "Your earnings are a ledger: sales add a line, fees and refunds subtract one",
             ]}
           />

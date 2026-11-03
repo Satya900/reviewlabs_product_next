@@ -2,20 +2,10 @@
 
 import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
 import { z } from "zod";
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { decrypt, encrypt } from "@/lib/crypto";
-import { env } from "@/lib/env";
-import { sendMetaEvent } from "@/lib/meta";
-import { checkTokenWithMeta, pixelSchema } from "@/lib/meta-settings";
-import { platformEventIds, sendFirstPageEvent, trackingFromHeaders } from "@/lib/platform-meta";
-import { PLATFORM_EVENT_COOKIE } from "@/lib/platform-pixel";
-import { hasCreatorPlan } from "@/lib/plans";
 import { htmlToText, sanitizeDescription } from "@/lib/rich-text";
 import { rupeesToPaise } from "@/lib/money";
 import { MAX_LINKS, cleanLinkUrl, linkLabelError, suggestLinkLabel } from "@/lib/product-links";
@@ -67,7 +57,7 @@ const pageSchema = z.object({
 });
 
 export async function updatePage(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
+  await requireCreator();
   const parsed = pageSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;
@@ -106,23 +96,6 @@ export async function updatePage(_prev: ActionState, formData: FormData): Promis
     }
   }
   if (error) return { error: error.code === "23505" ? "That slug is taken, try another" : planLimitMessage(error.message) ?? error.message };
-
-  // A creator's first live page tells our ads who actually uses Reviewlabs.
-  // Sent once per creator (the event ID is per creator); the cookie fires the
-  // browser Pixel half with the same ID.
-  if (input.status === "live" && !profile.is_admin) {
-    const eventId = platformEventIds.firstPage(profile.id);
-    const { count: sent } = await createAdminClient()
-      .from("meta_events")
-      .select("id", { count: "exact", head: true })
-      .eq("event_name", "PublishPage")
-      .eq("event_id", eventId);
-    if (!sent) {
-      const tracking = trackingFromHeaders(await headers());
-      after(() => sendFirstPageEvent(profile.id, tracking).catch((e) => console.warn("[page] first page event:", e)));
-      (await cookies()).set(PLATFORM_EVENT_COOKIE, `PublishPage:${eventId}`, { path: "/", maxAge: 600, sameSite: "lax" });
-    }
-  }
 
   revalidatePath(`/dashboard/pages/${input.id}`);
   revalidatePath("/dashboard/pages");
@@ -286,67 +259,3 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
   return { ok: "Saved" };
 }
 
-// A Pixel ID turns on browser events; the optional Conversions API token adds
-// server events. Leaving the Pixel ID empty turns tracking off.
-export async function updatePixel(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const profile = await requireCreator();
-  if (!hasCreatorPlan(profile)) return { error: "Meta tracking is part of the Creator plan." };
-  const parsed = pixelSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const input = parsed.data;
-  const db = createAdminClient();
-
-  if (!input.pixel_id) {
-    if (input.capi_token) return { error: "Add your Pixel ID too. The token only works with its pixel." };
-    const { error } = await db
-      .from("creator_pixel_settings")
-      .upsert({ creator_id: profile.id, pixel_id: null, capi_token_encrypted: null, test_event_code: null }, { onConflict: "creator_id" });
-    if (error) return { error: error.message };
-    revalidatePath("/dashboard/settings");
-    return { ok: "Meta tracking is off" };
-  }
-
-  const { data: current } = await db.from("creator_pixel_settings").select("pixel_id, capi_token_encrypted").eq("creator_id", profile.id).maybeSingle();
-
-  // A blank token field keeps the saved token unless "remove token" is ticked;
-  // the token is never sent back to the browser.
-  const removeToken = formData.get("remove_token") === "on" && !input.capi_token;
-  const token = removeToken ? "" : input.capi_token || (current?.capi_token_encrypted ? decrypt(current.capi_token_encrypted) : "");
-
-  if (token && input.test_event_code && (input.capi_token || current?.pixel_id !== input.pixel_id)) {
-    const problem = await checkTokenWithMeta(input.pixel_id, token, input.test_event_code);
-    if (problem) return { error: `Meta didn't accept this token for pixel ${input.pixel_id}: ${problem}` };
-  }
-
-  const { error } = await db.from("creator_pixel_settings").upsert(
-    {
-      creator_id: profile.id,
-      pixel_id: input.pixel_id,
-      test_event_code: input.test_event_code || null,
-      ...(input.capi_token ? { capi_token_encrypted: encrypt(input.capi_token) } : removeToken ? { capi_token_encrypted: null } : {}),
-    },
-    { onConflict: "creator_id" },
-  );
-  if (error) return { error: error.message };
-  revalidatePath("/dashboard/settings");
-  if (!token) return { ok: "Saved. Meta Pixel is on (browser events only)." };
-  return { ok: input.test_event_code ? "Saved. Meta Pixel and Conversions API are on, in test mode." : "Saved. Meta Pixel and Conversions API are on." };
-}
-
-export async function sendTestMetaEvent(): Promise<ActionState> {
-  const profile = await requireCreator();
-  if (!hasCreatorPlan(profile)) return { error: "Meta tracking is part of the Creator plan." };
-  // Without the creator's test code this would land in their real data.
-  const { data: settings } = await createAdminClient().from("creator_pixel_settings").select("test_event_code").eq("creator_id", profile.id).maybeSingle();
-  if (!settings?.test_event_code) return { error: "Add your test event code under Testing first, so the test doesn't count as a real visit." };
-  const result = await sendMetaEvent({ creatorId: profile.id }, {
-    eventName: "PageView",
-    eventId: `test_${crypto.randomUUID()}`,
-    tracking: { source_url: env.appUrl(), user_agent: "reviewlabs-test", client_ip: "127.0.0.1" },
-    // Meta refuses events with no customer data; the creator's own email is enough.
-    buyer: { email: profile.email },
-  });
-  if (result.status === "skipped") return { error: "Test events are sent from our server, so they need your Conversions API token" };
-  if (result.status === "failed") return { error: `Meta rejected the event: ${JSON.stringify(result.response ?? result.error)}` };
-  return { ok: "Test event sent. Check the Test events tab in Events Manager." };
-}

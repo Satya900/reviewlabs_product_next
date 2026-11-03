@@ -3,7 +3,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { escapeHtml, sendEmail } from "@/lib/email";
 import { formatPaise } from "@/lib/money";
-import { sendPurchaseEvent } from "@/lib/meta";
 import type { RazorpayPayment } from "@/lib/razorpay";
 import type { Order } from "@/lib/types";
 import { orderFiles, orderLinks, type DeliverableLink } from "@/lib/order-files";
@@ -27,15 +26,16 @@ export async function recordCapturedPayment(payment: RazorpayPayment) {
   return data; // null when the Razorpay order isn't one of ours
 }
 
-// Receipt email + Meta Purchase. Each step is idempotent and retried by cron.
+// Receipt email. Idempotent, and retried by cron until it goes out.
 export async function runPostPaymentTasks(orderId: string) {
   const admin = createAdminClient();
   const { data: order } = await admin.from("orders").select("*").eq("id", orderId).single<Order>();
   if (!order || order.status !== "paid") return;
 
-  const results = await Promise.allSettled([sendReceipt(order), sendPurchaseEvent(order)]);
-  for (const r of results) {
-    if (r.status === "rejected") console.error(`[post-payment] order ${orderId}:`, r.reason);
+  try {
+    await sendReceipt(order);
+  } catch (e) {
+    console.error(`[post-payment] order ${orderId}:`, e);
   }
 }
 

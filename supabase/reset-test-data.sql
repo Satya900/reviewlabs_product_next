@@ -4,8 +4,8 @@
 --
 -- Part 1 removes everything test-mode payments created: orders, payments,
 -- refunds, ledger entries, payouts and payout requests, plan payments and
--- lifetime purchases, download links, lead-magnet sign-ups, webhook and Meta
--- logs, view counts and rate-limit counters. Creators whose plan came from a
+-- lifetime purchases, download links, lead-magnet sign-ups, webhook logs,
+-- view counts and rate-limit counters. Creators whose plan came from a
 -- TEST subscription or TEST lifetime purchase go back to Free, because those
 -- don't exist in live Razorpay.
 --
@@ -13,7 +13,7 @@
 --
 -- KEEPS: real creator accounts and their pages, files, checkout questions,
 -- testimonials, FAQs, add-on offers, lead magnets, coupons (usage reset to 0),
--- bank details and cheques, Meta Pixel settings, and plans you granted by hand
+-- bank details and cheques, and plans you granted by hand
 -- (no Razorpay subscription behind them).
 --
 -- This cannot be undone. Never run it after real sales have started.
@@ -57,7 +57,6 @@ delete from public.ledger_entries;
 delete from public.payouts;
 delete from public.refunds;
 delete from public.download_grants;
-delete from public.meta_events;
 delete from public.payments;
 delete from public.orders;
 delete from public.subscription_payments;

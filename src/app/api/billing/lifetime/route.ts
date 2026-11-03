@@ -1,10 +1,9 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay, verifyCheckoutSignature, type RazorpayPayment } from "@/lib/razorpay";
 import { grantLifetime } from "@/lib/billing";
-import { platformEventIds, sendLifetimeEvent, trackingFromRequest } from "@/lib/platform-meta";
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -29,10 +28,7 @@ export async function POST(request: Request) {
     if (payment.order_id !== razorpay_order_id) return NextResponse.json({ error: "Payment does not match order" }, { status: 400 });
     if (payment.status !== "captured") return NextResponse.json({ status: "processing" });
     await grantLifetime(razorpay_order_id, payment.id, payment.amount);
-    const tracking = trackingFromRequest(request);
-    after(() => sendLifetimeEvent(profile.id, razorpay_order_id, payment.amount, tracking).catch((e) => console.warn("[billing/lifetime] purchase event:", e)));
-    // The browser sends the same event with this ID for deduplication.
-    return NextResponse.json({ status: "active", event: { id: platformEventIds.lifetime(razorpay_order_id), value: payment.amount / 100 } });
+    return NextResponse.json({ status: "active" });
   } catch (e) {
     console.error("[billing/lifetime]", e);
     return NextResponse.json({ status: "processing" });

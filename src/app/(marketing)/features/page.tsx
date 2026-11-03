@@ -108,7 +108,6 @@ export default function Features() {
           "Pick your handle, upload a photo, add up to nine social links",
           "Feature one product at the top, reorder or hide the rest",
           "Live preview while you edit",
-          "Your Meta Pixel tracks storefront visits (Creator)",
           "No Reviewlabs badge on the Creator plan",
         ]}
         mock={
@@ -163,13 +162,12 @@ export default function Features() {
         icon="target"
         kicker="Grow"
         title="See what sells, then sell more of it."
-        sub="On the Creator plan: track every page from first view to paid order, run discount codes for launches, and give your Meta ads the purchase data they need."
+        sub="On the Creator plan: track every page from first view to paid order, and run discount codes for launches."
         items={[
           "Page views, checkouts, sales and conversion per page",
           "Coupons: percent or flat, with expiry dates and use limits",
           "Add-on offer at checkout, with its own files",
-          "Meta Pixel plus Conversions API, for your account or per page",
-          "Test events with your own test code before you spend",
+          "CSV export of every order",
         ]}
         mock={
           <MockFrame>
@@ -263,7 +261,7 @@ export default function Features() {
             ["lock", "Payments verified by signature", "Every Razorpay payment is checked on our server before an order counts."],
             ["spark", "Missed updates recovered", "A background check asks Razorpay about unfinished orders, so a closed tab never loses a sale."],
             ["ledger", "A ledger nobody can edit", "Corrections are new lines, never rewrites, so your history stays honest."],
-            ["mail", "Emails sent once", "Retries never send the same buyer two emails or report two purchases to Meta."],
+            ["mail", "Emails sent once", "Retries never send the same buyer two emails."],
             ["bank", "Payouts with UTR", "Request a payout from ₹500 once a sale is 24 hours old. Each payout is logged with the reference your bank shows."],
             ["upi", "Verified accounts", "Every creator verifies their email before they can sell, and limits are enforced in the database."],
           ].map(([icon, title, body]) => (

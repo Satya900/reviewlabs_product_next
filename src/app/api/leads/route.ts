@@ -14,8 +14,6 @@ const schema = z.object({
   answers: z.record(z.string(), z.string().max(2000)).default({}),
   code: z.string().max(10).optional(),
   company: z.string().max(200).optional(), // honeypot
-  fbp: z.string().max(200).optional(),
-  fbc: z.string().max(400).optional(),
   sourceUrl: z.url().max(2000).optional(),
 });
 
@@ -99,8 +97,6 @@ export async function POST(request: Request) {
       answers,
       email_verified: magnet.verify_email,
       tracking: {
-        fbp: input.fbp,
-        fbc: input.fbc,
         source_url: input.sourceUrl,
         client_ip: ip === "unknown" ? undefined : ip,
         user_agent: request.headers.get("user-agent") ?? undefined,

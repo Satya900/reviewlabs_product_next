@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Field, inputClass, textareaClass, cx } from "@/components/ui";
-import { getMetaCookies, trackPixel } from "@/components/meta-pixel";
 import { formatPaise } from "@/lib/money";
 
 type CheckoutField = { id: string; label: string; type: "text" | "textarea" | "number" | "select"; required: boolean; options: string[] };
 type Props = {
   page: { id: string; slug: string; title: string; amountPaise: number; currency: string; buttonLabel: string };
   fields: CheckoutField[];
-  pixelId: string | null;
   // Editor preview: looks identical but can't take payments.
   preview?: boolean;
   // Shown in the consent line under the pay button.
@@ -39,7 +37,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName }: Props) {
+export function CheckoutForm({ page, fields, preview, offer, sellerName }: Props) {
   const router = useRouter();
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -80,7 +78,7 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
       fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href, ...getMetaCookies() }),
+        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href }),
       }),
     ]);
     const data = await res.json().catch(() => ({}));
@@ -94,13 +92,6 @@ export function CheckoutForm({ page, fields, pixelId, preview, offer, sellerName
       setBusy(false);
       return;
     }
-
-    trackPixel(
-      pixelId,
-      "InitiateCheckout",
-      { content_ids: [page.id], content_name: page.title, content_type: "product", value: data.amount / 100, currency: page.currency, num_items: 1 },
-      data.initiateCheckoutEventId,
-    );
 
     const successUrl = `/p/${page.slug}/success?order=${data.orderId}`;
     const rzp = new window.Razorpay({

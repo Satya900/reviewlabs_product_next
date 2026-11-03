@@ -3,7 +3,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { escapeHtml, sendEmail } from "@/lib/email";
 import { attachIfSmall, formatSize } from "@/lib/fulfilment";
-import { sendLeadResponseEvent } from "@/lib/meta";
 import { sha256 } from "@/lib/crypto";
 import type { Tracking } from "@/lib/types";
 
@@ -11,15 +10,18 @@ const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial
 
 type Response = { id: string; magnet_id: string; creator_id: string; name: string; email: string; phone: string; download_token: string; tracking: Tracking | null };
 
-// After a new response: send the free files by email and report a Lead to Meta.
+// After a new response: send the free files by email.
 export async function runLeadTasks(responseId: string) {
   const admin = createAdminClient();
   const { data: response } = await admin.from("lead_responses").select("*").eq("id", responseId).single<Response>();
   if (!response) return;
   const { data: magnet } = await admin.from("lead_magnets").select("title, thank_you_message").eq("id", response.magnet_id).single();
   if (!magnet) return;
-  const results = await Promise.allSettled([sendLeadEmail(response, magnet.title, magnet.thank_you_message), sendLeadResponseEvent(response, magnet.title)]);
-  for (const r of results) if (r.status === "rejected") console.error(`[lead] response ${responseId}:`, r.reason);
+  try {
+    await sendLeadEmail(response, magnet.title, magnet.thank_you_message);
+  } catch (e) {
+    console.error(`[lead] response ${responseId}:`, e);
+  }
 }
 
 export function leadFileUrl(token: string, fileId: string) {
