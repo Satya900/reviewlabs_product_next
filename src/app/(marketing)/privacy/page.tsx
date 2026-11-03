@@ -59,10 +59,13 @@ export default function Privacy() {
       <Clause n={7} title="How long we keep it">
         <p>We keep order and payment records for 8 years, as Indian tax law requires. Other data is deleted when it is no longer needed, or when you ask us to delete it and the law allows it.</p>
       </Clause>
-      <Clause n={8} title="Your rights">
+      <Clause n={8} title="Requests from authorities">
+        <p>We only share personal data with a public authority when the law requires it. Before responding we check that the request is lawful, and we challenge requests we consider unlawful. We share only the minimum data needed, and we keep a record of every request, our response and the legal reasons for it.</p>
+      </Clause>
+      <Clause n={9} title="Your rights">
         <p>You can ask to see, correct or delete your personal data, or withdraw your consent, by writing to {site.supportEmail}. We reply within 30 days.</p>
       </Clause>
-      <Clause n={9} title="Contact">
+      <Clause n={10} title="Contact">
         <p>
           Questions or complaints about your data: write to <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.
           We acknowledge complaints within 48 hours.
