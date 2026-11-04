@@ -72,6 +72,24 @@ export function trialDaysLeft(p: PlanFields, now = Date.now()): number | null {
   return Math.max(1, Math.ceil((new Date(p.trial_ends_at).getTime() - now) / 86_400_000));
 }
 
+// Who can upgrade in one click: Creator on an active monthly or yearly
+// subscription (not lifetime, not cancelling, not granted by an admin).
+export function canUpgradeInOneClick(p: { plan: string; plan_status: string; plan_interval: string | null; razorpay_subscription_id: string | null; is_admin: boolean }): boolean {
+  if (p.is_admin || p.plan !== "creator" || p.plan_status !== "active" || !p.razorpay_subscription_id) return false;
+  return p.plan_interval === "month" || p.plan_interval === "year";
+}
+
+// Creator → Pro mid-period: pay the price difference for the days left, in
+// whole rupees (at least ₹1). Pro then renews at full price on the same date
+// Creator would have, so the billing date never moves.
+export function upgradeQuote(interval: Interval, periodEnd: Date, now = Date.now()): { paise: number; daysLeft: number } {
+  const periodMs = (interval === "year" ? 365 : 30) * 86_400_000;
+  const left = Math.min(Math.max(periodEnd.getTime() - now, 0), periodMs);
+  const diff = PLAN_PRICES.pro[interval] - PLAN_PRICES.creator[interval];
+  const paise = Math.max(100, Math.ceil((diff * left) / periodMs / 100) * 100);
+  return { paise, daysLeft: Math.ceil(left / 86_400_000) };
+}
+
 // Platform fee a creator pays per sale: 0% unless they have a custom deal.
 // Mirrors public.creator_fee_bps.
 export function platformFeePercent(p: { commission_bps?: number | null }): number {

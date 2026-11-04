@@ -5,7 +5,7 @@ import { requireCreator } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { razorpay } from "@/lib/razorpay";
-import { currentTier, planName, type Interval, type Tier } from "@/lib/plans";
+import { canUpgradeInOneClick, currentTier, planName, upgradeQuote, type Interval, type Tier } from "@/lib/plans";
 import { isValidGstin, stateName } from "@/lib/gst";
 
 export type StartResult = { error?: string; subscriptionId?: string; keyId?: string; name?: string; email?: string; startsAfterTrial?: boolean };
@@ -88,4 +88,48 @@ export async function saveBillingDetails(_prev: { error?: string; ok?: string } 
   if (error) return { error: "Couldn't save right now. Please try again." };
   revalidatePath("/dashboard/billing");
   return { ok: gstin ? "Saved. New invoices will include your GSTIN." : "Saved." };
+}
+
+export type UpgradeResult = { error?: string; subscriptionId?: string; keyId?: string; name?: string; email?: string; amountPaise?: number; startsOn?: string };
+
+// Creator → Pro now. A new Pro subscription starts when the Creator period
+// ends; the prorated difference is charged upfront when the creator approves
+// it in Checkout. Their Creator subscription stops renewing once that's done.
+export async function startUpgrade(): Promise<UpgradeResult> {
+  const profile = await requireCreator();
+  if (!canUpgradeInOneClick(profile)) return { error: "Upgrading in one click needs an active monthly or yearly Creator plan. Write to us and we'll move you to Pro." };
+  const interval = profile.plan_interval as Interval;
+  try {
+    const current = (await razorpay().subscriptions.fetch(profile.razorpay_subscription_id!)) as unknown as { status: string; current_end: number | null };
+    if (current.status !== "active" || !current.current_end) return { error: "Your Creator plan isn't active right now. Please try again later or write to us." };
+    // Razorpay needs the new start in the future; a renewal minutes away is about to charge anyway.
+    if (current.current_end * 1000 - Date.now() < 30 * 60_000) return { error: "Your Creator plan renews in the next few minutes. Please try again in an hour." };
+    const quote = upgradeQuote(interval, new Date(current.current_end * 1000));
+
+    // A previous upgrade the creator didn't finish: drop it first.
+    if (profile.pending_subscription_id) {
+      await razorpay().subscriptions.cancel(profile.pending_subscription_id, false).catch(() => null);
+    }
+    const sub = await razorpay().subscriptions.create({
+      plan_id: env.razorpayPlanId("pro", interval),
+      total_count: interval === "year" ? 10 : 120,
+      customer_notify: 1,
+      start_at: current.current_end,
+      addons: [{ item: { name: "Upgrade to Pro (prorated)", amount: quote.paise, currency: "INR" } }],
+      notes: { creator_id: profile.id, product: "reviewlabs_plan", tier: "pro", interval, upgrade: "yes", from_subscription: profile.razorpay_subscription_id! },
+    } as never) as unknown as { id: string };
+    await createAdminClient().from("profiles").update({ pending_subscription_id: sub.id }).eq("id", profile.id);
+    return {
+      subscriptionId: sub.id,
+      keyId: env.razorpayKeyId(),
+      name: profile.name ?? "",
+      email: profile.email,
+      amountPaise: quote.paise,
+      startsOn: new Date(current.current_end * 1000).toISOString(),
+    };
+  } catch (e) {
+    const err = e as { error?: { description?: string }; message?: string };
+    console.error("[billing] start upgrade", err.error?.description ?? err.message);
+    return { error: "We couldn't start the upgrade right now. Please try again." };
+  }
 }

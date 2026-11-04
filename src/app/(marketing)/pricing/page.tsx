@@ -169,7 +169,7 @@ export default function Pricing() {
               { q: "When do I get paid?", a: "When you ask. Request a payout from Earnings once you have ₹500 or more available (sales become available 24 hours after they happen), and we send it to the bank account you added. Each payout shows in your earnings with its UTR number." },
               { q: "What happens if I cancel?", a: "You keep your plan until the end of the period you paid for. After that your store goes offline until you subscribe again. Nothing is deleted." },
               { q: "Who pays for refunds?", a: "Refunds come out of your balance. Razorpay keeps its charge on refunded payments, so that charge isn't returned." },
-              { q: "Can I switch between Creator and Pro?", a: "Yes. Write to us and we'll move you over; the change takes effect straight away." },
+              { q: "Can I switch between Creator and Pro?", a: "Upgrade to Pro any time from Plan and billing, in one click. You pay only the difference for the days left in your current period, Pro turns on straight away, and your billing date stays the same. To move from Pro to Creator, write to us." },
               { q: "Do you offer custom pricing?", a: "Yes. If you sell at high volume or need help setting up, tell us your requirements on the Custom plan page and we'll get back to you." },
             ]}
           />

@@ -12,7 +12,7 @@ export function UpgradeCard({ feature, compact }: { feature: PremiumFeature; com
         <span className="inline-flex rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">{planName(copy.tier)} plan</span>
         <p className={cx("font-semibold", compact ? "text-[17px]" : "text-[22px]")}>{copy.title}</p>
         <p className="max-w-lg text-[15px] text-on-dark-soft">{copy.body}</p>
-        <Link href="/dashboard/billing" className={cx(buttonClass.primary, "mt-2")}>
+        <Link href="/dashboard/billing#upgrade" className={cx(buttonClass.primary, "mt-2")}>
           Get {planName(copy.tier)} for {priceLabel(copy.tier, "month")}/month
         </Link>
       </div>

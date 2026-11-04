@@ -21,7 +21,8 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = parsed.data;
 
-  if (profile.razorpay_subscription_id !== razorpay_subscription_id) {
+  // Their subscription, or the pending Pro subscription of an upgrade.
+  if (profile.razorpay_subscription_id !== razorpay_subscription_id && profile.pending_subscription_id !== razorpay_subscription_id) {
     return NextResponse.json({ error: "Subscription does not belong to this account" }, { status: 403 });
   }
   if (!verifySubscriptionSignature(razorpay_payment_id, razorpay_subscription_id, razorpay_signature)) {
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
   try {
     const sub = await fetchSubscription(razorpay_subscription_id);
-    // The first charge (regular or intro price) comes back through Checkout; record it.
+    // The first charge (or an upgrade's prorated amount) comes back through Checkout; record it.
     const payment = (await razorpay().payments.fetch(razorpay_payment_id)) as unknown as { id: string; amount: number; status: string };
     await recordSubscriptionPayment(sub, payment);
     await syncSubscription(sub);
