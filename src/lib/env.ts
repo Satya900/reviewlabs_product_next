@@ -36,6 +36,9 @@ export const env = {
   autodmEnabled: () => Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET && process.env.META_LOGIN_CONFIG_ID),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,
+  // Broadcast emails per day across all creators, so receipts and invoices
+  // always have room (Resend Free allows 100 a day in total).
+  broadcastDailyCap: () => Math.max(0, Number(process.env.BROADCAST_DAILY_CAP ?? 60) || 0),
   emailFrom: () => process.env.EMAIL_FROM ?? "Reviewlabs <no-reply@reviewlabs.space>",
   // 0 or unset = lifetime access (links never expire).
   downloadTtlDays: (): number | null => {

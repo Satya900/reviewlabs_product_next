@@ -96,7 +96,7 @@ export function platformFeePercent(p: { commission_bps?: number | null }): numbe
   return p.commission_bps ? p.commission_bps / 100 : 0;
 }
 
-export type PremiumFeature = "coupons" | "analytics" | "offer" | "autodm" | "branding";
+export type PremiumFeature = "coupons" | "analytics" | "offer" | "autodm" | "branding" | "email";
 
 // Pro-only features (Stan-style: Creator sells, Pro grows). Shown in UpgradeCard.
 export const premiumCopy: Record<PremiumFeature, { title: string; body: string; tier: Tier }> = {
@@ -104,6 +104,7 @@ export const premiumCopy: Record<PremiumFeature, { title: string; body: string; 
   analytics: { tier: "pro", title: "Advanced analytics", body: "See conversion for every page, where buyers drop off, and which channels bring visits and sales: Instagram, WhatsApp, YouTube, AutoDM and more." },
   offer: { tier: "pro", title: "Add-on offer", body: "Add a one-click bonus at checkout so buyers can add it to their order. A simple way to raise every order's value." },
   autodm: { tier: "pro", title: "AutoDM", body: "When someone comments a keyword on your post or reel, they get a DM with your link, automatically." },
+  email: { tier: "pro", title: "Email broadcasts", body: "Email everyone who bought from you or signed up for a freebie: launches, offers and new products, up to 5,000 emails a month." },
   branding: { tier: "pro", title: "Remove Reviewlabs branding", body: "Your storefront and product pages show only your brand, without the \"Made with Reviewlabs\" badge." },
 };
 
@@ -123,11 +124,12 @@ export const creatorFeatures = [
 export const proFeatures = [
   "Everything in Creator",
   "AutoDM: comment a keyword, get the link by DM",
+  "Email broadcasts to your buyers and subscribers (5,000 a month)",
   "Coupons and discount codes",
   "Add-on offer (order bump) at checkout",
   "Advanced analytics: conversion, drop-off and traffic sources",
   "No \"Made with Reviewlabs\" badge",
-  "First access to email automation and affiliates",
+  "First access to email automations and affiliates",
 ];
 
 // Side-by-side comparison on the pricing page. true = included, false = not included.
@@ -159,6 +161,7 @@ export const planMatrix: { group: string; rows: { feature: string; creator: Plan
     rows: [
       { feature: "AutoDM: keyword comments get your link by DM", creator: false, pro: true },
       { feature: "Public replies under comments", creator: false, pro: true },
+      { feature: "Email broadcasts to buyers and subscribers", creator: false, pro: "5,000/month" },
       { feature: "Coupons and discount codes", creator: false, pro: true },
       { feature: "Add-on offer (order bump) at checkout", creator: false, pro: true },
       { feature: "Remove \"Made with Reviewlabs\" badge", creator: false, pro: true },

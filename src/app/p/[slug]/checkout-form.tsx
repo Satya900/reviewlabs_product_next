@@ -52,6 +52,8 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName, coupons
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checkingCoupon, setCheckingCoupon] = useState(false);
   const [offerSelected, setOfferSelected] = useState(false);
+  // Marketing consent: unticked by default, so it's a clear choice (DPDP).
+  const [optIn, setOptIn] = useState(false);
   const mainPrice = coupon?.finalPaise ?? page.amountPaise;
   const payable = mainPrice + (offer && offerSelected ? offer.pricePaise : 0);
 
@@ -81,7 +83,7 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName, coupons
       fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href, source: firstSource() }),
+        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href, source: firstSource(), marketingOptIn: optIn }),
       }),
     ]);
     const data = await res.json().catch(() => ({}));
@@ -233,6 +235,10 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName, coupons
             </p>
           </div>
         )}
+        <label className="flex cursor-pointer items-start gap-3 text-[14px] text-body">
+          <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-primary" />
+          <span>Send me updates and offers from {sellerName ?? "the seller"} by email. Unsubscribe any time.</span>
+        </label>
         <p className="text-center text-[12px] leading-relaxed text-muted @3xl:pt-1">
           By paying, you agree to share the details above with {sellerName ?? "the seller"} (owner of this page) and Reviewlabs, and to the{" "}
           <a href="/terms" target="_blank" className="underline">terms</a> and{" "}
