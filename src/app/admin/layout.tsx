@@ -10,6 +10,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     { href: "/admin/orders", label: "All orders" },
     { href: "/admin/payouts", label: waiting ? `Payouts (${waiting})` : "Payouts" },
     { href: "/admin/requests", label: "Requests" },
+    { href: "/admin/invoices", label: "GST invoices" },
     { href: "/dashboard", label: "Back to dashboard", exact: true },
   ];
   return (

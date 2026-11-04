@@ -29,7 +29,8 @@ export default function Privacy() {
         <p>The creator receives these details because you asked for their free resource and agreed to receive updates from them.</p>
       </Clause>
       <Clause n={3} title="What we collect from creators">
-        <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them).</p>
+        <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them), and the details you give us for your GST invoices (name, state, address and GSTIN if you have one).</p>
+        <p>We keep the tax invoices we issue you for your plan for as long as GST law requires, currently 72 months from the due date of the annual return for that year. They cannot be deleted before then, even if you close your account.</p>
         <p>If you set up a storefront, your handle, photo, bio and social links are shown publicly. If you ask about a custom plan, we keep the details you send us so we can reply.</p>
       </Clause>
       <Clause n={4} title="Instagram (AutoDM)">

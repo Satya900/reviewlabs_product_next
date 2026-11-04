@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay } from "@/lib/razorpay";
+import { emailInvoicesSoon } from "@/lib/invoices";
 
 // The subset of Razorpay's subscription entity we use.
 export type RazorpaySubscription = {
@@ -37,6 +38,7 @@ export async function recordSubscriptionPayment(sub: RazorpaySubscription, payme
     },
     { onConflict: "razorpay_payment_id" },
   );
+  emailInvoicesSoon(); // the database issued the GST invoice with the payment
 }
 
 async function creatorForSubscription(sub: RazorpaySubscription) {
@@ -65,6 +67,7 @@ export async function syncSubscription(sub: RazorpaySubscription, payment?: { id
       },
       { onConflict: "razorpay_payment_id" },
     );
+    emailInvoicesSoon();
   }
 
   switch (sub.status) {
@@ -131,6 +134,7 @@ export async function grantLifetime(orderId: string, paymentId: string, amountPa
     .rpc("grant_lifetime", { p_razorpay_order_id: orderId, p_razorpay_payment_id: paymentId, p_amount_paise: amountPaise })
     .maybeSingle<{ creator_id: string; newly_granted: boolean; old_subscription_id: string | null }>();
   if (error) throw new Error(`grant_lifetime failed: ${error.message}`);
+  if (data?.newly_granted) emailInvoicesSoon();
   if (data?.newly_granted && data.old_subscription_id) {
     try {
       await razorpay().subscriptions.cancel(data.old_subscription_id, false);
