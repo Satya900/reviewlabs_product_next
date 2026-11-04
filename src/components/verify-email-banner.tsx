@@ -5,13 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { sendMyVerificationEmail } from "@/app/(marketing)/auth-actions";
 
 // Shown at the top of every dashboard page until the creator verifies their
-// email. ?welcome=1 (straight after signup) means the first link already went out.
-export function VerifyEmailBanner({ email }: { email: string }) {
+// email. linkSent: a link already went out (at signup or a resend), so the
+// banner points to the inbox. canResend: the last one was over 10 minutes ago,
+// so "Send again" is offered; until then one signup means one email.
+export function VerifyEmailBanner({ email, linkSent, canResend }: { email: string; linkSent: boolean; canResend: boolean }) {
   const params = useSearchParams();
-  const justSignedUp = params.get("welcome") === "1";
   const invalid = params.get("verify") === "invalid";
   const [state, action, pending] = useActionState(sendMyVerificationEmail, null);
-  const sent = state?.sentTo ?? (justSignedUp && !state ? email : null);
+  const sent = state?.sentTo ?? (linkSent && !state ? email : null);
+  const waiting = !invalid && ((linkSent && !canResend) || !!state?.sentTo);
 
   return (
     <div role="status" className="flex flex-col gap-3 rounded-2xl border border-accent-yellow/40 bg-accent-yellow/10 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
@@ -32,15 +34,19 @@ export function VerifyEmailBanner({ email }: { email: string }) {
           {state?.error && <p className="mt-1 font-medium text-down">{state.error}</p>}
         </div>
       </div>
-      <form action={action} className="shrink-0">
-        <button
-          type="submit"
-          disabled={pending}
-          className="h-10 w-full rounded-full bg-ink px-5 text-[14px] font-semibold text-white transition disabled:opacity-60 sm:w-auto"
-        >
-          {pending ? "Sending…" : sent ? "Send again" : "Click here to verify"}
-        </button>
-      </form>
+      {waiting ? (
+        <p className="shrink-0 text-[13px] text-muted">Didn&apos;t get it? You can send another in a few minutes.</p>
+      ) : (
+        <form action={action} className="shrink-0">
+          <button
+            type="submit"
+            disabled={pending}
+            className="h-10 w-full rounded-full bg-ink px-5 text-[14px] font-semibold text-white transition disabled:opacity-60 sm:w-auto"
+          >
+            {pending ? "Sending…" : sent ? "Send again" : "Send verification email"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

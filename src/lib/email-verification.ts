@@ -2,10 +2,19 @@ import "server-only";
 import crypto from "node:crypto";
 import { env } from "@/lib/env";
 import { escapeHtml, sendEmail } from "@/lib/email";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createToken, hashEmail, readToken, type VerificationClaim } from "@/lib/verification-token";
 
 // Creators sign in straight away and verify their email later (see migration
 // 0019). The link carries a signed, expiring token (src/lib/verification-token.ts).
+
+// A creator's own "send again" waits this long after the last link, so one
+// signup means one email unless the first really didn't arrive.
+export const VERIFICATION_RESEND_MS = 10 * 60_000;
+
+export function canResendVerification(sentAt: string | null | undefined, now = Date.now()): boolean {
+  return !sentAt || now - new Date(sentAt).getTime() >= VERIFICATION_RESEND_MS;
+}
 
 function signingKey(): Buffer {
   // Separate key per purpose, derived from the app's encryption key.
@@ -46,4 +55,6 @@ export async function sendVerificationEmail(user: { id: string; email: string; n
 </div></div>`,
     text: [...lines, `Verify your email: ${link}`, "The link works for 7 days. If you didn't create a Reviewlabs account, you can ignore this email."].join("\n\n"),
   });
+  const { error } = await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
+  if (error) console.error("[verify] sent_at", error.message);
 }

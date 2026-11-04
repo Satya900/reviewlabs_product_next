@@ -6,7 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendVerificationEmail } from "@/lib/email-verification";
+import { canResendVerification, sendVerificationEmail } from "@/lib/email-verification";
 import { getProfile } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { clientIp } from "@/lib/request";
@@ -66,7 +66,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     redirect("/login");
   }
   const user = { id: created.user.id, email: parsed.data.email, name: parsed.data.name };
-  after(() => sendVerificationEmail(user).catch((e) => console.error("[signup] verification email", (e as Error).message)));
+  // Marked as sent before the dashboard loads, so its banner says "we sent a
+  // link" rather than offering a second email. Cleared if the send fails.
+  await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
+  after(() =>
+    sendVerificationEmail(user).catch(async (e) => {
+      console.error("[signup] verification email", (e as Error).message);
+      await createAdminClient().from("profiles").update({ verification_sent_at: null }).eq("id", user.id);
+    }),
+  );
   // Which ad brought them (UTM tags and the Meta click, from the proxy's
   // cookies), and the signup conversion for our ads, sent now while we still
   // have this browser. The cookie lets the next page fire the browser Pixel
@@ -147,6 +155,8 @@ export async function sendMyVerificationEmail(): Promise<AuthState> {
   const profile = await getProfile();
   if (!profile) return { error: "Please log in again." };
   if (profile.email_verified_at) return { ok: "Your email is already verified." };
+  // The link from signup (or a recent resend) is still on its way: don't send another.
+  if (!canResendVerification(profile.verification_sent_at)) return { sentTo: profile.email };
   if (!(await rateLimit(`verify-send:${profile.id}`, 5, 3600))) {
     return { error: "We've sent a few links already. Check your inbox and spam folder, or try again in an hour." };
   }
