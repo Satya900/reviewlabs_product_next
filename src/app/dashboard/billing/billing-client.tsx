@@ -6,7 +6,8 @@ import { cancelSubscription, saveBillingDetails, startSubscription, startUpgrade
 import { Button, Field, FormMessage, cx, inputClass, textareaClass } from "@/components/ui";
 import { GST_STATES } from "@/lib/gst";
 import { formatPaise } from "@/lib/money";
-import type { Interval, Tier } from "@/lib/plans";
+import { PLAN_PRICES, type Interval, type Tier } from "@/lib/plans";
+import { trackCheckoutStart, trackSubscribe } from "@/components/platform-pixel";
 
 type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error: { description: string } }) => void) => void };
 
@@ -43,6 +44,7 @@ function SubscribeButton({ tier, interval, label, variant }: { tier: Tier; inter
       setBusy(false);
       return;
     }
+    trackCheckoutStart(`${name} plan`, PLAN_PRICES[tier][interval] / 100);
     const rzp = new RZP({
       key: res.keyId,
       subscription_id: res.subscriptionId,
@@ -52,7 +54,9 @@ function SubscribeButton({ tier, interval, label, variant }: { tier: Tier; inter
       theme: { color: "#0052ff" },
       handler: async (response: Record<string, string>) => {
         setState({ ok: `Done. Turning on ${name}…` });
-        await fetch("/api/billing/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => null);
+        const verified = await fetch("/api/billing/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => null);
+        const json = await verified?.json().catch(() => null);
+        if (json?.event) trackSubscribe(json.event.id, json.event);
         router.refresh();
         setBusy(false);
       },

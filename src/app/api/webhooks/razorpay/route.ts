@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
 import { grantLifetime, isLifetimePayment, syncSubscription, type RazorpaySubscription } from "@/lib/billing";
+import { sendSubscribeEvent } from "@/lib/platform-meta";
 
 type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string; notes?: Record<string, string> };
 
@@ -108,6 +109,12 @@ async function handleEvent(body: WebhookBody) {
       if (!sub) return;
       const pay = body.event === "subscription.charged" ? body.payload.payment?.entity : null;
       await syncSubscription(sub, pay ? { id: pay.id, amount: pay.amount, status: pay.status } : null);
+      // Backup for when the browser never reached /api/billing/verify. Only a
+      // creator's first plan payment is sent, once.
+      if (pay && (pay.status === "captured" || pay.status === "authorized")) {
+        const { data: row } = await createAdminClient().from("subscription_payments").select("creator_id").eq("razorpay_payment_id", pay.id).maybeSingle();
+        if (row) await sendSubscribeEvent(row.creator_id).catch(() => {});
+      }
       return;
     }
     default:
