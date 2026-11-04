@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefront } from "@/lib/storefront-data";
 import { StorefrontView } from "@/components/storefront-view";
+import { SourceMemo } from "@/components/page-view-beacon";
 import { StorePaused } from "@/components/store-paused";
 
 // Served at /@handle (see the rewrite in next.config.ts).
@@ -25,6 +26,7 @@ export default async function StorefrontPage({ params }: PageProps<"/s/[handle]"
   if (!data.storeLive) return <StorePaused name={data.name} />;
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,#eef3ff_0%,#f7f7f7_45%)]">
+      <SourceMemo />
       <StorefrontView data={data} />
     </main>
   );

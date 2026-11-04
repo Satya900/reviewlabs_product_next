@@ -11,6 +11,8 @@ import { payCreator, recordManualPayout } from "@/lib/payouts";
 import { emailCreatorRejected } from "@/lib/payout-requests";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isValidGstin } from "@/lib/gst";
+import { escapeHtml, sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -347,4 +349,32 @@ export async function saveGstSettings(_prev: ActionState, formData: FormData): P
   if (error) return { error: error.message };
   revalidatePath("/admin/invoices");
   return { ok: "Saved. New plan payments get an invoice straight away; earlier ones within 15 minutes." };
+}
+
+// AutoDM early access: after adding the creator's Facebook account as a Tester
+// in the Meta App Dashboard, mark them invited (emails them the next step).
+export async function decideAutodmAccess(creatorId: string, status: "invited" | "declined"): Promise<ActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+  const { data: req } = await db.from("autodm_access_requests").update({ status, decided_at: new Date().toISOString() }).eq("creator_id", creatorId).select("ig_username").maybeSingle();
+  if (!req) return { error: "Request not found." };
+  if (status === "invited") {
+    const { data: p } = await db.from("profiles").select("email, name").eq("id", creatorId).single();
+    if (p) {
+      const link = `${env.appUrl()}/dashboard/autodm`;
+      const lines = [
+        `Hi ${(p.name ?? "").split(" ")[0] || "there"},`,
+        `You're in: AutoDM is ready for @${req.ig_username}. Two quick steps:`,
+        "1. Open developers.facebook.com/requests while logged in to the Facebook account you gave us, and accept the Reviewlabs tester request.",
+        `2. Go to AutoDM in your dashboard and click Connect Instagram: ${link}`,
+      ];
+      try {
+        await sendEmail({ to: p.email, subject: "Your AutoDM access is ready", text: lines.join("\n\n"), html: lines.map((l) => `<p>${escapeHtml(l)}</p>`).join("") });
+      } catch (e) {
+        console.error("[admin] autodm invite email:", (e as Error).message);
+      }
+    }
+  }
+  revalidatePath("/admin/autodm");
+  return { ok: status === "invited" ? "Marked invited and emailed." : "Declined." };
 }

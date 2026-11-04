@@ -26,6 +26,8 @@ export const getPublicPage = cache(async (slug: string) => {
     creatorTier(page.creator_id),
   ]);
   const hasPlan = tier !== "none";
+  // Pro features: add-on offer, coupons, no "Made with Reviewlabs" badge.
+  const pro = tier === "pro" || tier === "trial";
   const { data: seller } = await admin.from("profiles").select("name").eq("id", page.creator_id).maybeSingle();
 
   return {
@@ -35,8 +37,9 @@ export const getPublicPage = cache(async (slug: string) => {
     linkLabels: (links ?? []).map((l) => l.label as string),
     testimonials: (testimonials ?? []) as Testimonial[],
     faqs: (faqs ?? []) as Faq[],
-    // Additional offers need a plan or the trial.
-    offer: hasPlan ? offer ?? null : null,
+    offer: pro ? offer ?? null : null,
+    couponsEnabled: pro,
+    showBranding: !pro,
     sellerName: (seller?.name as string | null) || "the seller",
     // Without a plan or trial the store is offline: the page shows but takes no
     // orders. (Paid buyers' thank-you and download pages keep working.)

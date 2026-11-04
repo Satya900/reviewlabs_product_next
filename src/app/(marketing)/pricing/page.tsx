@@ -62,9 +62,9 @@ export default function Pricing() {
             <div className="relative flex flex-1 flex-col">
               <div className="flex items-center gap-3">
                 <p className="text-[18px] font-semibold">Pro</p>
-                <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">With AutoDM</span>
+                <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Grow faster</span>
               </div>
-              <p className="mt-1 text-[15px] text-on-dark-soft">Turn Instagram comments into sales, automatically.</p>
+              <p className="mt-1 text-[15px] text-on-dark-soft">AutoDM, coupons, order bumps and analytics that show what sells.</p>
               <Prices tier="pro" dark />
               <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">0%</b> platform fee on every sale</p>
               <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Get started</Link>
@@ -95,7 +95,7 @@ export default function Pricing() {
       </Section>
 
       <Section>
-        <SectionHead center kicker="Compare plans" title="Everything in each plan." sub="Creator has everything you need to sell. Pro adds AutoDM for Instagram." />
+        <SectionHead center kicker="Compare plans" title="Everything in each plan." sub="Creator has everything you need to sell. Pro adds the tools that grow sales." />
         <div className="mx-auto mt-10 max-w-4xl overflow-x-auto rounded-3xl border border-hairline bg-canvas">
           <table className="w-full min-w-[560px] text-left text-[15px]">
             <thead>
@@ -163,7 +163,7 @@ export default function Pricing() {
             items={[
               { q: "Is there a free trial?", a: "No. Create your account, choose Creator or Pro, and your dashboard unlocks straight away. You can cancel any time." },
               { q: "Do you take a cut of my sales?", a: `No. The platform fee is 0% on both plans. The only deduction is Razorpay's payment charge (${GATEWAY_FEE_LABEL}: about 2% plus 18% GST), which we pass on at exactly what Razorpay charges us. You see it on every sale in your earnings.` },
-              { q: "What's the difference between Creator and Pro?", a: "Creator has everything you need to sell: unlimited products and lead magnets, your storefront, coupons, an add-on offer at checkout, analytics and payouts. Pro adds AutoDM: when someone comments a keyword on your Instagram post, they get a DM with your link automatically." },
+              { q: "What's the difference between Creator and Pro?", a: "Creator has everything you need to sell: unlimited products and lead magnets, your storefront, checkout, instant delivery, a sales dashboard, GST invoices and payouts. Pro adds the tools that grow sales: AutoDM (comment a keyword, get the link by DM), coupons, an add-on offer at checkout, advanced analytics with conversion and traffic sources, and no \"Made with Reviewlabs\" badge." },
               { q: "Do plan prices include GST?", a: `Yes. ${priceLabel("creator", "month")} a month or ${priceLabel("creator", "year")} a year for Creator, and ${priceLabel("pro", "month")} a month or ${priceLabel("pro", "year")} a year for Pro, are the full amounts you pay.` },
               { q: "Monthly or yearly?", a: `Yearly costs the same as 10 months, so you get 2 months free: ${yearlySaving("creator")} saved on Creator and ${yearlySaving("pro")} on Pro. Both renew automatically by autopay and can be cancelled from Plan and billing.` },
               { q: "When do I get paid?", a: "When you ask. Request a payout from Earnings once you have ₹500 or more available (sales become available 24 hours after they happen), and we send it to the bank account you added. Each payout shows in your earnings with its UTR number." },

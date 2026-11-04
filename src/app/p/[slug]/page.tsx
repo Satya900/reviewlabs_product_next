@@ -7,6 +7,7 @@ import { ProductView } from "@/components/product-view";
 import { faqJsonLd } from "@/lib/faq";
 import { sanitizeDescription } from "@/lib/rich-text";
 import { StorePaused } from "@/components/store-paused";
+import { MadeWithBadge } from "@/components/made-with-badge";
 
 export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -24,7 +25,7 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
   const data = await getPublicPage(slug);
   if (!data) notFound();
   if (!data.storeLive) return <StorePaused name={data.sellerName === "the seller" ? null : data.sellerName} />;
-  const { page, fields, files, linkLabels, testimonials, faqs, offer, sellerName } = data;
+  const { page, fields, files, linkLabels, testimonials, faqs, offer, sellerName, couponsEnabled, showBranding } = data;
 
   return (
     <>
@@ -51,10 +52,12 @@ export default async function PublicPaymentPage({ params }: PageProps<"/p/[slug]
             page={{ id: page.id, slug: page.slug, title: page.title, amountPaise: page.amount_paise, currency: page.currency, buttonLabel: page.button_label }}
             fields={fields.map((f) => ({ id: f.id, label: f.label, type: f.field_type, required: f.required, options: f.options }))}
             sellerName={sellerName}
+            couponsEnabled={couponsEnabled}
             offer={offer ? { id: offer.id, headline: offer.headline, title: offer.title, description: offer.description, imageUrl: offer.image_url, pricePaise: offer.price_paise, compareAtPaise: offer.compare_at_paise } : null}
           />
         }
       />
+      {showBranding && <MadeWithBadge />}
     </>
   );
 }

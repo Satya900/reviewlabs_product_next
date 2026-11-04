@@ -31,6 +31,8 @@ export const env = {
   metaGraphVersion: () => process.env.META_GRAPH_VERSION ?? "v26.0",
   // Tests point this at a local stand-in for Meta's API.
   metaGraphBase: () => process.env.META_GRAPH_BASE ?? "https://graph.facebook.com",
+  // AutoDM for every Pro creator (after Meta approves the app); otherwise by invitation.
+  autodmOpen: () => process.env.AUTODM_OPEN === "true",
   autodmEnabled: () => Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET && process.env.META_LOGIN_CONFIG_ID),
   cronSecret: () => required("CRON_SECRET"),
   resendApiKey: () => process.env.RESEND_API_KEY || null,

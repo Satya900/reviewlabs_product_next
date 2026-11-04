@@ -4,7 +4,7 @@ import { formatPaise } from "@/lib/money";
 import { Badge, EmptyState, PageTitle, Panel, tableClass } from "@/components/ui";
 import type { Coupon } from "@/lib/coupons";
 import { CouponActions, CouponForm } from "./coupon-forms";
-import { hasCreatorPlan } from "@/lib/plans";
+import { hasProPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
@@ -19,7 +19,7 @@ function currentTime() {
 
 export default async function CouponsPage() {
   const profile = await requirePlan();
-  if (!hasCreatorPlan(profile)) {
+  if (!hasProPlan(profile)) {
     return (
       <>
         <PageTitle>Coupons</PageTitle>
