@@ -288,7 +288,7 @@ export default function Home() {
             </p>
             <p className="mt-2 text-[15px] text-on-dark-soft">Creator is {priceLabel("creator", "month")}/month for everything you need to sell. Pro, at {priceLabel("pro", "month")}/month, adds the tools that grow sales: Instagram AutoDM, coupons, an add-on offer and advanced analytics. Yearly plans get 2 months free. All prices include GST, and we never take a cut of your sales.</p>
             <div className="mt-8">
-              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, checkout, delivery, payouts", "Pro: plus AutoDM, coupons, add-on offer, advanced analytics, no branding"]} />
+              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, checkout, delivery, payouts", "Pro: plus AutoDM, email broadcasts, coupons, add-on offer, advanced analytics, no branding"]} />
             </div>
             <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Get started</Link>
           </div>

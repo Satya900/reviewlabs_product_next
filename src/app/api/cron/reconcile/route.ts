@@ -9,6 +9,7 @@ import { syncOpenPayouts } from "@/lib/payouts";
 import { syncAllAccounts } from "@/lib/autodm-runner";
 import { sendTrialEmails } from "@/lib/trial-emails";
 import { sendInvoiceEmails } from "@/lib/invoices";
+import { processBroadcasts } from "@/lib/broadcasts";
 import { env } from "@/lib/env";
 
 export const maxDuration = 60;
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
 async function reconcile() {
   const admin = createAdminClient();
   const now = Date.now();
-  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, autodmSent: 0, trialEmails: 0, invoicesIssued: 0, invoicesEmailed: 0, errors: 0 };
+  const summary = { checked: 0, recovered: 0, refundsSynced: 0, plansChecked: 0, postPaymentRetried: 0, payoutsSynced: 0, autodmSent: 0, trialEmails: 0, invoicesIssued: 0, invoicesEmailed: 0, broadcastEmails: 0, errors: 0 };
 
   // 1. Unpaid orders 10 minutes to 3 days old: ask Razorpay what happened.
   const { data: pending } = await admin
@@ -193,7 +194,15 @@ async function reconcile() {
     console.error("[reconcile] invoices:", e);
   }
 
-  // 10. Housekeeping: rate-limit windows older than a day are useless.
+  // 10. Email broadcasts still queued (e.g. held back by the daily cap).
+  try {
+    summary.broadcastEmails = (await processBroadcasts(15_000)).sent;
+  } catch (e) {
+    summary.errors++;
+    console.error("[reconcile] broadcasts:", e);
+  }
+
+  // 11. Housekeeping: rate-limit windows older than a day are useless.
   await admin.from("rate_limits").delete().lt("window_start", new Date(now - 86_400_000).toISOString());
 
   return summary;

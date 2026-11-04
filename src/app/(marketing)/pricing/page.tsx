@@ -64,7 +64,7 @@ export default function Pricing() {
                 <p className="text-[18px] font-semibold">Pro</p>
                 <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Grow faster</span>
               </div>
-              <p className="mt-1 text-[15px] text-on-dark-soft">AutoDM, coupons, order bumps and analytics that show what sells.</p>
+              <p className="mt-1 text-[15px] text-on-dark-soft">AutoDM, email broadcasts, coupons, order bumps and analytics that show what sells.</p>
               <Prices tier="pro" dark />
               <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">0%</b> platform fee on every sale</p>
               <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Get started</Link>

@@ -60,6 +60,7 @@ export default function Terms() {
           <li>Your storefront handle, photo, bio and social links are public. Do not use a handle or photo that impersonates another person or brand.</li>
           <li>Lead magnets let you collect names, email addresses, phone numbers and answers from visitors. Visitors agree to receive updates from you. Use their details only for that, keep them secure, and stop contacting anyone who asks you to.</li>
           <li>You are responsible for following Indian law, including the Digital Personal Data Protection Act, 2023, when you use the leads you collect.</li>
+          <li>Email broadcasts (Pro) go only to buyers who opted in at checkout and to lead magnet sign-ups. Send only messages about you and your products: no spam, no misleading subjects, nothing illegal. We may pause broadcasts for an account that gets many complaints or bounces.</li>
           <li>Free files offered through lead magnets follow the same content rules as paid products.</li>
         </ul>
       </Clause>

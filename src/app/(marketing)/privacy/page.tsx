@@ -18,6 +18,7 @@ export default function Privacy() {
           <li>Technical data: IP address, browser type and the page you came from, used for fraud checks and the creator&apos;s sales analytics.</li>
         </ul>
         <p>We never see or store your card number, CVV, UPI PIN or bank login. Razorpay handles those.</p>
+        <p>If you tick &quot;Send me updates and offers&quot; at checkout, the creator can email you about their products through Reviewlabs. It is unticked unless you tick it, and every email has an unsubscribe link.</p>
         <p>Your details are saved when you start checkout, before you pay. If you don&apos;t finish the purchase or the payment fails, the creator can see your details and may contact you about that order.</p>
       </Clause>
       <Clause n={2} title="What we collect from lead magnet visitors">
@@ -26,7 +27,7 @@ export default function Privacy() {
           <li>If the creator turned on email verification, a one-time code that we store only as a hash. It stops working after 10 minutes and is deleted once used.</li>
           <li>The same technical data as buyers.</li>
         </ul>
-        <p>The creator receives these details because you asked for their free resource and agreed to receive updates from them.</p>
+        <p>The creator receives these details because you asked for their free resource and agreed to receive updates from them. Their emails are sent through Reviewlabs and each has an unsubscribe link; when you unsubscribe, we stop that creator&apos;s emails to you.</p>
       </Clause>
       <Clause n={3} title="What we collect from creators">
         <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them), and the details you give us for your GST invoices (name, state, address and GSTIN if you have one).</p>

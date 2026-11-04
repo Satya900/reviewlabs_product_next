@@ -17,6 +17,7 @@ const schema = z.object({
   responses: z.record(z.string(), z.string().max(2000)).default({}),
   sourceUrl: z.url().max(2000).optional(),
   source: z.string().regex(/^[a-z0-9_]{1,24}$/).optional(),
+  marketingOptIn: z.boolean().optional(),
   couponCode: z.string().trim().max(40).optional(),
   offerId: z.uuid().optional(),
 });
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
       offer_title: offer?.title ?? null,
       offer_price_paise: offer?.price_paise ?? 0,
       currency: page.currency,
+      marketing_opt_in: input.marketingOptIn === true,
       tracking: {
         source_url: input.sourceUrl,
         source: input.source,
