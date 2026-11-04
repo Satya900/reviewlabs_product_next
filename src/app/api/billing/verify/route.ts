@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/auth";
 import { verifySubscriptionSignature } from "@/lib/razorpay";
 import { fetchSubscription, recordSubscriptionPayment, syncSubscription } from "@/lib/billing";
 import { razorpay } from "@/lib/razorpay";
+import { clickDataFromHeaders, firstPlanPayment, sendSubscribeEvent } from "@/lib/platform-meta";
 
 const schema = z.object({
   razorpay_payment_id: z.string().min(1),
@@ -35,7 +36,13 @@ export async function POST(request: Request) {
     const payment = (await razorpay().payments.fetch(razorpay_payment_id)) as unknown as { id: string; amount: number; status: string };
     await recordSubscriptionPayment(sub, payment);
     await syncSubscription(sub);
-    return NextResponse.json({ status: sub.status });
+    // A creator's first plan payment is our ads' purchase. The browser sends
+    // the same event with this ID, so Meta counts it once.
+    const first = await firstPlanPayment(profile.id);
+    if (!first) return NextResponse.json({ status: sub.status });
+    const click = clickDataFromHeaders(request.headers);
+    after(() => sendSubscribeEvent(profile.id, click).catch((e) => console.warn("[billing/verify] subscribe event:", e)));
+    return NextResponse.json({ status: sub.status, event: { id: first.eventId, value: first.value, plan: first.plan } });
   } catch (e) {
     console.error("[billing/verify]", e);
     return NextResponse.json({ status: "processing" });

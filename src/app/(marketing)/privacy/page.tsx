@@ -32,6 +32,7 @@ export default function Privacy() {
       <Clause n={3} title="What we collect from creators">
         <p>Your email address, display name, payout details (bank account holder name, account number and IFSC, and the cancelled cheque you upload to confirm them), and the details you give us for your GST invoices (name, state, address and GSTIN if you have one).</p>
         <p>We keep the tax invoices we issue you for your plan for as long as GST law requires, currently 72 months from the due date of the annual return for that year. They cannot be deleted before then, even if you close your account.</p>
+        <p>When you sign up, we note which ad or link brought you to Reviewlabs (its campaign tags and, for Meta ads, the ad click) so we can see which of our ads work.</p>
         <p>If you set up a storefront, your handle, photo, bio and social links are shown publicly. If you ask about a custom plan, we keep the details you send us so we can reply.</p>
       </Clause>
       <Clause n={4} title="Instagram (AutoDM)">
@@ -55,6 +56,7 @@ export default function Privacy() {
           <li>Supabase, which hosts our database and file storage.</li>
           <li>Our email provider, to send receipts, download links and verification codes.</li>
           <li>Meta (Instagram), for creators who use AutoDM: we send the creator&apos;s replies through Instagram&apos;s API.</li>
+          <li>Meta, for our own ads: on our website and when creators sign up or first pay for a plan, we use the Meta Pixel and send the creator&apos;s email and name as a one-way hash, plus IP and browser details, so we can measure our ads. When someone arrives from a Meta ad, we keep the ad click in the _fbc cookie for 90 days. Buyers, lead magnet visitors and creators&apos; own pages are never tracked this way.</li>
         </ul>
         <p>We do not sell personal data.</p>
       </Clause>

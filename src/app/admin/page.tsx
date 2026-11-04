@@ -3,19 +3,33 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatPaise } from "@/lib/money";
 import { PageTitle, Stat, buttonClass, cx, tableClass } from "@/components/ui";
 import { currentTier } from "@/lib/plans";
+import { attributionLabel, type Attribution } from "@/lib/ad-click";
 
 export default async function AdminCreators() {
   const db = createAdminClient();
   const [{ data: profiles }, { data: balances }] = await Promise.all([
-    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number, payout_bank_submitted_at, payout_bank_name, email_verified_at").order("created_at"),
+    db.from("profiles").select("id, email, name, is_admin, plan, plan_status, plan_current_period_end, payout_upi, payout_account_number, payout_bank_submitted_at, payout_bank_name, email_verified_at, signup_attribution, created_at").order("created_at"),
     db.from("creator_balances").select("*"),
   ]);
-  const { data: subPayments } = await db.from("subscription_payments").select("amount_paise").in("status", ["captured", "authorized"]);
+  const { data: subPayments } = await db.from("subscription_payments").select("creator_id, amount_paise").in("status", ["captured", "authorized"]);
   const { data: commission } = await db.from("ledger_entries").select("amount_paise").eq("entry_type", "platform_fee");
   const planRevenue = (subPayments ?? []).reduce((s, r) => s + r.amount_paise, 0);
   const commissionRevenue = -(commission ?? []).reduce((s, r) => s + r.amount_paise, 0);
   const creatorCount = (profiles ?? []).filter((p) => { const t = currentTier(p); return !p.is_admin && (t === "creator" || t === "pro"); }).length;
   const trialCount = (profiles ?? []).filter((p) => !p.is_admin && currentTier(p) === "trial").length;
+  // Which ads bring signups and paying creators (last ad click before signup).
+  const paidCreators = new Set((subPayments ?? []).map((r) => r.creator_id));
+  const funnel = new Map<string, { signups: number; paid: number; last: string }>();
+  for (const p of profiles ?? []) {
+    if (p.is_admin) continue;
+    const key = attributionLabel(p.signup_attribution as Attribution | null);
+    const row = funnel.get(key) ?? { signups: 0, paid: 0, last: p.created_at };
+    row.signups++;
+    if (paidCreators.has(p.id)) row.paid++;
+    if (p.created_at > row.last) row.last = p.created_at;
+    funnel.set(key, row);
+  }
+  const funnelRows = [...funnel.entries()].sort((a, b) => b[1].signups - a[1].signups);
   const balanceBy = new Map((balances ?? []).map((b) => [b.creator_id, b]));
   const totalOwed = (balances ?? []).reduce((s, b) => s + Math.max(0, Number(b.balance_paise)), 0);
 
@@ -29,6 +43,30 @@ export default async function AdminCreators() {
         <Stat label="Paying creators (Creator + Pro)" value={creatorCount} sub={`${trialCount} on free trial`} />
         <Stat label="Plan revenue (all time)" value={formatPaise(planRevenue)} />
         <Stat label="Platform fees earned (net)" value={formatPaise(commissionRevenue)} />
+      </div>
+      <div className={tableClass.wrap}>
+        <table className={`${tableClass.table} min-w-[560px]`}>
+          <thead>
+            <tr>
+              <th className={tableClass.th}>Signups by source / medium / campaign</th>
+              <th className={`${tableClass.th} text-right`}>Signups</th>
+              <th className={`${tableClass.th} text-right`}>Paid</th>
+              <th className={`${tableClass.th} text-right`}>Paid rate</th>
+              <th className={`${tableClass.th} text-right`}>Latest signup</th>
+            </tr>
+          </thead>
+          <tbody>
+            {funnelRows.map(([label, r]) => (
+              <tr key={label}>
+                <td className={tableClass.td}>{label}</td>
+                <td className={cx(tableClass.td, "num text-right")}>{r.signups}</td>
+                <td className={cx(tableClass.td, "num text-right")}>{r.paid}</td>
+                <td className={cx(tableClass.td, "num text-right")}>{Math.round((r.paid / r.signups) * 100)}%</td>
+                <td className={cx(tableClass.td, "num text-right")}>{new Date(r.last).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" })}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       <div className={tableClass.wrap}>
         <table className={`${tableClass.table} min-w-[720px]`}>
@@ -53,6 +91,7 @@ export default async function AdminCreators() {
                       {p.email}{p.is_admin ? " (admin)" : ""}
                       {!p.email_verified_at && !p.is_admin && <span className="ml-2 font-medium text-accent-yellow">Email not verified</span>}
                     </p>
+                    {!p.is_admin && <p className="text-[12px] text-muted">From: {attributionLabel(p.signup_attribution as Attribution | null)}</p>}
                   </td>
                   <td className={tableClass.td}>
                     {p.payout_bank_submitted_at && p.payout_account_number
