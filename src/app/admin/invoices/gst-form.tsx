@@ -11,8 +11,8 @@ export function GstSettingsForm({ initial }: { initial: GstSettings }) {
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
       <Field label="GSTIN"><input name="gstin" defaultValue={initial.gstin ?? ""} required maxLength={15} className={cx(inputClass, "num uppercase")} /></Field>
-      <Field label="Legal name" hint="As on the GST certificate (the proprietor's name)."><input name="legal_name" defaultValue={initial.legal_name ?? ""} required className={inputClass} /></Field>
-      <Field label="Trade name"><input name="trade_name" defaultValue={initial.trade_name ?? ""} className={inputClass} /></Field>
+      <Field label="Proprietor's legal name" hint="Exactly as on the GST certificate."><input name="legal_name" defaultValue={initial.legal_name ?? ""} required className={inputClass} /></Field>
+      <Field label="Trade name (business)" hint="Shown as the seller on invoices."><input name="trade_name" defaultValue={initial.trade_name ?? ""} className={inputClass} /></Field>
       <Field label="SAC code"><input name="sac" defaultValue={initial.sac} maxLength={8} className={cx(inputClass, "num")} /></Field>
       <div className="sm:col-span-2">
         <Field label="Registered address"><textarea name="address" defaultValue={initial.address ?? ""} required rows={3} className={textareaClass} /></Field>

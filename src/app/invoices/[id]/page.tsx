@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatPaise } from "@/lib/money";
 import { amountInWords, GST_RATE_PERCENT, stateName } from "@/lib/gst";
 import type { Invoice } from "@/lib/invoices";
+import { site } from "@/lib/site";
 import { PrintButton } from "./print-button";
 
 export const metadata = { title: "Tax invoice", robots: { index: false } };
@@ -45,7 +46,7 @@ export default async function InvoicePage({ params }: PageProps<"/invoices/[id]"
         <header className="flex flex-wrap items-start justify-between gap-6 border-b border-hairline pb-6">
           <div>
             <p className="text-[24px] font-semibold tracking-tight">Tax invoice</p>
-            <p className="mt-1 text-body">Original for recipient</p>
+            <p className="mt-1 text-body">Original for recipient · {site.name}, a product of {inv.seller_trade_name ?? site.legalName}</p>
           </div>
           <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-1 text-right">
             <dt className="text-muted">Invoice no.</dt><dd className="num font-semibold">{inv.invoice_number}</dd>
@@ -58,7 +59,7 @@ export default async function InvoicePage({ params }: PageProps<"/invoices/[id]"
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-wider text-muted">From</p>
             <p className="mt-2 text-[15px] font-semibold">{inv.seller_trade_name ?? inv.seller_legal_name}</p>
-            {inv.seller_trade_name && inv.seller_legal_name && <p className="text-body">{inv.seller_legal_name} (proprietor)</p>}
+            {inv.seller_trade_name && inv.seller_legal_name && <p className="text-body">Proprietor: {inv.seller_legal_name}</p>}
             {inv.seller_address && <p className="whitespace-pre-line text-body">{inv.seller_address}</p>}
             <p className="mt-1">GSTIN: <span className="num font-medium">{inv.seller_gstin}</span></p>
             <p className="text-body">State: {state(inv.seller_state_code)}</p>

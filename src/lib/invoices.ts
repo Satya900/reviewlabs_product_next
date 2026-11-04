@@ -47,7 +47,7 @@ async function sendOne(inv: Pick<Invoice, "id" | "invoice_number" | "buyer_email
     "You can also find all your invoices under Plan and billing in your dashboard.",
   ];
   const html = `<div style="background:#f7f7f7;padding:32px 12px;"><div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #dee1e6;border-radius:24px;padding:32px;font-family:${font};color:#0a0b0d;">
-  <p style="margin:0;font-size:14px;color:#7c828a;">Reviewlabs</p>
+  <p style="margin:0;font-size:14px;color:#7c828a;">Reviewlabs by Veyrn Labs</p>
   <h1 style="margin:8px 0 0 0;font-size:28px;line-height:1.15;font-weight:400;letter-spacing:-0.6px;">Invoice ${escapeHtml(inv.invoice_number)}</h1>
   ${lines.map((l) => `<p style="margin:10px 0 0 0;font-size:16px;line-height:1.5;color:#5b616e;">${escapeHtml(l)}</p>`).join("")}
   <p style="margin:24px 0 0 0;"><a href="${link}" style="display:inline-block;background:#0052ff;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:12px 22px;border-radius:100px;">View invoice</a></p>

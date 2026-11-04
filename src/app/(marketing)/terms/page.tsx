@@ -14,7 +14,7 @@ export default function Terms() {
     >
       <Clause n={1} title="Who we are">
         <p>
-          {site.name} is a product of {site.legalName}, founded by {site.founder}. We provide software that lets independent creators sell
+          {site.name} is a product of {site.legalName}, {site.entity}, registered for GST in India. In these terms, &quot;we&quot; and &quot;us&quot; mean {site.legalName}. We provide software that lets independent creators sell
           digital products, such as ebooks and templates, through payment pages, and grow an audience with a link-in-bio storefront and
           lead magnets.
         </p>

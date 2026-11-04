@@ -24,7 +24,8 @@ export default async function AdminInvoices() {
         <a href="/admin/invoices/export" className={buttonClass.secondary}>Download CSV</a>
       </div>
       {!gst.gstin && <Notice tone="warn"><b>Invoices are paused.</b> Add your GSTIN and address below. Plan payments made until then are invoiced automatically once it&apos;s saved.</Notice>}
-      <Panel title="Our GST details">
+      <Panel title="Our GST details (Veyrn Labs)">
+        <p className="mb-5 text-[14px] text-body">Invoices are issued by the trade name, with the proprietor and GSTIN from the GST certificate. Reviewlabs appears as the product.</p>
         <GstSettingsForm initial={gst} />
       </Panel>
       <div className={tableClass.wrap}>

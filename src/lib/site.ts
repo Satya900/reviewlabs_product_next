@@ -3,8 +3,11 @@ export const site = {
   name: "Reviewlabs",
   tagline: "Sell your ebooks. Online.",
   description: "Payment pages, a link-in-bio storefront and lead magnets for creators who sell ebooks, templates and other digital files in India.",
+  // Reviewlabs is a product (brand) of Veyrn Labs, a sole proprietorship
+  // registered for GST in the proprietor's name.
   legalName: "Veyrn Labs",
   founder: "Satyabrata Mohanty",
+  entity: "a sole proprietorship of Satyabrata Mohanty",
   supportEmail: "satyabrata@veyrnlabs.com",
   // Plan prices, GST included. Yearly = 10 months.
   creatorMonthlyPaise: 79900,

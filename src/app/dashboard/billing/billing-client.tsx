@@ -157,12 +157,16 @@ export type BillingDetails = { name: string; gstin: string; stateCode: string; a
 // Details printed on GST invoices. A GSTIN sets the state automatically.
 export function BillingDetailsForm({ initial }: { initial: BillingDetails }) {
   const [state, action, pending] = useActionState(saveBillingDetails, null);
+  // Controlled, so what was typed survives a submit that comes back with an error.
+  const [name, setName] = useState(initial.name);
   const [gstin, setGstin] = useState(initial.gstin);
+  const [stateCode, setStateCode] = useState(initial.stateCode);
+  const [address, setAddress] = useState(initial.address);
   const gstState = /^[0-9]{2}/.test(gstin) ? gstin.slice(0, 2) : null;
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
       <Field label="Name on invoice" hint="Your name or your business's legal name.">
-        <input name="billing_name" defaultValue={initial.name} required maxLength={200} className={inputClass} />
+        <input name="billing_name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} className={inputClass} />
       </Field>
       <Field label="GSTIN (optional)" hint="Add it to get a B2B invoice and claim input tax credit.">
         <input name="billing_gstin" value={gstin} onChange={(e) => setGstin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, "").slice(0, 15))} placeholder="22AAAAA0000A1Z5" className={cx(inputClass, "num")} />
@@ -171,14 +175,14 @@ export function BillingDetailsForm({ initial }: { initial: BillingDetails }) {
         {gstState ? (
           <input readOnly value={GST_STATES.find((s) => s.code === gstState)?.name ?? "Check your GSTIN"} className={cx(inputClass, "bg-surface-soft")} />
         ) : (
-          <select name="billing_state_code" defaultValue={initial.stateCode} required className={inputClass}>
+          <select name="billing_state_code" value={stateCode} onChange={(e) => setStateCode(e.target.value)} required className={inputClass}>
             <option value="">Choose your state</option>
             {GST_STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
           </select>
         )}
       </Field>
       <Field label="Address (optional)">
-        <textarea name="billing_address" defaultValue={initial.address} rows={2} maxLength={500} className={textareaClass} />
+        <textarea name="billing_address" value={address} onChange={(e) => setAddress(e.target.value)} rows={2} maxLength={500} className={textareaClass} />
       </Field>
       <div className="flex items-center gap-3 sm:col-span-2">
         <Button loading={pending} type="submit" variant="secondary" disabled={pending}>{pending ? "Saving" : "Save details"}</Button>
