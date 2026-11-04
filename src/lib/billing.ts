@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { razorpay } from "@/lib/razorpay";
+import { razorpay, razorpayError } from "@/lib/razorpay";
 import { emailInvoicesSoon } from "@/lib/invoices";
 import { PLAN_PRICES } from "@/lib/plans";
 
@@ -92,14 +92,13 @@ async function completeUpgrade(sub: RazorpaySubscription, owner: { id: string; r
       await recordSubscriptionPayment(sub, payment);
     }
   } catch (e) {
-    console.error(`[billing] upgrade payment for ${sub.id}:`, (e as Error).message);
+    console.error(`[billing] upgrade payment for ${sub.id}:`, razorpayError(e));
   }
   if (switched?.length && owner.razorpay_subscription_id && owner.razorpay_subscription_id !== sub.id) {
     try {
       await razorpay().subscriptions.cancel(owner.razorpay_subscription_id, true); // at cycle end: no more Creator charges
     } catch (e) {
-      const err = e as { error?: { description?: string }; message?: string };
-      console.error(`[billing] cancel ${owner.razorpay_subscription_id} after upgrade:`, err.error?.description ?? err.message);
+      console.error(`[billing] cancel ${owner.razorpay_subscription_id} after upgrade:`, razorpayError(e));
     }
   }
 }

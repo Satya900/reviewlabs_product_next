@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireCreator } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
-import { razorpay } from "@/lib/razorpay";
+import { razorpay, razorpayError } from "@/lib/razorpay";
 import { canUpgradeInOneClick, currentTier, planName, upgradeQuote, type Interval, type Tier } from "@/lib/plans";
 import { isValidGstin, stateName } from "@/lib/gst";
 
@@ -128,8 +128,7 @@ export async function startUpgrade(): Promise<UpgradeResult> {
       startsOn: new Date(current.current_end * 1000).toISOString(),
     };
   } catch (e) {
-    const err = e as { error?: { description?: string }; message?: string };
-    console.error("[billing] start upgrade", err.error?.description ?? err.message);
+    console.error("[billing] start upgrade", razorpayError(e));
     return { error: "We couldn't start the upgrade right now. Please try again." };
   }
 }
