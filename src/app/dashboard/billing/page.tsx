@@ -5,7 +5,7 @@ import { formatPaise } from "@/lib/money";
 import { creatorFeatures, currentTier, isNewAccount, GATEWAY_FEE_LABEL, planName, platformFeePercent, priceLabel, proFeatures, trialDaysLeft, yearlySaving, type Tier } from "@/lib/plans";
 import { Notice, PageTitle, Panel, tableClass } from "@/components/ui";
 import { CheckList } from "@/components/marketing";
-import { CancelButton, PlanPicker, type PlanCard } from "./billing-client";
+import { BillingDetailsForm, CancelButton, PlanPicker, type PlanCard } from "./billing-client";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
 
@@ -23,11 +23,15 @@ export default async function BillingPage() {
   const tier = currentTier(profile);
   const daysLeft = trialDaysLeft(profile);
   const supabase = await createClient();
-  const { data: payments } = await supabase
-    .from("subscription_payments")
-    .select("razorpay_payment_id, razorpay_subscription_id, amount_paise, status, created_at, period_end")
-    .order("created_at", { ascending: false })
-    .limit(24);
+  const [{ data: payments }, { data: invoices }] = await Promise.all([
+    supabase
+      .from("subscription_payments")
+      .select("id, razorpay_payment_id, razorpay_subscription_id, amount_paise, status, created_at, period_end")
+      .order("created_at", { ascending: false })
+      .limit(24),
+    supabase.from("invoices").select("id, invoice_number, subscription_payment_id").order("issued_at", { ascending: false }).limit(24),
+  ]);
+  const invoiceFor = new Map((invoices ?? []).map((i) => [i.subscription_payment_id, i]));
   const periodEnd = profile.plan_current_period_end ? dateFmt.format(new Date(profile.plan_current_period_end)) : null;
   const trialEnd = profile.trial_ends_at ? dateFmt.format(new Date(profile.trial_ends_at)) : null;
   const paid = tier === "creator" || tier === "pro";
@@ -95,6 +99,13 @@ export default async function BillingPage() {
         </Panel>
       )}
 
+      {!profile.is_admin && (
+        <Panel title="GST details for invoices">
+          <p className="mb-5 text-[14px] text-body">Every plan payment comes with a GST tax invoice by email. These details are printed on invoices issued from now on.</p>
+          <BillingDetailsForm initial={{ name: profile.billing_name ?? profile.name ?? "", gstin: profile.billing_gstin ?? "", stateCode: profile.billing_state_code ?? "", address: profile.billing_address ?? "" }} />
+        </Panel>
+      )}
+
       {!!payments?.length && (
         <div className={tableClass.wrap}>
           <table className={tableClass.table}>
@@ -103,18 +114,23 @@ export default async function BillingPage() {
                 <th className={tableClass.th}>Date</th>
                 <th className={tableClass.th}>Amount</th>
                 <th className={tableClass.th}>Covers until</th>
+                <th className={tableClass.th}>Invoice</th>
                 <th className={tableClass.th}>Payment ID</th>
               </tr>
             </thead>
             <tbody>
-              {payments.map((p) => (
-                <tr key={p.razorpay_payment_id}>
-                  <td className={tableClass.td}>{dateFmt.format(new Date(p.created_at))}</td>
-                  <td className={`${tableClass.td} num`}>{formatPaise(p.amount_paise)}</td>
-                  <td className={tableClass.td}>{p.period_end ? dateFmt.format(new Date(p.period_end)) : p.razorpay_subscription_id.startsWith("lifetime:") ? "Lifetime" : "-"}</td>
-                  <td className={`${tableClass.td} num text-[12px] text-muted`}>{p.razorpay_payment_id}</td>
-                </tr>
-              ))}
+              {payments.map((p) => {
+                const inv = invoiceFor.get(p.id);
+                return (
+                  <tr key={p.razorpay_payment_id}>
+                    <td className={tableClass.td}>{dateFmt.format(new Date(p.created_at))}</td>
+                    <td className={`${tableClass.td} num`}>{formatPaise(p.amount_paise)}</td>
+                    <td className={tableClass.td}>{p.period_end ? dateFmt.format(new Date(p.period_end)) : p.razorpay_subscription_id.startsWith("lifetime:") ? "Lifetime" : "-"}</td>
+                    <td className={tableClass.td}>{inv ? <Link href={`/invoices/${inv.id}`} className="link num">{inv.invoice_number}</Link> : <span className="text-muted">Being prepared</span>}</td>
+                    <td className={`${tableClass.td} num text-[12px] text-muted`}>{p.razorpay_payment_id}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

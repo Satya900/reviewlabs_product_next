@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { razorpay } from "@/lib/razorpay";
 import { currentTier, planName, type Interval, type Tier } from "@/lib/plans";
+import { isValidGstin, stateName } from "@/lib/gst";
 
 export type StartResult = { error?: string; subscriptionId?: string; keyId?: string; name?: string; email?: string; startsAfterTrial?: boolean };
 
@@ -63,4 +64,28 @@ export async function cancelSubscription(): Promise<{ error?: string; ok?: strin
   await createAdminClient().from("profiles").update({ plan_status: "cancelling" }).eq("id", profile.id);
   revalidatePath("/dashboard/billing");
   return { ok: `Cancelled. You keep ${planName(profile.plan as Tier)} until the end of this billing period.` };
+}
+
+// Name, state, address and optional GSTIN printed on the creator's GST invoices.
+// Applies to invoices issued from now on; issued invoices never change.
+export async function saveBillingDetails(_prev: { error?: string; ok?: string } | null, formData: FormData): Promise<{ error?: string; ok?: string }> {
+  const profile = await requireCreator();
+  const text = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const name = text("billing_name", 200);
+  const gstin = text("billing_gstin", 15).toUpperCase();
+  const address = text("billing_address", 500);
+  let stateCode = text("billing_state_code", 2);
+  if (!name) return { error: "Enter the name for your invoices." };
+  if (gstin) {
+    if (!isValidGstin(gstin)) return { error: "That GSTIN doesn't look right. Check it on your GST certificate." };
+    stateCode = gstin.slice(0, 2); // a GSTIN's state is its first two digits
+  }
+  if (!stateName(stateCode)) return { error: "Choose your state." };
+  const { error } = await createAdminClient()
+    .from("profiles")
+    .update({ billing_name: name, billing_gstin: gstin || null, billing_state_code: stateCode, billing_address: address || null })
+    .eq("id", profile.id);
+  if (error) return { error: "Couldn't save right now. Please try again." };
+  revalidatePath("/dashboard/billing");
+  return { ok: gstin ? "Saved. New invoices will include your GSTIN." : "Saved." };
 }

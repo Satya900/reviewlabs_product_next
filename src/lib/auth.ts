@@ -17,6 +17,10 @@ export type Profile = {
   plan_interval: "month" | "year" | "lifetime" | null;
   intro_used: boolean;
   trial_ends_at: string | null;
+  billing_name: string | null;
+  billing_gstin: string | null;
+  billing_state_code: string | null;
+  billing_address: string | null;
   handle: string | null;
   avatar_url: string | null;
   bio: string;

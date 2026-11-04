@@ -10,6 +10,7 @@ import { formatPaise, rupeesToPaise } from "@/lib/money";
 import { payCreator, recordManualPayout } from "@/lib/payouts";
 import { emailCreatorRejected } from "@/lib/payout-requests";
 import { sendVerificationEmail } from "@/lib/email-verification";
+import { isValidGstin } from "@/lib/gst";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -326,4 +327,24 @@ export async function resendCreatorVerification(creatorId: string): Promise<Acti
     return { error: (e as Error).message };
   }
   return { ok: `Verification link sent to ${p.email}` };
+}
+
+// Our own details for GST invoices. Invoices are issued only once the GSTIN is
+// set; plan payments made before that are invoiced by the next reconcile run.
+export async function saveGstSettings(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const text = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const gstin = text("gstin", 15).toUpperCase();
+  const legalName = text("legal_name", 200);
+  const address = text("address", 500);
+  if (!isValidGstin(gstin)) return { error: "That GSTIN doesn't look right." };
+  if (!legalName) return { error: "Enter the legal name from your GST certificate." };
+  if (!address) return { error: "Enter your registered address." };
+  const { error } = await createAdminClient()
+    .from("gst_settings")
+    .update({ gstin, legal_name: legalName, trade_name: text("trade_name", 200) || null, address, sac: text("sac", 8) || "998314", updated_at: new Date().toISOString() })
+    .eq("id", 1);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/invoices");
+  return { ok: "Saved. New plan payments get an invoice straight away; earlier ones within 15 minutes." };
 }

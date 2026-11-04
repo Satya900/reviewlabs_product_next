@@ -25,7 +25,7 @@ export default function Contact() {
           <p className="text-[16px] font-semibold">Complaints</p>
           <p className="mt-2 text-[15px] text-body">
             Write to <a href={`mailto:${site.supportEmail}`} className="link">{site.supportEmail}</a> with the subject line &quot;Complaint&quot;.
-            We acknowledge complaints within 48 hours and resolve them within 30 days. {site.name} is a product of {site.legalName}, founded by {site.founder}.
+            We acknowledge complaints within 48 hours and resolve them within 30 days. {site.name} is a product of {site.legalName}, {site.entity}.
           </p>
         </div>
       </Section>
