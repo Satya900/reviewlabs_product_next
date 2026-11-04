@@ -64,3 +64,14 @@ test("hard paywall: a new account has no plan until it pays", () => {
   assert.equal(isNewAccount({ ...base, plan_status: "expired" }), false); // plan ended
   assert.equal(isNewAccount({ ...base, is_admin: true }), false);
 });
+
+test("upgrade quote: prorated difference in whole rupees, at least ₹1", async () => {
+  const { upgradeQuote } = await import("../src/lib/plans.ts");
+  const in15 = new Date(now + 15 * day);
+  assert.deepEqual(upgradeQuote("month", in15, now), { paise: 60000, daysLeft: 15 }); // (1999-799) × 15/30 = ₹600
+  assert.deepEqual(upgradeQuote("month", new Date(now + 30 * day), now), { paise: 120000, daysLeft: 30 });
+  assert.equal(upgradeQuote("month", new Date(now + 3600_000), now).paise, 200); // ₹1.67 → ₹2
+  assert.equal(upgradeQuote("month", new Date(now - day), now).paise, 100); // floor ₹1
+  assert.equal(upgradeQuote("month", new Date(now + 40 * day), now).paise, 120000); // capped at a full period
+  assert.equal(upgradeQuote("year", new Date(now + 73 * day), now).paise, 240000); // (19990-7990) × 73/365 = ₹2,400
+});

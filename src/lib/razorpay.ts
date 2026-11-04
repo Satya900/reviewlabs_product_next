@@ -60,3 +60,10 @@ export type RazorpayPayment = {
   contact?: string;
   notes?: Record<string, string> | unknown[];
 };
+
+// A readable reason from a Razorpay SDK error (it rejects with plain objects,
+// sometimes with only a status code).
+export function razorpayError(e: unknown): string {
+  const err = e as { error?: { description?: string }; message?: string; statusCode?: number };
+  return err?.error?.description ?? err?.message ?? (err?.statusCode ? `HTTP ${err.statusCode}` : String(e));
+}

@@ -2,9 +2,10 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { cancelSubscription, saveBillingDetails, startSubscription } from "./actions";
+import { cancelSubscription, saveBillingDetails, startSubscription, startUpgrade } from "./actions";
 import { Button, Field, FormMessage, cx, inputClass, textareaClass } from "@/components/ui";
 import { GST_STATES } from "@/lib/gst";
+import { formatPaise } from "@/lib/money";
 import type { Interval, Tier } from "@/lib/plans";
 
 type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error: { description: string } }) => void) => void };
@@ -189,5 +190,55 @@ export function BillingDetailsForm({ initial }: { initial: BillingDetails }) {
         <FormMessage state={state} />
       </div>
     </form>
+  );
+}
+
+// Creator → Pro in one click: pay the prorated difference now, Pro renews on
+// the same date Creator would have.
+export function UpgradeButton({ label }: { label: string }) {
+  const router = useRouter();
+  const [state, setState] = useState<{ error?: string; ok?: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upgrade() {
+    setBusy(true);
+    setState(null);
+    const [ready, res] = await Promise.all([loadRazorpay(), startUpgrade()]);
+    if (res.error || !res.subscriptionId) {
+      setState({ error: res.error ?? "Something went wrong" });
+      setBusy(false);
+      return;
+    }
+    const RZP = (window as unknown as { Razorpay?: new (o: Record<string, unknown>) => RazorpayInstance }).Razorpay;
+    if (!ready || !RZP) {
+      setState({ error: "Could not load the payment window. Check your connection and try again." });
+      setBusy(false);
+      return;
+    }
+    const starts = res.startsOn ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(new Date(res.startsOn)) : "";
+    const rzp = new RZP({
+      key: res.keyId,
+      subscription_id: res.subscriptionId,
+      name: "Upgrade to Reviewlabs Pro",
+      description: `${formatPaise(res.amountPaise ?? 0)} now, then the Pro price from ${starts}. Cancel any time.`,
+      prefill: { name: res.name, email: res.email },
+      theme: { color: "#0052ff" },
+      handler: async (response: Record<string, string>) => {
+        setState({ ok: "Done. Turning on Pro…" });
+        await fetch("/api/billing/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(response) }).catch(() => null);
+        router.refresh();
+        setBusy(false);
+      },
+      modal: { ondismiss: () => setBusy(false) },
+    });
+    rzp.on("payment.failed", (r) => setState({ error: r.error?.description ?? "Payment failed. You can try again." }));
+    rzp.open();
+  }
+
+  return (
+    <div className="space-y-2">
+      <Button loading={busy} variant="hero" onClick={upgrade} disabled={busy}>{busy ? "Opening payment" : label}</Button>
+      <FormMessage state={state} />
+    </div>
   );
 }

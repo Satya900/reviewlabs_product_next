@@ -2,10 +2,10 @@ import Link from "next/link";
 import { requireCreator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPaise } from "@/lib/money";
-import { creatorFeatures, currentTier, isNewAccount, GATEWAY_FEE_LABEL, planName, platformFeePercent, priceLabel, proFeatures, trialDaysLeft, yearlySaving, type Tier } from "@/lib/plans";
+import { canUpgradeInOneClick, creatorFeatures, currentTier, isNewAccount, upgradeQuote, GATEWAY_FEE_LABEL, planName, platformFeePercent, priceLabel, proFeatures, trialDaysLeft, yearlySaving, type Tier } from "@/lib/plans";
 import { Notice, PageTitle, Panel, tableClass } from "@/components/ui";
 import { CheckList } from "@/components/marketing";
-import { BillingDetailsForm, CancelButton, PlanPicker, type PlanCard } from "./billing-client";
+import { BillingDetailsForm, CancelButton, PlanPicker, UpgradeButton, type PlanCard } from "./billing-client";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
 
@@ -36,6 +36,8 @@ export default async function BillingPage() {
   const trialEnd = profile.trial_ends_at ? dateFmt.format(new Date(profile.trial_ends_at)) : null;
   const paid = tier === "creator" || tier === "pro";
   const customFee = platformFeePercent(profile);
+  const canUpgrade = tier === "creator" && canUpgradeInOneClick(profile);
+  const quote = canUpgrade && profile.plan_current_period_end ? upgradeQuote(profile.plan_interval === "year" ? "year" : "month", new Date(profile.plan_current_period_end)) : null;
 
   return (
     <>
@@ -65,6 +67,22 @@ export default async function BillingPage() {
         <Notice tone="warn">Your plan is cancelled and ends on {periodEnd}. After that your store goes offline until you subscribe again.</Notice>
       )}
 
+      {canUpgrade && quote && periodEnd && (
+        <section id="upgrade" className="relative overflow-hidden rounded-3xl bg-dark p-8 text-white">
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-60 rounded-full bg-primary/40 blur-[90px]" />
+          <div className="relative grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="space-y-3">
+              <span className="inline-flex rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Upgrade to Pro</span>
+              <p className="text-[22px] font-semibold">AutoDM, coupons, the add-on offer, advanced analytics and no badge.</p>
+              <p className="max-w-xl text-[15px] text-on-dark-soft">
+                Pay <b className="text-white">{formatPaise(quote.paise)}</b> now for the {quote.daysLeft} day{quote.daysLeft === 1 ? "" : "s"} left in this period. From {periodEnd} you pay {priceLabel("pro", profile.plan_interval === "year" ? "year" : "month")} a {profile.plan_interval === "year" ? "year" : "month"} instead of {priceLabel("creator", profile.plan_interval === "year" ? "year" : "month")}. Pro turns on straight away.
+              </p>
+            </div>
+            <UpgradeButton label={`Upgrade for ${formatPaise(quote.paise)}`} />
+          </div>
+        </section>
+      )}
+
       {paid && !profile.is_admin ? (
         <Panel title={`${planName(tier)} plan`}>
           <CheckList items={tier === "pro" ? proFeatures : creatorFeatures} />
@@ -76,7 +94,7 @@ export default async function BillingPage() {
                   {profile.plan_status === "cancelling" ? `Ends on ${periodEnd}.` : periodEnd ? `Next charge on ${periodEnd}.` : "Active."}
                 </>}
           </p>
-          {tier === "creator" && (
+          {tier === "creator" && !canUpgrade && (
             <p className="mt-2 text-[14px] text-body">Want AutoDM, coupons, the add-on offer and advanced analytics? <a href={`mailto:satyabrata@veyrnlabs.com?subject=Switch%20to%20Pro`} className="link">Write to us</a> and we&apos;ll move you to Pro.</p>
           )}
         </Panel>
