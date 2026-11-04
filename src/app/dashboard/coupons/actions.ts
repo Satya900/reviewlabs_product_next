@@ -6,7 +6,7 @@ import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeCode } from "@/lib/coupons";
 import { rupeesToPaise } from "@/lib/money";
-import { hasCreatorPlan } from "@/lib/plans";
+import { hasProPlan } from "@/lib/plans";
 
 export type CouponState = { error?: string; ok?: string } | null;
 
@@ -21,7 +21,7 @@ const schema = z.object({
 
 export async function createCoupon(_prev: CouponState, formData: FormData): Promise<CouponState> {
   const profile = await requirePlan();
-  if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use coupons." };
+  if (!hasProPlan(profile)) return { error: "Coupons are part of Pro. Upgrade in Plan and billing." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;

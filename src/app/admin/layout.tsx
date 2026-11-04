@@ -4,12 +4,17 @@ import { AppShell } from "@/components/app-shell";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const profile = await requireAdmin();
-  const { count: waiting } = await createAdminClient().from("payout_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+  const db = createAdminClient();
+  const [{ count: waiting }, { count: autodmWaiting }] = await Promise.all([
+    db.from("payout_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    db.from("autodm_access_requests").select("creator_id", { count: "exact", head: true }).eq("status", "pending"),
+  ]);
   const nav = [
     { href: "/admin", label: "Creators", exact: true },
     { href: "/admin/orders", label: "All orders" },
     { href: "/admin/payouts", label: waiting ? `Payouts (${waiting})` : "Payouts" },
     { href: "/admin/requests", label: "Requests" },
+    { href: "/admin/autodm", label: autodmWaiting ? `AutoDM access (${autodmWaiting})` : "AutoDM access" },
     { href: "/admin/invoices", label: "GST invoices" },
     { href: "/dashboard", label: "Back to dashboard", exact: true },
   ];

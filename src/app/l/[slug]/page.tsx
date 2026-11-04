@@ -33,7 +33,7 @@ export default async function LeadMagnetPage({ params }: PageProps<"/l/[slug]">)
       )}
       <div className="relative flex w-full flex-col items-center">
         <LeadMagnetCard data={data.form} files={data.files} />
-        {tier === "trial" && <Link href="/" className="mt-6 rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur">Made with Reviewlabs</Link>}
+        {tier !== "pro" && tier !== "trial" && <Link href="/" className="mt-6 rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur">Made with Reviewlabs</Link>}
       </div>
     </main>
   );

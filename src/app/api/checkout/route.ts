@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { applyCoupon } from "@/lib/coupons";
-import { creatorHasPlan } from "@/lib/plans-server";
+import { creatorHasPlan, creatorHasPro } from "@/lib/plans-server";
 import type { Order, PageField, PaymentPage } from "@/lib/types";
 
 const schema = z.object({
@@ -16,6 +16,7 @@ const schema = z.object({
   phone: z.string().trim().regex(/^\+?[0-9\s-]{8,16}$/, "Invalid phone number"),
   responses: z.record(z.string(), z.string().max(2000)).default({}),
   sourceUrl: z.url().max(2000).optional(),
+  source: z.string().regex(/^[a-z0-9_]{1,24}$/).optional(),
   couponCode: z.string().trim().max(40).optional(),
   offerId: z.uuid().optional(),
 });
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       .eq("page_id", page.id)
       .eq("active", true)
       .maybeSingle();
-    if (!data || !(await creatorHasPlan(page.creator_id))) {
+    if (!data || !(await creatorHasPro(page.creator_id))) {
       return NextResponse.json({ error: "That add-on is no longer available. Please refresh the page." }, { status: 400 });
     }
     offer = data;
@@ -109,6 +110,7 @@ export async function POST(request: Request) {
       currency: page.currency,
       tracking: {
         source_url: input.sourceUrl,
+        source: input.source,
         client_ip: clientIp(request.headers),
         user_agent: request.headers.get("user-agent") ?? undefined,
       },

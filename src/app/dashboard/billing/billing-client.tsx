@@ -123,7 +123,7 @@ export function PlanPicker({ plans, inTrial }: { plans: PlanCard[]; inTrial: boo
               <div className="relative space-y-5">
                 <div className="flex items-center justify-between">
                   <p className="text-[22px] font-semibold">{pro ? "Pro" : "Creator"}</p>
-                  {pro && <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">AutoDM</span>}
+                  {pro && <span className="rounded-full bg-primary px-3 py-1 text-[12px] font-semibold">Grow faster</span>}
                 </div>
                 <div>
                   <p className="flex items-baseline gap-2"><span className="display text-[44px]">{p.prices[interval]}</span><span className={pro ? "text-on-dark-soft" : "text-body"}>/ {interval === "year" ? "year" : "month"}</span></p>

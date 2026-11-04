@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { Button, FormMessage, cx } from "@/components/ui";
-import { deleteAutomation, disconnectInstagram, setAutomationActive, syncNow } from "./actions";
+import { Button, Field, FormMessage, cx, inputClass } from "@/components/ui";
+import { deleteAutomation, disconnectInstagram, requestAutodmAccess, setAutomationActive, syncNow } from "./actions";
 
 export function AutomationToggle({ id, active }: { id: string; active: boolean }) {
   const [on, setOn] = useState(active);
@@ -61,5 +61,26 @@ export function DeleteAutomationButton({ id }: { id: string }) {
       <Button variant="danger" type="button" loading={pending} onClick={() => start(() => deleteAutomation(id))}>Yes, delete</Button>
       <button type="button" onClick={() => setConfirming(false)} className="font-semibold text-ink">Cancel</button>
     </span>
+  );
+}
+
+// Early access: Instagram username + the Facebook account Meta should invite.
+export function AccessRequestForm({ initial }: { initial?: { ig: string; facebook: string } }) {
+  const [state, action, pending] = useActionState(requestAutodmAccess, null);
+  const [ig, setIg] = useState(initial?.ig ?? "");
+  const [facebook, setFacebook] = useState(initial?.facebook ?? "");
+  return (
+    <form action={action} className="grid gap-4 sm:grid-cols-2">
+      <Field label="Instagram username" hint="The professional account you post from.">
+        <input name="ig_username" value={ig} onChange={(e) => setIg(e.target.value)} placeholder="@yourname" required className={inputClass} />
+      </Field>
+      <Field label="Facebook profile link or email" hint="Meta sends the invite to this Facebook account.">
+        <input name="facebook" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/yourname" required className={inputClass} />
+      </Field>
+      <div className="flex items-center gap-3 sm:col-span-2">
+        <Button loading={pending} type="submit" disabled={pending}>{pending ? "Sending" : "Request early access"}</Button>
+        <FormMessage state={state} />
+      </div>
+    </form>
   );
 }

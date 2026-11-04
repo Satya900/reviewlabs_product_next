@@ -3,6 +3,7 @@ import { getProfile } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { loginUrl } from "@/lib/instagram";
 import { hasProPlan } from "@/lib/plans";
+import { autodmAccess } from "@/lib/autodm-access";
 import { STATE_COOKIE, newLoginState, redirectUri } from "@/lib/instagram-connect";
 
 // "Connect Instagram": off to Meta's login, where the creator picks the
@@ -12,6 +13,7 @@ export async function GET(request: Request) {
   if (!profile) return NextResponse.redirect(new URL("/login?next=/dashboard/autodm", request.url));
   if (!env.autodmEnabled()) return NextResponse.redirect(new URL("/dashboard/autodm?ig=unavailable", request.url));
   if (!hasProPlan(profile)) return NextResponse.redirect(new URL("/dashboard/billing", request.url));
+  if (!(await autodmAccess(profile)).canConnect) return NextResponse.redirect(new URL("/dashboard/autodm?ig=early", request.url));
 
   const { state, nonce } = newLoginState(profile.id);
   const response = NextResponse.redirect(loginUrl(redirectUri(), state));

@@ -3,7 +3,8 @@ import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { Badge, EmptyState, Notice, PageTitle, Panel, Stat, buttonClass, tableClass } from "@/components/ui";
-import { AutomationToggle, DisconnectButton, SyncNowButton } from "./autodm-controls";
+import { AccessRequestForm, AutomationToggle, DisconnectButton, SyncNowButton } from "./autodm-controls";
+import { autodmAccess } from "@/lib/autodm-access";
 import { hasProPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 
@@ -20,6 +21,7 @@ const connectMessages: Record<string, { tone: "good" | "bad" | "info"; text: str
   taken: { tone: "bad", text: "That Instagram account is already connected to another Reviewlabs account." },
   failed: { tone: "bad", text: "Instagram didn't let us connect. Please try again in a minute." },
   unavailable: { tone: "info", text: "AutoDM isn't switched on yet. Check back soon." },
+  early: { tone: "info", text: "AutoDM is in early access. Request access below and we'll invite you." },
 };
 
 function since(days: number) {
@@ -43,6 +45,7 @@ export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard
   ]);
   const message = typeof ig === "string" ? connectMessages[ig] : null;
   const pro = hasProPlan(profile);
+  const access = await autodmAccess(profile);
 
   const all = events ?? [];
   const sent = all.filter((e) => e.status === "sent");
@@ -69,10 +72,29 @@ export default async function AutoDmPage({ searchParams }: PageProps<"/dashboard
         </>
       )}
 
-      {!pro && !account ? null : !account ? (
+      {!pro && !account ? null : !account && !access.canConnect ? (
+        <Panel title="AutoDM is in early access">
+          <div className="space-y-4 text-[15px] text-body">
+            <p>While Meta reviews Reviewlabs for public use, Instagram only lets accounts we invite connect. It takes one extra step and is usually done within one working day.</p>
+            {access.request?.status === "pending" ? (
+              <Notice tone="info">
+                <b>Request received for @{access.request.ig_username}.</b> We&apos;ll add your Facebook account ({access.request.facebook}) as a tester and email you when it&apos;s ready.
+              </Notice>
+            ) : access.request?.status === "declined" ? (
+              <Notice tone="warn">We couldn&apos;t invite that account. Check your details and send them again, or write to us.</Notice>
+            ) : null}
+            <AccessRequestForm initial={access.request ? { ig: access.request.ig_username, facebook: access.request.facebook } : undefined} />
+          </div>
+        </Panel>
+      ) : !account ? (
         <Panel title="Connect your Instagram">
           <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
             <div className="space-y-3 text-[15px] text-body">
+              {!access.open && access.request?.status === "invited" && (
+                <Notice tone="good">
+                  <b>You&apos;re invited.</b> First accept the invite from Meta: open <a href="https://developers.facebook.com/requests/" target="_blank" rel="noreferrer" className="link">developers.facebook.com/requests</a> while logged in to the Facebook account you gave us, and accept the Reviewlabs tester request. Then click Connect Instagram.
+                </Notice>
+              )}
               <p>Connect the Instagram account you post from. You&apos;ll log in with Instagram or Facebook and choose the account.</p>
               <ul className="list-disc space-y-1 pl-5">
                 <li>It must be a professional account (Creator or Business). You can switch for free in Instagram settings.</li>

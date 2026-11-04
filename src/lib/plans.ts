@@ -4,7 +4,8 @@ import { site } from "./site.ts";
 // (creator_plan_tier and friends), so the UI is never the only guard.
 //
 // No free plan and no trial for new accounts: nothing works until they pay.
-// Creator unlocks selling; Pro adds AutoDM. Trials granted before the paywall
+// Creator unlocks selling; Pro adds the growth tools (AutoDM, coupons, add-on
+// offer, advanced analytics, no branding). Trials granted before the paywall
 // still run to their end. Without a plan or trial the creator's store is offline. No platform fee on sales; Razorpay's charge is
 // passed on at cost.
 
@@ -53,7 +54,8 @@ export function hasCreatorPlan(p: PlanFields, now = Date.now()): boolean {
   return currentTier(p, now) !== "none";
 }
 
-// AutoDM and the other Pro features: Pro or the trial.
+// The Pro features (AutoDM, coupons, add-on offer, advanced analytics,
+// no branding): Pro or the trial.
 export function hasProPlan(p: PlanFields, now = Date.now()): boolean {
   const t = currentTier(p, now);
   return t === "pro" || t === "trial";
@@ -76,32 +78,37 @@ export function platformFeePercent(p: { commission_bps?: number | null }): numbe
   return p.commission_bps ? p.commission_bps / 100 : 0;
 }
 
-export type PremiumFeature = "coupons" | "analytics" | "csv" | "offer" | "autodm";
+export type PremiumFeature = "coupons" | "analytics" | "offer" | "autodm" | "branding";
 
+// Pro-only features (Stan-style: Creator sells, Pro grows). Shown in UpgradeCard.
 export const premiumCopy: Record<PremiumFeature, { title: string; body: string; tier: Tier }> = {
-  coupons: { tier: "creator", title: "Coupons", body: "Run launch discounts and limited-time offers with percent or flat coupons." },
-  analytics: { tier: "creator", title: "Analytics", body: "See views, checkouts, sales and conversion for every page." },
-  csv: { tier: "creator", title: "CSV export", body: "Download all your orders as a spreadsheet for your accountant." },
-  offer: { tier: "creator", title: "Additional offer", body: "Add a one-click bonus at checkout so buyers can add it to their order. A simple way to raise every order's value." },
+  coupons: { tier: "pro", title: "Coupons", body: "Run launch discounts and limited-time offers with percent or flat coupon codes." },
+  analytics: { tier: "pro", title: "Advanced analytics", body: "See conversion for every page, where buyers drop off, and which channels bring visits and sales: Instagram, WhatsApp, YouTube, AutoDM and more." },
+  offer: { tier: "pro", title: "Add-on offer", body: "Add a one-click bonus at checkout so buyers can add it to their order. A simple way to raise every order's value." },
   autodm: { tier: "pro", title: "AutoDM", body: "When someone comments a keyword on your post or reel, they get a DM with your link, automatically." },
+  branding: { tier: "pro", title: "Remove Reviewlabs branding", body: "Your storefront and product pages show only your brand, without the \"Made with Reviewlabs\" badge." },
 };
 
+// Creator: everything you need to sell.
 export const creatorFeatures = [
   "Unlimited product pages and lead magnets",
   "0% platform fee on every sale",
   "UPI, card and netbanking checkout",
   "Instant delivery and lifetime download links",
   "Link-in-bio storefront at reviewlabs.space/@you",
-  "Coupons and an add-on offer at checkout",
-  "Analytics and CSV export",
+  "Sales dashboard: views, sales and revenue",
+  "Orders, CSV export and GST invoices",
   "Payouts to your bank on request",
 ];
 
+// Pro: the tools that grow sales.
 export const proFeatures = [
   "Everything in Creator",
   "AutoDM: comment a keyword, get the link by DM",
-  "Public replies under comments, rotated automatically",
-  "DM and link-click stats per automation",
+  "Coupons and discount codes",
+  "Add-on offer (order bump) at checkout",
+  "Advanced analytics: conversion, drop-off and traffic sources",
+  "No \"Made with Reviewlabs\" badge",
   "First access to email automation and affiliates",
 ];
 
@@ -124,25 +131,30 @@ export const planMatrix: { group: string; rows: { feature: string; creator: Plan
       { feature: "UPI, cards and netbanking via Razorpay", creator: true, pro: true },
       { feature: "Files and links (Notion, Drive, Canva, groups) as products", creator: true, pro: true },
       { feature: "Custom checkout questions, testimonials and FAQ", creator: true, pro: true },
-      { feature: "Coupons and an add-on offer at checkout", creator: true, pro: true },
       { feature: "Instant delivery and lifetime download links", creator: true, pro: true },
+      { feature: "Link-in-bio storefront at reviewlabs.space/@you", creator: true, pro: true },
+      { feature: "Payments follow-up: failed and abandoned checkouts", creator: true, pro: true },
     ],
   },
   {
     group: "Grow",
     rows: [
-      { feature: "Link-in-bio storefront at reviewlabs.space/@you", creator: true, pro: true },
       { feature: "AutoDM: keyword comments get your link by DM", creator: false, pro: true },
       { feature: "Public replies under comments", creator: false, pro: true },
-      { feature: "Payments follow-up: failed and abandoned checkouts", creator: true, pro: true },
+      { feature: "Coupons and discount codes", creator: false, pro: true },
+      { feature: "Add-on offer (order bump) at checkout", creator: false, pro: true },
+      { feature: "Remove \"Made with Reviewlabs\" badge", creator: false, pro: true },
     ],
   },
   {
     group: "Track and get paid",
     rows: [
-      { feature: "Analytics: views, checkouts, sales, conversion", creator: true, pro: true },
+      { feature: "Sales dashboard: views, sales, revenue per day", creator: true, pro: true },
+      { feature: "Conversion and drop-off for every page", creator: false, pro: true },
+      { feature: "Traffic sources: Instagram, WhatsApp, YouTube, AutoDM…", creator: false, pro: true },
       { feature: "AutoDM stats: DMs sent and link clicks", creator: false, pro: true },
       { feature: "Orders, earnings ledger and CSV export", creator: true, pro: true },
+      { feature: "GST invoice for every plan payment", creator: true, pro: true },
       { feature: "Payouts to your bank on request (from ₹500), with UTR", creator: true, pro: true },
     ],
   },

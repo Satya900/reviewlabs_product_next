@@ -1,7 +1,8 @@
 import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
-import { hasCreatorPlan } from "@/lib/plans";
+import { hasProPlan } from "@/lib/plans";
+import Link from "next/link";
 import { PageTitle } from "@/components/ui";
 import { StorefrontEditor } from "./storefront-editor";
 
@@ -27,10 +28,15 @@ export default async function StorefrontSettings() {
   return (
     <>
       <PageTitle sub="One link for your Instagram bio with all your products, your photo and your socials.">Storefront</PageTitle>
+      {!hasProPlan(profile) && (
+        <p className="rounded-2xl bg-surface-soft px-4 py-3 text-[14px] text-body">
+          Your storefront and product pages show a small &quot;Made with Reviewlabs&quot; badge. <Link href="/dashboard/billing" className="link">Remove it with Pro</Link>.
+        </p>
+      )}
       <StorefrontEditor
         appUrl={env.appUrl()}
         creatorId={profile.id}
-        showBranding={!hasCreatorPlan(profile)}
+        showBranding={!hasProPlan(profile)}
         initial={{
           handle: profile.handle ?? "",
           name: profile.name ?? "",

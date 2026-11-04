@@ -77,7 +77,7 @@ export default async function BillingPage() {
                 </>}
           </p>
           {tier === "creator" && (
-            <p className="mt-2 text-[14px] text-body">Want AutoDM? <a href={`mailto:satyabrata@veyrnlabs.com?subject=Switch%20to%20Pro`} className="link">Write to us</a> and we&apos;ll move you to Pro.</p>
+            <p className="mt-2 text-[14px] text-body">Want AutoDM, coupons, the add-on offer and advanced analytics? <a href={`mailto:satyabrata@veyrnlabs.com?subject=Switch%20to%20Pro`} className="link">Write to us</a> and we&apos;ll move you to Pro.</p>
           )}
         </Panel>
       ) : !profile.is_admin ? (

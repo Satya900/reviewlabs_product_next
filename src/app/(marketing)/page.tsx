@@ -159,8 +159,8 @@ export default function Home() {
           <FeatureCard icon="store" title="Link-in-bio storefront">One link with your photo, socials and every product. Made for Instagram and YouTube bios.</FeatureCard>
           <FeatureCard icon="magnet" title="Lead magnets">Give away a free guide for a name and email, with optional email verification. Build a list you own.</FeatureCard>
           <FeatureCard icon="star" title="Testimonials and FAQ">Show reviews from happy buyers and answer common questions right on the page.</FeatureCard>
-          <FeatureCard icon="tag" title="Coupons" badge="Creator">Percent or flat discounts, limited by date or number of uses, for one page or all of them.</FeatureCard>
-          <FeatureCard icon="gift" title="Additional offer" badge="Creator">A one-tick add-on at checkout that raises the value of every order.</FeatureCard>
+          <FeatureCard icon="tag" title="Coupons" badge="Pro">Percent or flat discounts, limited by date or number of uses, for one page or all of them.</FeatureCard>
+          <FeatureCard icon="gift" title="Additional offer" badge="Pro">A one-tick add-on at checkout that raises the value of every order.</FeatureCard>
         </div>
       </Section>
 
@@ -227,7 +227,7 @@ export default function Home() {
                   "Razorpay confirms every payment, no screenshots",
                   "The file goes out on its own, at 3 am too",
                   "Every sale, fee and refund is a line in your ledger",
-                  "Built-in analytics show views, checkouts and sales for every page",
+                  "Built-in analytics show views and sales, and on Pro where every buyer came from",
                   "Free lead magnets grow a list you can sell to later",
                 ]}
               />
@@ -286,9 +286,9 @@ export default function Home() {
               <span className="display text-[64px]">{priceLabel("creator", "month")}</span>
               <span className="text-on-dark-soft">/ month</span>
             </p>
-            <p className="mt-2 text-[15px] text-on-dark-soft">Creator is {priceLabel("creator", "month")}/month and Pro, with Instagram AutoDM, is {priceLabel("pro", "month")}/month. Yearly plans get 2 months free. All prices include GST, and we never take a cut of your sales.</p>
+            <p className="mt-2 text-[15px] text-on-dark-soft">Creator is {priceLabel("creator", "month")}/month for everything you need to sell. Pro, at {priceLabel("pro", "month")}/month, adds the tools that grow sales: Instagram AutoDM, coupons, an add-on offer and advanced analytics. Yearly plans get 2 months free. All prices include GST, and we never take a cut of your sales.</p>
             <div className="mt-8">
-              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, coupons, analytics", "Pro: everything in Creator plus AutoDM"]} />
+              <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, checkout, delivery, payouts", "Pro: plus AutoDM, coupons, add-on offer, advanced analytics, no branding"]} />
             </div>
             <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Get started</Link>
           </div>

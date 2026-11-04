@@ -46,7 +46,7 @@ export default function Features() {
           "Testimonials and an FAQ section to answer buyers before they ask",
           "Custom checkout questions: text, number or dropdown",
           "Your own support email, refund policy and terms on each page",
-          "Coupons and a one-tick add-on offer at checkout (Creator)",
+          "Coupons and a one-tick add-on offer at checkout (Pro)",
         ]}
         mock={
           <MockFrame>
@@ -164,9 +164,9 @@ export default function Features() {
         title="See what sells, then sell more of it."
         sub="Track every page from first view to paid order, and run discount codes for launches."
         items={[
-          "Page views, checkouts, sales and conversion per page",
-          "Coupons: percent or flat, with expiry dates and use limits",
-          "Add-on offer at checkout, with its own files",
+          "Views, sales and revenue per day; conversion, drop-off and traffic sources per page on Pro",
+          "Coupons: percent or flat, with expiry dates and use limits (Pro)",
+          "Add-on offer at checkout, with its own files (Pro)",
           "CSV export of every order",
         ]}
         mock={
@@ -230,7 +230,7 @@ export default function Features() {
           "Title, price and the crossed-out original price",
           "Description with its images, plus your cover, copied to Reviewlabs",
           "Testimonials, FAQs, checkout questions and policies",
-          "Add-on offer, saved switched off until you add its file (Creator)",
+          "Add-on offer, saved switched off until you add its file (Pro)",
           "Always a draft first, so nothing goes live until you publish",
           "Imports from other platforms are in development",
         ]}

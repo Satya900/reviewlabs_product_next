@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requirePlan } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { hasCreatorPlan } from "@/lib/plans";
+import { hasProPlan } from "@/lib/plans";
 import { rupeesToPaise } from "@/lib/money";
 import { isAllowedImageSrc } from "@/lib/rich-text";
 import type { ActionState } from "../../actions";
@@ -27,7 +27,7 @@ function refresh(pageId: string) {
 // One add-on per page; RLS makes sure the page belongs to this creator.
 export async function saveOffer(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const profile = await requirePlan();
-  if (!hasCreatorPlan(profile)) return { error: "Choose a plan in Plan and billing to use additional offers." };
+  if (!hasProPlan(profile)) return { error: "Add-on offers are part of Pro. Upgrade in Plan and billing." };
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const input = parsed.data;

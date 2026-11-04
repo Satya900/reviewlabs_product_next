@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { creatorHasPlan } from "@/lib/plans-server";
+import { creatorHasPro } from "@/lib/plans-server";
 
 export type Coupon = {
   id: string;
@@ -37,7 +37,8 @@ export async function applyCoupon(page: { id: string; creator_id: string; amount
   const code = normalizeCode(rawCode);
   if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { ok: false, error: "That coupon code isn't valid" };
   // Coupons only work while the seller has a plan or is in the trial.
-  if (!(await creatorHasPlan(page.creator_id))) return { ok: false, error: "That coupon code isn't valid for this product" };
+  // Coupons are a Pro feature.
+  if (!(await creatorHasPro(page.creator_id))) return { ok: false, error: "That coupon code isn't valid for this product" };
 
   const { data: coupon } = await createAdminClient()
     .from("coupons")

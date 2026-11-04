@@ -16,7 +16,7 @@ import { FaqsPanel } from "./faqs-panel";
 import { OfferPanel } from "./offer-panel";
 import { PoliciesPanel } from "./policies-panel";
 import { PageTabs } from "./page-tabs";
-import { hasCreatorPlan } from "@/lib/plans";
+import { hasProPlan } from "@/lib/plans";
 import { UpgradeCard } from "@/components/upgrade-card";
 
 export default async function EditPage({ params }: PageProps<"/dashboard/pages/[id]">) {
@@ -65,7 +65,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
         fields={(fields ?? []) as PageField[]}
         testimonials={(testimonials ?? []) as Testimonial[]}
         faqs={(faqs ?? []) as Faq[]}
-        offer={offer && offer.active && hasCreatorPlan(profile) ? offer : null}
+        offer={offer && offer.active && hasProPlan(profile) ? offer : null}
       >
         <Panel title="What buyers receive">
           <p className="mb-3 text-[13px]">Sent by email and shown on the thank-you page after payment. Add files, links, or both.</p>
@@ -76,7 +76,7 @@ export default async function EditPage({ params }: PageProps<"/dashboard/pages/[
           <LinksManager pageId={page.id} links={(links ?? []) as PageLink[]} />
         </Panel>
         <Panel title="Additional offer">
-          {hasCreatorPlan(profile) ? (
+          {hasProPlan(profile) ? (
             <OfferPanel creatorId={profile.id} pageId={page.id} offer={offer ?? null} files={(offerFiles ?? []) as OfferFile[]} />
           ) : (
             <UpgradeCard feature="offer" compact />

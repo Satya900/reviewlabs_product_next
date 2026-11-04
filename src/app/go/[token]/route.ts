@@ -9,5 +9,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   const { data: url } = await createAdminClient().rpc("record_dm_click", { p_token: token });
   // Only https links (custom links are checked when saved) or our own pages.
   const safe = typeof url === "string" && (url.startsWith("https://") || url.startsWith(`${env.appUrl()}/`));
-  return NextResponse.redirect(safe ? url : new URL("/", request.url));
+  if (!safe) return NextResponse.redirect(new URL("/", request.url));
+  // Our own pages: tag the visit so Pro analytics can credit AutoDM.
+  if (url.startsWith(`${env.appUrl()}/`)) {
+    const tagged = new URL(url);
+    if (!tagged.searchParams.has("utm_source")) tagged.searchParams.set("utm_source", "autodm");
+    return NextResponse.redirect(tagged);
+  }
+  return NextResponse.redirect(url);
 }

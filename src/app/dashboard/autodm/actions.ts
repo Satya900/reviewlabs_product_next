@@ -13,6 +13,9 @@ import { unsubscribeWebhooks } from "@/lib/instagram";
 import { syncAccount } from "@/lib/autodm-runner";
 import { rateLimit } from "@/lib/rate-limit";
 import { hasProPlan } from "@/lib/plans";
+import { escapeHtml, sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
+import { site } from "@/lib/site";
 
 export type ActionState = { error?: string; ok?: string } | null;
 
@@ -130,4 +133,35 @@ export async function syncNow(): Promise<ActionState> {
   } catch (e) {
     return { error: `Instagram didn't answer: ${(e as Error).message}` };
   }
+}
+
+// AutoDM early access: the creator asks; the admin adds their Facebook account
+// as a Tester in the Meta app. Emails the admin each new request.
+export async function requestAutodmAccess(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const profile = await requirePlan();
+  if (!hasProPlan(profile)) return { error: "AutoDM is part of Pro. Upgrade in Plan and billing." };
+  const ig = String(formData.get("ig_username") ?? "").trim().replace(/^@/, "").toLowerCase();
+  const facebook = String(formData.get("facebook") ?? "").trim().slice(0, 200);
+  if (!/^[a-z0-9._]{1,30}$/.test(ig)) return { error: "Enter your Instagram username, like satya.creates." };
+  if (facebook.length < 3) return { error: "Enter your Facebook profile link or the email you use for Facebook." };
+  const admin = createAdminClient();
+  const { data: existing } = await admin.from("autodm_access_requests").select("status").eq("creator_id", profile.id).maybeSingle();
+  if (existing?.status === "invited") return { ok: "You're already invited." };
+  const { error } = await admin.from("autodm_access_requests").upsert(
+    { creator_id: profile.id, ig_username: ig, facebook, status: "pending", created_at: new Date().toISOString(), decided_at: null },
+    { onConflict: "creator_id" },
+  );
+  if (error) return { error: "Couldn't send your request. Please try again." };
+  try {
+    await sendEmail({
+      to: site.supportEmail,
+      subject: `AutoDM access request: @${ig}`,
+      text: `${profile.name ?? profile.email} (${profile.email}) asked for AutoDM.\n\nInstagram: @${ig}\nFacebook: ${facebook}\n\nAdd them as a Tester in the Meta App Dashboard (App roles → Roles), then mark them invited: ${env.appUrl()}/admin/autodm`,
+      html: `<p>${escapeHtml(profile.name ?? profile.email)} (${escapeHtml(profile.email)}) asked for AutoDM.</p><p>Instagram: @${escapeHtml(ig)}<br>Facebook: ${escapeHtml(facebook)}</p><p>Add them as a Tester in the Meta App Dashboard (App roles → Roles), then <a href="${env.appUrl()}/admin/autodm">mark them invited</a>.</p>`,
+    });
+  } catch (e) {
+    console.error("[autodm] access request email:", (e as Error).message);
+  }
+  revalidatePath("/dashboard/autodm");
+  return { ok: "Request sent." };
 }

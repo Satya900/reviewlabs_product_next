@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { clientIp } from "@/lib/request";
 import { rateLimit } from "@/lib/rate-limit";
 
-const schema = z.object({ pageId: z.uuid() });
+const schema = z.object({ pageId: z.uuid(), source: z.string().regex(/^[a-z0-9_]{1,24}$/).optional() });
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|headless/i;
 
 export async function POST(request: Request) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const ip = clientIp(request.headers) ?? "unknown";
   if (!(await rateLimit(`view:${ip}:${parsed.data.pageId}`, 5, 3600))) return NextResponse.json({ ok: true });
 
-  const { error } = await createAdminClient().rpc("record_page_view", { p_page_id: parsed.data.pageId });
+  const { error } = await createAdminClient().rpc("record_page_view", { p_page_id: parsed.data.pageId, p_source: parsed.data.source ?? "direct" });
   if (error) console.error("[views]", error.message);
   return NextResponse.json({ ok: true });
 }

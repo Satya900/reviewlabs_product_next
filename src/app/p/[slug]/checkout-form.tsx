@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Field, inputClass, textareaClass, cx } from "@/components/ui";
 import { formatPaise } from "@/lib/money";
+import { firstSource } from "@/components/page-view-beacon";
 
 type CheckoutField = { id: string; label: string; type: "text" | "textarea" | "number" | "select"; required: boolean; options: string[] };
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
   preview?: boolean;
   // Shown in the consent line under the pay button.
   sellerName?: string;
+  // Coupons are a Pro feature; hide the field when the creator is on Creator.
+  couponsEnabled?: boolean;
   // Optional add-on (order bump) the buyer can tick.
   offer?: { id: string; headline: string; title: string; description: string; imageUrl: string | null; pricePaise: number; compareAtPaise: number | null } | null;
 };
@@ -37,7 +40,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export function CheckoutForm({ page, fields, preview, offer, sellerName }: Props) {
+export function CheckoutForm({ page, fields, preview, offer, sellerName, couponsEnabled = true }: Props) {
   const router = useRouter();
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -78,7 +81,7 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName }: Props
       fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href }),
+        body: JSON.stringify({ pageId: page.id, ...buyer, responses, couponCode: coupon?.code, offerId: offer && offerSelected ? offer.id : undefined, sourceUrl: window.location.href, source: firstSource() }),
       }),
     ]);
     const data = await res.json().catch(() => ({}));
@@ -148,7 +151,7 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName }: Props
             )}
           </Field>
         ))}
-        <div className="rounded-2xl bg-surface-soft p-3">
+        {couponsEnabled && <div className="rounded-2xl bg-surface-soft p-3">
           {coupon ? (
             <div className="flex items-center justify-between gap-2 text-[13px]">
               <span>
@@ -176,7 +179,7 @@ export function CheckoutForm({ page, fields, preview, offer, sellerName }: Props
           ) : (
             <button type="button" onClick={() => setCouponOpen(true)} className="link text-[14px]">Have a coupon code?</button>
           )}
-        </div>
+        </div>}
         {offer && (
           <label
             className={cx(
