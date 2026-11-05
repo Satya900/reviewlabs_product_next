@@ -10,7 +10,7 @@ function PasswordInput({ name, autoComplete, placeholder }: { name: string; auto
   return (
     <div className="relative">
       <input name={name} type={show ? "text" : "password"} required minLength={name === "password" && autoComplete === "current-password" ? 1 : 8} autoComplete={autoComplete} placeholder={placeholder} className={`${inputClass} pr-16`} />
-      <button type="button" onClick={() => setShow(!show)} className="link absolute right-4 top-1/2 -translate-y-1/2 text-[13px]">
+      <button type="button" onClick={() => setShow(!show)} className="link absolute inset-y-0 right-1 px-3 text-[13px]">
         {show ? "Hide" : "Show"}
       </button>
     </div>
@@ -39,7 +39,7 @@ export function LoginForm({ next }: { next: string }) {
       <div className="space-y-1.5">
         <div className="flex items-baseline justify-between">
           <span className="text-[14px] font-semibold">Password</span>
-          <Link href="/forgot-password" className="link text-[13px]">Forgot password?</Link>
+          <Link href="/forgot-password" className="link py-1.5 text-[13px]">Forgot password?</Link>
         </div>
         <PasswordInput name="password" autoComplete="current-password" />
       </div>

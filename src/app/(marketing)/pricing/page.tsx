@@ -9,7 +9,8 @@ export const metadata = { title: "Pricing" };
 function Cell({ value }: { value: PlanCell }) {
   if (value === true) return <Icon name="check" className="mx-auto size-5 text-up" />;
   if (value === false) return <span className="text-muted-soft" aria-label="Not included">–</span>;
-  return <span className="text-[14px] font-medium">{value}</span>;
+  // "₹1,999/month" may break after the slash in a phone-width column.
+  return <span className="text-[13px] font-medium sm:text-[14px]">{value.replace("/", "/\u200b")}</span>;
 }
 
 // Razorpay's charge (about 2% + 18% GST); the actual amount per payment can vary slightly.
@@ -25,10 +26,11 @@ function Prices({ tier, dark }: { tier: Tier; dark?: boolean }) {
       </div>
       <div className={cx("rounded-2xl p-4 ring-1", dark ? "bg-dark-elevated ring-primary/60" : "bg-surface-soft ring-primary/30")}>
         <p className={cx("flex items-center justify-between text-[13px]", dark ? "text-on-dark-soft" : "text-body")}>
-          Yearly <span className="rounded-full bg-up/20 px-2 py-0.5 text-[11px] font-semibold text-up">Save {yearlySaving(tier)}</span>
+          Yearly
         </p>
         <p className="display mt-1 text-[32px]">{priceLabel(tier, "year")}</p>
         <p className={cx("text-[12px]", dark ? "text-on-dark-soft" : "text-muted")}>2 months free · incl. GST</p>
+        <p className="mt-2"><span className="inline-block whitespace-nowrap rounded-full bg-up/20 px-2 py-0.5 text-[12px] font-semibold text-up">Save {yearlySaving(tier)}</span></p>
       </div>
     </div>
   );
@@ -96,25 +98,25 @@ export default function Pricing() {
 
       <Section>
         <SectionHead center kicker="Compare plans" title="Everything in each plan." sub="Creator has everything you need to sell. Pro adds the tools that grow sales." />
-        <div className="mx-auto mt-10 max-w-4xl overflow-x-auto rounded-3xl border border-hairline bg-canvas">
-          <table className="w-full min-w-[560px] text-left text-[15px]">
+        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-hairline bg-canvas">
+          <table className="w-full text-left text-[14px] sm:text-[15px]">
             <thead>
               <tr className="border-b border-hairline">
-                <th className="px-5 py-4 font-semibold">Feature</th>
-                <th className="w-40 px-4 py-4 text-center font-semibold">Creator</th>
-                <th className="w-40 bg-primary-soft px-4 py-4 text-center font-semibold text-primary">Pro</th>
+                <th className="px-4 py-4 font-semibold sm:px-5">Feature</th>
+                <th className="w-[84px] px-2 py-4 text-center font-semibold sm:w-40 sm:px-4">Creator</th>
+                <th className="w-[84px] bg-primary-soft px-2 py-4 text-center font-semibold text-primary sm:w-40 sm:px-4">Pro</th>
               </tr>
             </thead>
             {planMatrix.map((g) => (
               <tbody key={g.group}>
                 <tr>
-                  <th colSpan={3} className="bg-surface-soft px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-muted">{g.group}</th>
+                  <th colSpan={3} className="bg-surface-soft px-4 py-2.5 sm:px-5 text-[12px] font-semibold uppercase tracking-wider text-muted">{g.group}</th>
                 </tr>
                 {g.rows.map((r) => (
                   <tr key={r.feature} className="border-b border-hairline-soft last:border-0">
-                    <td className="px-5 py-3.5 text-body">{r.feature}</td>
-                    <td className="px-4 py-3.5 text-center"><Cell value={r.creator} /></td>
-                    <td className="bg-primary-soft/40 px-4 py-3.5 text-center"><Cell value={r.pro} /></td>
+                    <td className="px-4 py-3.5 text-body [overflow-wrap:anywhere] sm:px-5">{r.feature}</td>
+                    <td className="px-2 py-3.5 text-center sm:px-4"><Cell value={r.creator} /></td>
+                    <td className="bg-primary-soft/40 px-2 py-3.5 text-center sm:px-4"><Cell value={r.pro} /></td>
                   </tr>
                 ))}
               </tbody>

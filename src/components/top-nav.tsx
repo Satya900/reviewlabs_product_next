@@ -23,7 +23,7 @@ const navItems = [
 export function TopNav({ dark }: { dark?: boolean }) {
   return (
     <header className={cx("sticky top-0 z-40 border-b", dark ? "border-dark-line bg-dark/90 text-white backdrop-blur" : "border-hairline bg-canvas/90 backdrop-blur")}>
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 px-5 sm:px-8">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8 md:gap-6">
         <Logo dark={dark} />
         <nav className="hidden items-center gap-7 md:flex">
           {navItems.map((item) => (
@@ -36,7 +36,7 @@ export function TopNav({ dark }: { dark?: boolean }) {
           <Link href="/login" className={cx("hidden px-3 text-[14px] font-semibold sm:block", dark ? "text-white" : "text-ink")}>
             Log in
           </Link>
-          <Link href="/signup" className={cx(buttonClass.primary, "h-10 px-4 text-[14px]")}>Get started</Link>
+          <Link href="/signup" className={cx(buttonClass.primary, "h-10 whitespace-nowrap px-4 text-[14px]")}>Get started</Link>
           <details className="relative md:hidden">
             <summary className={cx("flex size-10 cursor-pointer list-none items-center justify-center rounded-full [&::-webkit-details-marker]:hidden", dark ? "bg-dark-elevated" : "bg-surface-strong")} aria-label="Menu">
               <svg viewBox="0 0 24 24" className="size-5" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>

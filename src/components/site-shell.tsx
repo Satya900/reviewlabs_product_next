@@ -17,15 +17,15 @@ export function SiteFooter() {
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-[14px] text-body">{site.description}</p>
-          <a href={`mailto:${site.supportEmail}`} className="link text-[14px]">{site.supportEmail}</a>
+          <a href={`mailto:${site.supportEmail}`} className="link inline-block py-1 text-[14px]">{site.supportEmail}</a>
         </div>
         {footerColumns.map((col) => (
           <div key={col.title}>
             <p className="text-[14px] font-semibold text-ink">{col.title}</p>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 space-y-1">
               {col.links.map((l) => (
                 <li key={l.label}>
-                  <Link href={l.href} className="text-[14px] text-body">{l.label}</Link>
+                  <Link href={l.href} className="inline-block py-1 text-[14px] text-body">{l.label}</Link>
                 </li>
               ))}
             </ul>
@@ -69,8 +69,8 @@ export function BuyerShell({ children }: { children: ReactNode }) {
       <footer className="border-t border-hairline bg-canvas px-5 py-6 text-[13px] text-muted sm:px-8">
         <div className="mx-auto flex max-w-[1100px] flex-wrap justify-between gap-3">
           <p>Sold through {site.name} by {site.legalName}. Payments by Razorpay.</p>
-          <p className="flex flex-wrap gap-4">
-            {legalLinks.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
+          <p className="flex flex-wrap gap-x-4">
+            {legalLinks.map((l) => <Link key={l.href} href={l.href} className="py-1.5">{l.label}</Link>)}
           </p>
         </div>
       </footer>
