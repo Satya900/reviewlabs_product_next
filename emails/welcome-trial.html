@@ -1,0 +1,137 @@
+<!doctype html>
+<!--
+  Reviewlabs welcome email (Resend template), sent once at signup.
+  It replaces the plain verification email for new signups, so a new creator
+  gets ONE email: welcome + verify + first steps.
+
+  Resend template settings
+    Name:     Welcome + trial (signup)
+    Subject:  Your Reviewlabs store is open: 7 days free
+    Variables (Resend uses {{{TRIPLE_BRACES}}}; FIRST_NAME is reserved, so it's CREATOR_NAME):
+      CREATOR_NAME    string  fallback "there"                                first name
+      VERIFY_URL      string  fallback "https://reviewlabs.space/dashboard"   the creator's own verification link
+      TRIAL_END_DATE  string  fallback "7 days from today"                    e.g. "Thursday, 12 November"
+    The app always sends all three; the fallbacks only keep the email readable if one is ever missing.
+    Preview text: Your 7-day free trial has started. Verify your email, then put your first product online in about 5 minutes.
+
+  The app sends it when RESEND_WELCOME_TEMPLATE_ID is set (src/lib/email-verification.ts).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>Your Reviewlabs store is open</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f7f7;">
+<!-- Inbox preview line -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#f7f7f7;">Your 7-day free trial has started. Verify your email, then put your first product online in about 5 minutes.&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f7f7;">
+<tr><td align="center" style="padding:32px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid #dee1e6;border-radius:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0a0b0d;">
+
+<!-- Header -->
+<tr><td style="padding:32px 32px 0 32px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td style="width:36px;height:36px;border-radius:18px;background:#0052ff;color:#ffffff;font-size:18px;font-weight:700;text-align:center;line-height:36px;">R</td>
+    <td style="padding-left:10px;font-size:18px;font-weight:700;letter-spacing:-0.3px;">Reviewlabs</td>
+  </tr></table>
+</td></tr>
+
+<!-- Hero -->
+<tr><td style="padding:24px 32px 0 32px;">
+  <h1 style="margin:0;font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-0.8px;">Welcome, {{{CREATOR_NAME}}}. Your store is open.</h1>
+  <p style="margin:14px 0 0 0;font-size:16px;line-height:1.55;color:#5b616e;">Your <b style="color:#0a0b0d;">7-day free trial</b> has started. No card needed. Last day: <b style="color:#0a0b0d;">{{{TRIAL_END_DATE}}}</b>. Here's how to make your first sale this week.</p>
+</td></tr>
+
+<!-- Step 1: verify -->
+<tr><td style="padding:28px 32px 0 32px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef3ff;border-radius:18px;">
+  <tr><td style="padding:22px 22px 24px 22px;">
+    <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.4px;color:#0052ff;text-transform:uppercase;">Step 1 · 10 seconds</p>
+    <p style="margin:6px 0 0 0;font-size:19px;font-weight:700;letter-spacing:-0.3px;">Verify your email</p>
+    <p style="margin:6px 0 0 0;font-size:15px;line-height:1.5;color:#5b616e;">You need this to publish your page and receive payouts.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;"><tr>
+      <td style="border-radius:100px;background:#0052ff;"><a href="{{{VERIFY_URL}}}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:100px;">Verify my email</a></td>
+    </tr></table>
+    <p style="margin:12px 0 0 0;font-size:12px;line-height:1.5;color:#7c828a;">The link works for 7 days, on any device.</p>
+  </td></tr>
+  </table>
+</td></tr>
+
+<!-- Steps 2-4 -->
+<tr><td style="padding:24px 32px 0 32px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td valign="top" style="width:36px;padding-top:2px;"><div style="width:28px;height:28px;border-radius:14px;background:#0a0b0d;color:#ffffff;font-size:14px;font-weight:700;text-align:center;line-height:28px;">2</div></td>
+    <td valign="top" style="padding-bottom:20px;">
+      <p style="margin:0;font-size:17px;font-weight:700;letter-spacing:-0.2px;">Make your first product page <span style="font-weight:400;color:#7c828a;">(about 5 minutes)</span></p>
+      <p style="margin:6px 0 0 0;font-size:15px;line-height:1.5;color:#5b616e;">Add a title and price, upload your ebook, template or notes (or paste a Drive, Notion or Canva link), and set the page to Live.</p>
+      <p style="margin:8px 0 0 0;font-size:15px;"><a href="https://reviewlabs.space/dashboard/pages" style="color:#0052ff;font-weight:700;text-decoration:none;">Create my page →</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="width:36px;padding-top:2px;"><div style="width:28px;height:28px;border-radius:14px;background:#0a0b0d;color:#ffffff;font-size:14px;font-weight:700;text-align:center;line-height:28px;">3</div></td>
+    <td valign="top" style="padding-bottom:20px;">
+      <p style="margin:0;font-size:17px;font-weight:700;letter-spacing:-0.2px;">Share your link</p>
+      <p style="margin:6px 0 0 0;font-size:15px;line-height:1.5;color:#5b616e;">Put it in your Instagram bio, a story or your WhatsApp. Buyers pay with UPI or card, and the file lands in their inbox automatically. You don't have to send anything.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="width:36px;padding-top:2px;"><div style="width:28px;height:28px;border-radius:14px;background:#0a0b0d;color:#ffffff;font-size:14px;font-weight:700;text-align:center;line-height:28px;">4</div></td>
+    <td valign="top">
+      <p style="margin:0;font-size:17px;font-weight:700;letter-spacing:-0.2px;">Add your bank account</p>
+      <p style="margin:6px 0 0 0;font-size:15px;line-height:1.5;color:#5b616e;">So your earnings can reach you. Request a payout any time from ₹500, with the UTR number for every transfer.</p>
+      <p style="margin:8px 0 0 0;font-size:15px;"><a href="https://reviewlabs.space/dashboard/setup/payouts" style="color:#0052ff;font-weight:700;text-decoration:none;">Add bank details →</a></p>
+    </td>
+  </tr>
+  </table>
+</td></tr>
+
+<!-- What's in the trial -->
+<tr><td style="padding:28px 32px 0 32px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #dee1e6;border-radius:18px;">
+  <tr><td style="padding:20px 22px;">
+    <p style="margin:0;font-size:16px;font-weight:700;">What your trial includes</p>
+    <p style="margin:10px 0 0 0;font-size:15px;line-height:1.8;color:#5b616e;">
+      ✓ 1 product page and 1 free lead magnet<br>
+      ✓ UPI and card checkout, instant delivery<br>
+      ✓ Your link-in-bio storefront<br>
+      ✓ Sales dashboard, orders and payouts<br>
+      ✓ <b style="color:#0a0b0d;">0% platform fee</b> on every sale (Razorpay's payment charge of about 2.36% is passed on at cost)
+    </p>
+  </td></tr>
+  </table>
+</td></tr>
+
+<!-- After the trial -->
+<tr><td style="padding:24px 32px 0 32px;">
+  <p style="margin:0;font-size:16px;font-weight:700;">When you're ready for more</p>
+  <p style="margin:8px 0 0 0;font-size:15px;line-height:1.55;color:#5b616e;"><b style="color:#0a0b0d;">Creator, ₹799/month:</b> unlimited product pages and lead magnets.<br><b style="color:#0a0b0d;">Pro, ₹1,999/month:</b> adds Instagram AutoDM, email broadcasts, coupons and more.</p>
+  <p style="margin:10px 0 0 0;font-size:15px;line-height:1.55;color:#5b616e;">Prices include GST. If you choose a plan during your trial, billing starts only when the trial ends. If you don't, your pages pause when the trial ends and nothing is deleted.</p>
+  <p style="margin:10px 0 0 0;font-size:15px;"><a href="https://reviewlabs.space/dashboard/billing" style="color:#0052ff;font-weight:700;text-decoration:none;">See plans →</a></p>
+</td></tr>
+
+<!-- Help -->
+<tr><td style="padding:28px 32px 32px 32px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f7f7;border-radius:18px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;font-size:15px;line-height:1.55;color:#0a0b0d;"><b>Stuck anywhere?</b> Just reply to this email. We read every reply. Moving from Superprofile? We'll move your pages for you.</p>
+  </td></tr>
+  </table>
+</td></tr>
+
+</table>
+
+<!-- Footer -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+<tr><td style="padding:18px 32px 0 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7c828a;text-align:center;">
+  You're getting this because you created a Reviewlabs account with this email. If that wasn't you, you can ignore it.<br>
+  Reviewlabs · <a href="https://reviewlabs.space" style="color:#7c828a;">reviewlabs.space</a>
+</td></tr>
+</table>
+
+</td></tr>
+</table>
+</body>
+</html>

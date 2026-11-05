@@ -6,11 +6,12 @@ import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { canResendVerification, sendVerificationEmail } from "@/lib/email-verification";
+import { canResendVerification, sendVerificationEmail, sendWelcomeEmail } from "@/lib/email-verification";
 import { getProfile } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { clientIp } from "@/lib/request";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { TRIAL_DAYS } from "@/lib/plans";
 import { PLATFORM_EVENT_COOKIE } from "@/lib/platform-pixel";
 import { clickDataFromHeaders, platformEventIds, sendRegistrationEvent, signupAttributionFromHeaders } from "@/lib/platform-meta";
 
@@ -69,8 +70,11 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   // Marked as sent before the dashboard loads, so its banner says "we sent a
   // link" rather than offering a second email. Cleared if the send fails.
   await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
+  // One email: welcome, verification link and first steps (falls back to the
+  // plain verification email without the Resend template).
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 86_400_000);
   after(() =>
-    sendVerificationEmail(user).catch(async (e) => {
+    sendWelcomeEmail(user, trialEndsAt).catch(async (e) => {
       console.error("[signup] verification email", (e as Error).message);
       await createAdminClient().from("profiles").update({ verification_sent_at: null }).eq("id", user.id);
     }),

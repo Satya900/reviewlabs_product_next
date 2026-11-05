@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 import { env } from "@/lib/env";
-import { escapeHtml, sendEmail } from "@/lib/email";
+import { escapeHtml, sendEmail, sendTemplateEmail } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createToken, hashEmail, readToken, type VerificationClaim } from "@/lib/verification-token";
 
@@ -54,6 +54,26 @@ export async function sendVerificationEmail(user: { id: string; email: string; n
   <p style="margin:24px 0 0 0;font-size:13px;line-height:1.5;color:#7c828a;">The link works for 7 days. If you didn't create a Reviewlabs account, you can ignore this email.</p>
 </div></div>`,
     text: [...lines, `Verify your email: ${link}`, "The link works for 7 days. If you didn't create a Reviewlabs account, you can ignore this email."].join("\n\n"),
+  });
+  const { error } = await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
+  if (error) console.error("[verify] sent_at", error.message);
+}
+
+// The one email a new creator gets at signup: welcome, their verification
+// link and first steps, from the Resend template in emails/welcome-trial.html.
+// Without RESEND_WELCOME_TEMPLATE_ID it falls back to the plain verification email.
+export async function sendWelcomeEmail(user: { id: string; email: string; name?: string | null }, trialEndsAt: Date): Promise<void> {
+  const templateId = process.env.RESEND_WELCOME_TEMPLATE_ID;
+  if (!templateId) return sendVerificationEmail(user);
+  await sendTemplateEmail({
+    to: user.email,
+    templateId,
+    variables: {
+      // Resend inserts {{{VARIABLES}}} unescaped, and the name is what the person typed.
+      CREATOR_NAME: escapeHtml(user.name?.trim().split(/\s+/)[0] || "there"),
+      VERIFY_URL: `${env.appUrl()}/auth/verify-email?t=${createVerificationToken(user.id, user.email)}`,
+      TRIAL_END_DATE: new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" }).format(trialEndsAt),
+    },
   });
   const { error } = await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
   if (error) console.error("[verify] sent_at", error.message);
