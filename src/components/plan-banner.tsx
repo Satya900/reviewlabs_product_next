@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Profile } from "@/lib/auth";
-import { currentTier, isNewAccount, trialDaysLeft } from "@/lib/plans";
+import { TRIAL_LIMITS, currentTier, isNewAccount, trialDaysLeft } from "@/lib/plans";
 
 // Top of every dashboard page: trial days left, or that the store is offline.
 export function PlanBanner({ profile }: { profile: Profile }) {
@@ -9,7 +9,7 @@ export function PlanBanner({ profile }: { profile: Profile }) {
     const days = trialDaysLeft(profile) ?? 0;
     return (
       <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 text-[14px] ${days <= 2 ? "bg-[#fff7e0]" : "bg-primary-soft"} text-ink`}>
-        <span><b>Free trial: {days} day{days === 1 ? "" : "s"} left.</b> Every feature is on, including AutoDM.</span>
+        <span><b>Free trial: {days} day{days === 1 ? "" : "s"} left.</b> Make {TRIAL_LIMITS.pages} product page and {TRIAL_LIMITS.leadMagnets} lead magnet and start selling. A plan unlocks unlimited pages and Pro tools.</span>
         <Link href="/dashboard/billing" className="font-semibold text-primary">Choose a plan →</Link>
       </div>
     );

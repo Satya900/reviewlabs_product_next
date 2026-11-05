@@ -44,7 +44,7 @@ export const getStorefront = cache(async (handle: string): Promise<(StorefrontDa
     socials: (profile.social_links ?? {}) as Record<string, string>,
     featuredId: profile.featured_page_id,
     // "Made with Reviewlabs" unless on Pro (removing it is a Pro feature).
-    showBranding: tier !== "pro" && tier !== "trial",
+    showBranding: tier !== "pro",
     storeLive: tier !== "none",
     products: [
       ...(pages ?? []).map((p) => ({ id: p.id, href: `/p/${p.slug}`, title: p.title, amountPaise: p.amount_paise, isFree: false, cover: p.cover_image_url })),

@@ -12,6 +12,7 @@ export type LeadActionState = { error?: string; ok?: string } | null;
 
 function limitMessage(message: string) {
   if (message.includes("email_not_verified")) return "Verify your email to publish. Use the link at the top of the page, then publish again.";
+  if (message.includes("trial_lead_magnet_limit")) return "Your free trial includes one lead magnet. Choose a plan in Plan and billing for unlimited lead magnets.";
   return null;
 }
 

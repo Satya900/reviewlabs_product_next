@@ -45,7 +45,7 @@ export default function Terms() {
       <Clause n={4} title="Fees and payouts for creators">
         <ul>
           <li>Plans: Creator ({formatPaise(site.creatorMonthlyPaise)} per month or {formatPaise(site.creatorYearlyPaise)} per year), Pro, which adds Instagram AutoDM ({formatPaise(site.proMonthlyPaise)} per month or {formatPaise(site.proYearlyPaise)} per year), and custom plans agreed with us in writing. Plans are billed through Razorpay as a recurring payment you can cancel any time. All plan prices include GST.</li>
-          <li>There is no free plan or free trial. A paid plan is needed to use the dashboard and sell; the first payment is taken when you subscribe.</li>
+          <li>There is no free plan. New accounts get a 7-day free trial with one product page and one lead magnet, without Pro features; no card is needed. If you subscribe during the trial, the first payment is taken when the trial ends; otherwise it is taken when you subscribe.</li>
           <li>Without an active plan, your store is offline: buyers cannot open your product pages, storefront or lead magnets, and no new orders can be placed. Your content is kept and comes back online when you subscribe. Buyers who already paid keep access to what they bought.</li>
           <li>We charge no platform fee on sales, unless a custom plan sets one. Razorpay&apos;s charge for each payment (including GST on it) is passed on to you at cost and shown as its own line in your earnings.</li>
           <li>Accounts that bought lifetime access before 4 November 2026 keep Creator features for as long as {site.name} operates and the account is in good standing, with no renewal charges.</li>

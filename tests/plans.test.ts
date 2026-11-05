@@ -1,16 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { currentTier, hasCreatorPlan, isNewAccount, hasProPlan, platformFeePercent, priceLabel, trialDaysLeft, yearlySaving } from "../src/lib/plans.ts";
+import { TRIAL_LIMITS, currentTier, hasCreatorPlan, isNewAccount, hasProPlan, platformFeePercent, priceLabel, trialDaysLeft, yearlySaving } from "../src/lib/plans.ts";
 
 const now = Date.parse("2026-11-04T12:00:00Z");
 const day = 86_400_000;
 const base = { is_admin: false, plan: "free", plan_status: "none", plan_current_period_end: null as string | null, trial_ends_at: null as string | null };
 const iso = (ms: number) => new Date(ms).toISOString();
 
-test("trial gives every feature, then the store goes offline", () => {
+test("trial is Creator-level (selling, no Pro tools), then the store goes offline", () => {
   const trial = { ...base, trial_ends_at: iso(now + 3 * day) };
   assert.equal(currentTier(trial, now), "trial");
-  assert.ok(hasCreatorPlan(trial, now) && hasProPlan(trial, now));
+  assert.ok(hasCreatorPlan(trial, now) && !hasProPlan(trial, now));
+  assert.deepEqual(TRIAL_LIMITS, { pages: 1, leadMagnets: 1 });
   assert.equal(trialDaysLeft(trial, now), 3);
   assert.equal(trialDaysLeft({ ...base, trial_ends_at: iso(now + 2 * 3600_000) }, now), 1);
   const over = { ...base, trial_ends_at: iso(now - 1000) };

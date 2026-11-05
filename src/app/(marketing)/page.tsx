@@ -37,7 +37,7 @@ export default function Home() {
               Add a link-in-bio storefront, free lead magnets and Instagram AutoDM to grow. 0% platform fee on every sale.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className={buttonClass.hero}>Get started</Link>
+              <Link href="/signup" className={buttonClass.hero}>Start 7-day free trial</Link>
               <Link href="/how-it-works" className={cx(buttonClass.outlineDark, "h-14 px-8")}>See how it works</Link>
             </div>
             <dl className="grid max-w-lg grid-cols-3 gap-4 border-t border-dark-line pt-6">
@@ -290,7 +290,7 @@ export default function Home() {
             <div className="mt-8">
               <CheckList dark items={[`Creator ${priceLabel("creator", "month")}/month, Pro ${priceLabel("pro", "month")}/month, GST included`, "Creator: unlimited products, storefront, checkout, delivery, payouts", "Pro: plus AutoDM, email broadcasts, coupons, add-on offer, advanced analytics, no branding"]} />
             </div>
-            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Get started</Link>
+            <Link href="/signup" className={cx(buttonClass.primary, "mt-8 w-full")}>Start 7-day free trial</Link>
           </div>
           <div className="rounded-3xl border border-hairline bg-canvas p-8">
             <p className="text-[16px] font-semibold">A ₹499 sale, worked out</p>
@@ -329,7 +329,7 @@ export default function Home() {
       <CtaBand
         title="Put your first product online this week."
         sub="0% platform fee. Your first page can be live in minutes."
-        primary={{ href: "/signup", label: "Get started" }}
+        primary={{ href: "/signup", label: "Start 7-day free trial" }}
         secondary={{ href: "/pricing", label: "See pricing" }}
       />
     </>

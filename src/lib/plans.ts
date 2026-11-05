@@ -3,15 +3,16 @@ import { site } from "./site.ts";
 // Plan rules shared by server and UI. The database enforces the same rules
 // (creator_plan_tier and friends), so the UI is never the only guard.
 //
-// No free plan and no trial for new accounts: nothing works until they pay.
-// Creator unlocks selling; Pro adds the growth tools (AutoDM, coupons, add-on
-// offer, advanced analytics, no branding). Trials granted before the paywall
-// still run to their end. Without a plan or trial the creator's store is offline. No platform fee on sales; Razorpay's charge is
-// passed on at cost.
+// No free plan. New accounts get a 7-day trial at Creator level with limits:
+// one product page and one lead magnet (TRIAL_LIMITS, enforced by the
+// database). Creator unlocks unlimited selling; Pro adds the growth tools
+// (AutoDM, email broadcasts, coupons, add-on offer, advanced analytics, no
+// branding). Without a plan or trial the creator's store is offline. No
+// platform fee on sales; Razorpay's charge is passed on at cost.
 
 export type Tier = "creator" | "pro";
 export type Interval = "month" | "year";
-// What a creator can use right now. "trial" has every feature.
+// What a creator can use right now. "trial" = Creator features within TRIAL_LIMITS.
 export type CurrentTier = Tier | "trial" | "none";
 
 export const PLAN_PRICES: Record<Tier, Record<Interval, number>> = {
@@ -19,6 +20,8 @@ export const PLAN_PRICES: Record<Tier, Record<Interval, number>> = {
   pro: { month: site.proMonthlyPaise, year: site.proYearlyPaise },
 };
 export const TRIAL_DAYS = site.trialDays;
+// What the trial includes (the database enforces the same numbers, migration 0035).
+export const TRIAL_LIMITS = { pages: 1, leadMagnets: 1 } as const;
 // Razorpay's charge, about 2% plus 18% GST, passed on at cost.
 export const GATEWAY_FEE_LABEL = "about 2.36%";
 
@@ -54,11 +57,10 @@ export function hasCreatorPlan(p: PlanFields, now = Date.now()): boolean {
   return currentTier(p, now) !== "none";
 }
 
-// The Pro features (AutoDM, coupons, add-on offer, advanced analytics,
-// no branding): Pro or the trial.
+// The Pro features (AutoDM, email broadcasts, coupons, add-on offer, advanced
+// analytics, no branding): Pro only, not the trial.
 export function hasProPlan(p: PlanFields, now = Date.now()): boolean {
-  const t = currentTier(p, now);
-  return t === "pro" || t === "trial";
+  return currentTier(p, now) === "pro";
 }
 
 // Never had a plan or a trial (an abandoned checkout still counts as new).
