@@ -98,7 +98,7 @@ export default function Pricing() {
 
       <Section>
         <SectionHead center kicker="Compare plans" title="Everything in each plan." sub="Creator has everything you need to sell. Pro adds the tools that grow sales." />
-        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-hairline bg-canvas">
+        <div className="mx-auto mt-10 max-w-4xl overflow-x-auto rounded-3xl border border-hairline bg-canvas">
           <table className="w-full text-left text-[14px] sm:text-[15px]">
             <thead>
               <tr className="border-b border-hairline">
