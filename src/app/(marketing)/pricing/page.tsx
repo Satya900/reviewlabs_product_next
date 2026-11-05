@@ -52,7 +52,7 @@ export default function Pricing() {
             <p className="mt-1 text-[15px] text-body">Everything you need to sell digital products.</p>
             <Prices tier="creator" />
             <p className="mt-4 text-[15px] text-body"><b className="text-ink">0%</b> platform fee on every sale</p>
-            <Link href="/signup" className={cx(buttonClass.secondary, "mt-6 h-12 w-full")}>Get started</Link>
+            <Link href="/signup" className={cx(buttonClass.secondary, "mt-6 h-12 w-full")}>Start 7-day free trial</Link>
             <div className="mt-8"><CheckList items={creatorFeatures} /></div>
           </div>
 
@@ -67,7 +67,7 @@ export default function Pricing() {
               <p className="mt-1 text-[15px] text-on-dark-soft">AutoDM, email broadcasts, coupons, order bumps and analytics that show what sells.</p>
               <Prices tier="pro" dark />
               <p className="mt-4 text-[15px] text-on-dark-soft"><b className="text-white">0%</b> platform fee on every sale</p>
-              <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Get started</Link>
+              <Link href="/signup" className={cx(buttonClass.primary, "mt-6 h-12 w-full")}>Start 7-day free trial</Link>
               <div className="mt-8"><CheckList dark items={proFeatures} /></div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function Pricing() {
           <SectionHead kicker="Questions" title="Pricing, answered." />
           <Faq
             items={[
-              { q: "Is there a free trial?", a: "No. Create your account, choose Creator or Pro, and your dashboard unlocks straight away. You can cancel any time." },
+              { q: "Is there a free trial?", a: "Yes, 7 days, no card needed. Make one product page and one lead magnet and start selling with UPI checkout, delivery and payouts. Choose Creator or Pro any time for unlimited pages and Pro tools; if you choose during the trial, billing starts when it ends." },
               { q: "Do you take a cut of my sales?", a: `No. The platform fee is 0% on both plans. The only deduction is Razorpay's payment charge (${GATEWAY_FEE_LABEL}: about 2% plus 18% GST), which we pass on at exactly what Razorpay charges us. You see it on every sale in your earnings.` },
               { q: "What's the difference between Creator and Pro?", a: "Creator has everything you need to sell: unlimited products and lead magnets, your storefront, checkout, instant delivery, a sales dashboard, GST invoices and payouts. Pro adds the tools that grow sales: AutoDM (comment a keyword, get the link by DM), coupons, an add-on offer at checkout, advanced analytics with conversion and traffic sources, and no \"Made with Reviewlabs\" badge." },
               { q: "Do plan prices include GST?", a: `Yes. ${priceLabel("creator", "month")} a month or ${priceLabel("creator", "year")} a year for Creator, and ${priceLabel("pro", "month")} a month or ${priceLabel("pro", "year")} a year for Pro, are the full amounts you pay.` },
@@ -176,7 +176,7 @@ export default function Pricing() {
         </div>
       </Section>
 
-      <CtaBand title="Put your first product online today." sub="0% platform fee. Cancel any time." primary={{ href: "/signup", label: "Get started" }} secondary={{ href: "/custom", label: "Custom plan" }} />
+      <CtaBand title="Put your first product online today." sub="0% platform fee. Cancel any time." primary={{ href: "/signup", label: "Start 7-day free trial" }} secondary={{ href: "/custom", label: "Custom plan" }} />
     </>
   );
 }

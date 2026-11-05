@@ -15,6 +15,7 @@ export type ActionState = { error?: string; ok?: string } | null;
 // Turns the database's plan-limit errors into something a creator can act on.
 function planLimitMessage(message: string): string | null {
   if (message.includes("email_not_verified")) return "Verify your email to publish. Use the link at the top of the page, then set it to Live.";
+  if (message.includes("trial_page_limit")) return "Your free trial includes one product page. Choose a plan in Plan and billing for unlimited pages.";
   return null;
 }
 

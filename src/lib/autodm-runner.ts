@@ -62,7 +62,7 @@ export type CommentResult = "no_account" | "no_plan" | "no_match" | "duplicate" 
 export async function handleComment(event: CommentEvent): Promise<CommentResult> {
   const account = await loadAccount(event.igUserId);
   if (!account) return "no_account";
-  // AutoDM is a Pro feature (the trial includes it).
+  // AutoDM is a Pro feature (not in the trial).
   if (!(await creatorHasPro(account.creator_id))) return "no_plan";
   const db = createAdminClient();
 

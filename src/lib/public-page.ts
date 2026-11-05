@@ -27,7 +27,7 @@ export const getPublicPage = cache(async (slug: string) => {
   ]);
   const hasPlan = tier !== "none";
   // Pro features: add-on offer, coupons, no "Made with Reviewlabs" badge.
-  const pro = tier === "pro" || tier === "trial";
+  const pro = tier === "pro";
   const { data: seller } = await admin.from("profiles").select("name").eq("id", page.creator_id).maybeSingle();
 
   return {

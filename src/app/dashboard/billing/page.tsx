@@ -48,7 +48,7 @@ export default async function BillingPage() {
       {profile.is_admin && <Notice>Admin accounts have every feature without a subscription.</Notice>}
       {tier === "trial" && (
         <Notice tone="info">
-          <b>Free trial: {daysLeft} day{daysLeft === 1 ? "" : "s"} left</b> (until {trialEnd}). You have every feature, including AutoDM. Choose a plan to keep your store live after that.
+          <b>Free trial: {daysLeft} day{daysLeft === 1 ? "" : "s"} left</b> (until {trialEnd}). Your trial includes 1 product page and 1 lead magnet with checkout, delivery, your storefront and payouts. Choose Creator for unlimited pages, or Pro to add AutoDM, email broadcasts, coupons and more. Billing starts when the trial ends, and your store stays live.
         </Notice>
       )}
       {tier === "none" && isNewAccount(profile) ? (

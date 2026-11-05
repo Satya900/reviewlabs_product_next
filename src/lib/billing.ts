@@ -38,6 +38,12 @@ function paymentDescription(sub: RazorpaySubscription, amount: number): string |
 export async function recordSubscriptionPayment(sub: RazorpaySubscription, payment: { id: string; amount: number; status: string }) {
   const owner = await creatorForSubscription(sub);
   if (!owner || (payment.status !== "captured" && payment.status !== "authorized")) return;
+  // Subscribed during the trial: billing starts when the trial ends, so the
+  // payment Checkout returns is only Razorpay's autopay authorisation (refunded
+  // by Razorpay), not a plan payment. Recording it would issue a GST invoice and
+  // count it as the creator's first payment. The first real charge arrives
+  // later through the subscription.charged webhook.
+  if (noteValue(sub, "after_trial") === "yes" && sub.start_at && sub.start_at * 1000 > Date.now()) return;
   await createAdminClient().from("subscription_payments").upsert(
     {
       creator_id: owner.id,

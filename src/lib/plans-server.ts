@@ -18,8 +18,7 @@ export async function creatorHasPlan(creatorId: string): Promise<boolean> {
   return (await creatorTier(creatorId)) !== "none";
 }
 
-// Pro or the trial: AutoDM.
+// Pro only (the trial is Creator-level): AutoDM, add-on offer and the rest.
 export async function creatorHasPro(creatorId: string): Promise<boolean> {
-  const tier = await creatorTier(creatorId);
-  return tier === "pro" || tier === "trial";
+  return (await creatorTier(creatorId)) === "pro";
 }

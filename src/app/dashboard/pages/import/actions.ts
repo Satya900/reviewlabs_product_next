@@ -78,6 +78,7 @@ export async function importFromSuperprofile(raw: unknown, ownsPage: boolean): P
     .select("id")
     .single();
   if (error || !page) {
+    if (error?.message.includes("trial_page_limit")) return { error: "Your free trial includes one product page. Choose a plan in Plan and billing for unlimited pages." };
     return { error: error?.message ?? "Couldn't create the page" };
   }
 
