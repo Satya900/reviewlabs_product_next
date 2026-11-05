@@ -8,9 +8,11 @@
     Name:     Welcome + trial (signup)
     Subject:  Your Reviewlabs store is open: 7 days free
     Variables (Resend uses {{{TRIPLE_BRACES}}}; FIRST_NAME is reserved, so it's CREATOR_NAME):
-      CREATOR_NAME    string  fallback "there"   first name
-      VERIFY_URL      string  no fallback        the creator's own verification link (required)
-      TRIAL_END_DATE  string  no fallback        e.g. "Thursday, 12 November" (required)
+      CREATOR_NAME    string  fallback "there"                                first name
+      VERIFY_URL      string  fallback "https://reviewlabs.space/dashboard"   the creator's own verification link
+      TRIAL_END_DATE  string  fallback "7 days from today"                    e.g. "Thursday, 12 November"
+    The app always sends all three; the fallbacks only keep the email readable if one is ever missing.
+    Preview text: Your 7-day free trial has started. Verify your email, then put your first product online in about 5 minutes.
 
   The app sends it when RESEND_WELCOME_TEMPLATE_ID is set (src/lib/email-verification.ts).
 -->
@@ -39,7 +41,7 @@
 <!-- Hero -->
 <tr><td style="padding:24px 32px 0 32px;">
   <h1 style="margin:0;font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-0.8px;">Welcome, {{{CREATOR_NAME}}}. Your store is open.</h1>
-  <p style="margin:14px 0 0 0;font-size:16px;line-height:1.55;color:#5b616e;">Your <b style="color:#0a0b0d;">7-day free trial</b> has started and runs until <b style="color:#0a0b0d;">{{{TRIAL_END_DATE}}}</b>. No card needed. Here's how to make your first sale this week.</p>
+  <p style="margin:14px 0 0 0;font-size:16px;line-height:1.55;color:#5b616e;">Your <b style="color:#0a0b0d;">7-day free trial</b> has started. No card needed. Last day: <b style="color:#0a0b0d;">{{{TRIAL_END_DATE}}}</b>. Here's how to make your first sale this week.</p>
 </td></tr>
 
 <!-- Step 1: verify -->
@@ -106,7 +108,7 @@
 <tr><td style="padding:24px 32px 0 32px;">
   <p style="margin:0;font-size:16px;font-weight:700;">When you're ready for more</p>
   <p style="margin:8px 0 0 0;font-size:15px;line-height:1.55;color:#5b616e;"><b style="color:#0a0b0d;">Creator, ₹799/month:</b> unlimited product pages and lead magnets.<br><b style="color:#0a0b0d;">Pro, ₹1,999/month:</b> adds Instagram AutoDM, email broadcasts, coupons and more.</p>
-  <p style="margin:10px 0 0 0;font-size:15px;line-height:1.55;color:#5b616e;">Prices include GST. If you choose a plan during your trial, billing starts only when the trial ends. If you don't, your pages pause on {{{TRIAL_END_DATE}}} and nothing is deleted.</p>
+  <p style="margin:10px 0 0 0;font-size:15px;line-height:1.55;color:#5b616e;">Prices include GST. If you choose a plan during your trial, billing starts only when the trial ends. If you don't, your pages pause when the trial ends and nothing is deleted.</p>
   <p style="margin:10px 0 0 0;font-size:15px;"><a href="https://reviewlabs.space/dashboard/billing" style="color:#0052ff;font-weight:700;text-decoration:none;">See plans →</a></p>
 </td></tr>
 
