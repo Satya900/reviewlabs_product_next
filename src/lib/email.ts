@@ -32,6 +32,28 @@ export async function sendEmail(email: Email): Promise<void> {
   if (!res.ok) throw new Error(`Resend error ${res.status}: ${await res.text()}`);
 }
 
+// A template stored in Resend (Dashboard > Templates), filled with variables.
+// Resend renders the HTML and the subject saved with the template.
+export async function sendTemplateEmail(email: { to: string; templateId: string; variables: Record<string, string>; replyTo?: string }): Promise<void> {
+  const apiKey = env.resendApiKey();
+  if (!apiKey) {
+    console.info(`[email:dev] to=${email.to} template=${email.templateId} variables=${JSON.stringify(email.variables)}`);
+    return;
+  }
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      from: env.emailFrom(),
+      reply_to: email.replyTo ?? site.supportEmail,
+      to: [email.to],
+      template: { id: email.templateId, variables: email.variables },
+    }),
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`Resend error ${res.status}: ${await res.text()}`);
+}
+
 export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
