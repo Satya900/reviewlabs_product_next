@@ -71,8 +71,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   // link" rather than offering a second email. Cleared if the send fails.
   await createAdminClient().from("profiles").update({ verification_sent_at: new Date().toISOString() }).eq("id", user.id);
   // One email: welcome, verification link and first steps (falls back to the
-  // plain verification email without the Resend template).
-  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 86_400_000);
+  // plain verification email without the Resend template). The trial end is the
+  // one the database stored when it created the profile, so the date matches.
+  const { data: trial } = await createAdminClient().from("profiles").select("trial_ends_at").eq("id", user.id).maybeSingle();
+  const trialEndsAt = trial?.trial_ends_at ? new Date(trial.trial_ends_at) : new Date(Date.now() + TRIAL_DAYS * 86_400_000);
   after(() =>
     sendWelcomeEmail(user, trialEndsAt).catch(async (e) => {
       console.error("[signup] verification email", (e as Error).message);
