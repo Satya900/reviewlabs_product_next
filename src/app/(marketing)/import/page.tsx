@@ -60,7 +60,7 @@ export default function ImportGuide() {
       </Section>
 
       <Section tone="soft" id="save">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr] [&>*]:min-w-0">
           <SectionHead
             kicker="Step 1 in detail"
             title="How to save your page."

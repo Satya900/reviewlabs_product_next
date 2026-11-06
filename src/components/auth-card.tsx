@@ -12,7 +12,7 @@ export function AuthCard({ title, sub, children, footer }: { title: string; sub?
           {sub && <p className="mt-2 text-[16px] text-body">{sub}</p>}
           <div className="mt-8">{children}</div>
         </div>
-        {footer && <div className="mt-6 text-center text-[14px] text-body">{footer}</div>}
+        {footer && <div className="mt-6 text-center text-[14px] text-body [&_a]:inline-block [&_a]:py-1.5">{footer}</div>}
       </div>
     </section>
   );
