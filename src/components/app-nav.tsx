@@ -39,7 +39,7 @@ export function AppNav({ items }: { items: NavItem[] }) {
     };
   }, [pathname, items.length]);
   return (
-    <div className="relative">
+    <div className="relative md:flex md:min-h-0 md:flex-col">
       <nav ref={nav} className="flex gap-1 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:flex-col md:px-3 md:pb-0">
         {items.map((item) => {
           const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
