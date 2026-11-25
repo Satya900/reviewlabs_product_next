@@ -81,7 +81,7 @@ npm run dev
 ```
 
 ### 7. Deploy
-See **[DEPLOY.md](DEPLOY.md)** for the full production checklist: GitHub, Vercel, domain, Supabase URLs, Razorpay live mode, the 15-minute recovery job and the launch smoke test.
+See **[DEPLOY.md](DEPLOY.md)** for the full production checklist: GitHub, Cloudflare Workers, domain, Supabase URLs, Razorpay live mode, the 15-minute recovery job and the launch smoke test.
 
 ## Testing checklist (Razorpay test mode)
 - [ ] Create a page, upload a file, set it Live, open `/p/<slug>`

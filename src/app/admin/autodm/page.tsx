@@ -23,7 +23,7 @@ export default async function AdminAutodmAccess() {
         <Notice tone="good">AutoDM is open to every Pro creator (AUTODM_OPEN=true). Requests are no longer needed.</Notice>
       ) : (
         <Notice tone="info">
-          For each request: Meta App Dashboard → App roles → Roles → Add people → <b>Testers</b>, enter their Facebook account, then click Mark invited here. They get an email with the accept step. After Meta approves the app, set <code>AUTODM_OPEN=true</code> in Vercel.
+          For each request: Meta App Dashboard → App roles → Roles → Add people → <b>Testers</b>, enter their Facebook account, then click Mark invited here. They get an email with the accept step. After Meta approves the app, set <code>AUTODM_OPEN=true</code> on the Cloudflare Worker.
         </Notice>
       )}
       {!rows.length ? (

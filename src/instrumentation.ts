@@ -4,7 +4,7 @@ import { sentryOptions } from "@/lib/sentry-options";
 // Error tracking on the server. Off until NEXT_PUBLIC_SENTRY_DSN is set, so
 // local development sends nothing. What's collected: src/lib/sentry-options.ts.
 export async function register() {
-  const options = sentryOptions(process.env.VERCEL_ENV);
+  const options = sentryOptions(process.env.NEXT_PUBLIC_APP_ENV);
   if (process.env.NEXT_RUNTIME === "nodejs") {
     Sentry.init({
       ...options,

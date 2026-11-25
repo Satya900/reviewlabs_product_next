@@ -1,0 +1,18 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// The whole Next.js app runs as this one Worker (built by `opennextjs-cloudflare build`).
+	"name": "reviewlabs",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-11-20",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	// Run near Supabase rather than near the visitor: pages make several
+	// database calls each, and those round trips dominate.
+	"placement": { "mode": "smart" },
+	// Resizes and re-encodes imported images (src/lib/media-copy.ts).
+	"images": { "binding": "IMAGES" },
+	"observability": { "enabled": true }
+}
