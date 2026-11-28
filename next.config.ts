@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs/config";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const securityHeaders = [
@@ -46,15 +45,4 @@ const nextConfig: NextConfig = {
 // Gives `next dev` the Cloudflare bindings (Images) from wrangler.jsonc.
 initOpenNextCloudflareForDev();
 
-// Sentry: readable stack traces need source maps, uploaded at build time when
-// SENTRY_AUTH_TOKEN is set (Cloudflare build settings). /monitoring forwards
-// browser error reports to Sentry so ad blockers don't drop them.
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG ?? "veyrnlabs",
-  project: process.env.SENTRY_PROJECT ?? "reviewlabs-nextjs",
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
-  telemetry: false,
-});
+export default nextConfig;

@@ -15,10 +15,7 @@
 	// Resizes and re-encodes imported images (src/lib/media-copy.ts).
 	"images": { "binding": "IMAGES" },
 	"observability": { "enabled": true },
-	// Server settings that aren't secret. Each deploy replaces plain-text variables
-	// with this list, so anything added in the dashboard must be a Secret.
-	"vars": {
-		"EMAIL_FROM": "Reviewlabs <no-reply@reviewlabs.space>",
-		"META_GRAPH_VERSION": "v24.0"
-	}
+	// Every setting and key lives in the Cloudflare dashboard (Variables and
+	// Secrets), none in this repo; deploys keep them.
+	"keep_vars": true
 }

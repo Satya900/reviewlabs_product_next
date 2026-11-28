@@ -77,3 +77,32 @@ export function attributionLabel(a: Pick<Attribution, "source" | "medium" | "cam
   if (!a) return "Direct or unknown";
   return [a.source, a.medium, a.campaign].filter(Boolean).join(" / ");
 }
+
+// What signup saves on the profile: the UTM tags plus the Meta click cookies,
+// read from the signup request.
+export type SignupAttribution = Partial<Attribution> & { fbc?: string; fbp?: string };
+
+function readCookies(cookieHeader: string | null): Record<string, string> {
+  return Object.fromEntries(
+    (cookieHeader ?? "").split(/;\s*/).filter(Boolean).map((c) => {
+      const i = c.indexOf("=");
+      return [c.slice(0, i), safeDecode(c.slice(i + 1))];
+    }),
+  );
+}
+
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+export function signupAttributionFromHeaders(headers: Headers): SignupAttribution | null {
+  const cookies = readCookies(headers.get("cookie"));
+  const a: SignupAttribution = { ...parseAttribution(cookies[ATTR_COOKIE]) };
+  if (cookies[FBC_COOKIE]) a.fbc = cookies[FBC_COOKIE].slice(0, 500);
+  if (cookies._fbp) a.fbp = cookies._fbp.slice(0, 100);
+  return Object.keys(a).length ? a : null;
+}

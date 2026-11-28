@@ -25,25 +25,27 @@ The site runs on Cloudflare Workers through the OpenNext adapter (`wrangler.json
    - **Deploy command:** `npx opennextjs-cloudflare deploy`
    - **Production branch:** `main`
 2. **Never deploy from your laptop.** The build copies every `.env*` file into the Worker, so a local deploy would ship your local secrets and test keys. `npm run deploy` refuses while a `.env` file exists.
-3. **Public settings** (`NEXT_PUBLIC_*`) are committed in `.env.production`. The build bakes them into the pages, and everything in that file reaches the browser, so never put a secret there. Add `NEXT_PUBLIC_META_PIXEL_ID` and `NEXT_PUBLIC_SENTRY_DSN` there too.
-4. **Secrets** go on the Worker: Settings → **Variables and Secrets** → type **Secret** (not Text: each deploy replaces plain-text variables with the `vars` in `wrangler.jsonc`), or `npx wrangler secret put NAME`. `EMAIL_FROM` and `META_GRAPH_VERSION` are already in `wrangler.jsonc`.
+3. **Every setting and key lives in Cloudflare, none in the repo.** Worker → Settings:
+   - **Build → Variables and secrets:** `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. The build needs these three to make the pages.
+   - **Variables and Secrets** (type **Secret**): all of the variables below, including those three again.
 
-| Secret | Value |
+| Variable | Value |
 |---|---|
+| `NEXT_PUBLIC_APP_URL` | `https://reviewlabs.space` |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase → Project settings → API |
+| `SUPABASE_SECRET_KEY` | Supabase → Project settings → API |
 | `ENCRYPTION_KEY` | **The exact value the live site used.** Saved Meta tokens were encrypted with it; a different key makes them unreadable. |
 | `CRON_SECRET` | The value already in the Supabase cron job (`supabase/cron.sql`) |
-| `SUPABASE_SECRET_KEY` | Same as local |
-| `RAZORPAY_KEY_SECRET` | **Live** key secret, matching `NEXT_PUBLIC_RAZORPAY_KEY_ID` in `.env.production` |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | **Live** keys from Razorpay |
 | `RAZORPAY_WEBHOOK_SECRET` | The secret in Razorpay's live webhook (step 5) |
 | `RAZORPAY_PLAN_*_ID` | Plan ids from `node scripts/create-razorpay-plan.mjs` (live mode) |
 | `RESEND_API_KEY` | Resend key |
-| `META_APP_ID`, `META_APP_SECRET`, `META_LOGIN_CONFIG_ID`, `META_CAPI_TOKEN` | From the Meta app and Events Manager |
-
-`SENTRY_AUTH_TOKEN` (for readable stack traces) goes under Settings → **Build → Variables and secrets** instead: it's only used while building.
+| `EMAIL_FROM` | `Reviewlabs <no-reply@reviewlabs.space>` |
+| `META_APP_ID`, `META_APP_SECRET`, `META_LOGIN_CONFIG_ID`, `INSTAGRAM_WEBHOOK_VERIFY_TOKEN`, `META_GRAPH_VERSION` | The Meta app (Instagram AutoDM) |
 
 You don't need `DOWNLOAD_LINK_TTL_DAYS` or `DOWNLOAD_MAX_PER_GRANT`; the defaults are lifetime access and 50 downloads per link.
 
-5. Deploy. When it finishes, open the `*.workers.dev` URL and check the home page loads.
+4. Deploy. When it finishes, open the `*.workers.dev` URL and check the home page loads.
 
 To try a production build locally on the Workers runtime: `npm run preview` (http://localhost:8787, uses your `.env`).
 
