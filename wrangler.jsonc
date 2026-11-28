@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	// The whole Next.js app runs as this one Worker (built by `opennextjs-cloudflare build`).
-	"name": "reviewlabs",
+	"name": "reviewlabs-product-next",
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-11-20",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -14,5 +14,11 @@
 	"placement": { "mode": "smart" },
 	// Resizes and re-encodes imported images (src/lib/media-copy.ts).
 	"images": { "binding": "IMAGES" },
-	"observability": { "enabled": true }
+	"observability": { "enabled": true },
+	// Server settings that aren't secret. Each deploy replaces plain-text variables
+	// with this list, so anything added in the dashboard must be a Secret.
+	"vars": {
+		"EMAIL_FROM": "Reviewlabs <no-reply@reviewlabs.space>",
+		"META_GRAPH_VERSION": "v24.0"
+	}
 }
