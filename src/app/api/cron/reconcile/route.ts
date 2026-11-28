@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { razorpay, type RazorpayPayment } from "@/lib/razorpay";
 import { recordCapturedPayment, runPostPaymentTasks } from "@/lib/fulfilment";
@@ -15,17 +14,9 @@ import { env } from "@/lib/env";
 export const maxDuration = 60;
 
 // Catches anything a missed webhook or a crashed request left behind.
-// Reported to Sentry as a cron monitor: it alerts when a run fails, or when
-// runs stop arriving (e.g. the Supabase pg_cron job or its secret broke).
 export async function GET(request: Request) {
   if (!isAuthorizedCron(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const summary = await Sentry.withMonitor("reconcile", reconcile, {
-    schedule: { type: "crontab", value: "*/15 * * * *" },
-    checkinMargin: 10,
-    maxRuntime: 2,
-    timezone: "UTC",
-  });
-  return NextResponse.json(summary);
+  return NextResponse.json(await reconcile());
 }
 
 async function reconcile() {

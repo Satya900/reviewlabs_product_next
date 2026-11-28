@@ -5,7 +5,6 @@ import { currentTier } from "@/lib/plans";
 import { PlanBanner } from "@/components/plan-banner";
 import { AppShell } from "@/components/app-shell";
 import { canResendVerification } from "@/lib/email-verification";
-import { PlatformPixel } from "@/components/platform-pixel";
 
 const planLabel = { pro: "Pro plan", creator: "Creator plan", trial: "Free trial", none: "No plan" } as const;
 
@@ -30,7 +29,6 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   ];
   return (
     <AppShell label={profile.is_admin ? "Admin" : planLabel[tier]} nav={nav} email={profile.email}>
-      <PlatformPixel pageViews={false} />
       <Suspense>
         {profile.email_verified_at || profile.is_admin ? <VerifiedNotice /> : <VerifyEmailBanner email={profile.email} linkSent={!!profile.verification_sent_at} canResend={canResendVerification(profile.verification_sent_at)} />}
       </Suspense>

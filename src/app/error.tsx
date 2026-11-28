@@ -1,17 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
 import { buttonClass } from "@/components/ui";
 
 // Shown when a page throws. Payments are recorded by webhooks, so a page
 // error never loses an order; the buyer can safely retry or come back.
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
   return (
     <main className="flex min-h-[70vh] items-center justify-center px-5">
       <div className="max-w-md text-center">

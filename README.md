@@ -72,16 +72,13 @@ Each creator enters their Pixel ID under **Dashboard → Settings** (or per page
 | InitiateCheckout | after order created | `/api/checkout` | `ic_<orderId>` |
 | Purchase | success page | webhook / verify | `purchase_<orderId>` |
 
-### 5b. Reviewlabs' own pixel (our ads)
-Set `NEXT_PUBLIC_META_PIXEL_ID` to send our own ad events: PageView on marketing pages (ViewContent on pricing, features and compare), `CompleteRegistration` when a signup's email is verified, `Subscribe` on a Creator subscription's first charge and `Purchase` for Lifetime. Add `META_CAPI_TOKEN` to also send the conversions from the server (deduplicated by event_id, logged in `meta_events`). This pixel never loads on creators' public pages. `META_TEST_EVENT_CODE` is for checking events in Events Manager; remove it before running ads.
-
 ### 6. Run
 ```bash
 npm run dev
 ```
 
 ### 7. Deploy
-See **[DEPLOY.md](DEPLOY.md)** for the full production checklist: GitHub, Vercel, domain, Supabase URLs, Razorpay live mode, the 15-minute recovery job and the launch smoke test.
+See **[DEPLOY.md](DEPLOY.md)** for the full production checklist: GitHub, Cloudflare Workers, domain, Supabase URLs, Razorpay live mode, the 15-minute recovery job and the launch smoke test.
 
 ## Testing checklist (Razorpay test mode)
 - [ ] Create a page, upload a file, set it Live, open `/p/<slug>`

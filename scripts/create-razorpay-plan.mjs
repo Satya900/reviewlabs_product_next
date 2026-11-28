@@ -1,7 +1,7 @@
 // Creates the four subscription plans in Razorpay and prints their ids:
 // Creator ₹799/month and ₹7,990/year, Pro ₹1,999/month and ₹19,990/year (GST included).
 // Run once per mode (test keys, then live keys):  node scripts/create-razorpay-plan.mjs
-// Then set the four RAZORPAY_PLAN_*_ID values (locally in .env, and in Vercel).
+// Then set the four RAZORPAY_PLAN_*_ID values (locally in .env, and on the Cloudflare Worker).
 import fs from "node:fs";
 
 for (const line of fs.existsSync(".env") ? fs.readFileSync(".env", "utf8").split("\n") : []) {

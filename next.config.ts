@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs/config";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
@@ -14,7 +14,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Payment, dashboard and download pages are all per-request, so we keep
   // the classic dynamic rendering model instead of Cache Components.
-  serverExternalPackages: ["razorpay", "sharp"],
+  serverExternalPackages: ["razorpay"],
   // Lets the dev server answer through a Cloudflare quick tunnel (HTTPS testing). Ignored in production.
   allowedDevOrigins: ["*.trycloudflare.com"],
   poweredByHeader: false,
@@ -42,15 +42,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry: readable stack traces need source maps, uploaded at build time when
-// SENTRY_AUTH_TOKEN is set (Vercel only). /monitoring forwards browser error
-// reports to Sentry so ad blockers don't drop them.
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG ?? "veyrnlabs",
-  project: process.env.SENTRY_PROJECT ?? "reviewlabs-nextjs",
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
-  telemetry: false,
-});
+// Gives `next dev` the Cloudflare bindings (Images) from wrangler.jsonc.
+initOpenNextCloudflareForDev();
+
+export default nextConfig;

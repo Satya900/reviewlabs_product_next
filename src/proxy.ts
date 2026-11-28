@@ -21,7 +21,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*", "/admin/:path*", "/invoices/:path*", "/login", "/signup", "/forgot-password", "/reset-password", "/auth/:path*",
     // Any page opened from an ad or a tagged link (homepage, pricing, ...).
-    { source: "/((?!api|_next/static|_next/image|monitoring|favicon.ico|sitemap.xml|robots.txt).*)", has: [{ type: "query", key: "fbclid" }] },
-    { source: "/((?!api|_next/static|_next/image|monitoring|favicon.ico|sitemap.xml|robots.txt).*)", has: [{ type: "query", key: "utm_source" }] },
+    { source: "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)", has: [{ type: "query", key: "fbclid" }] },
+    { source: "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)", has: [{ type: "query", key: "utm_source" }] },
   ],
 };

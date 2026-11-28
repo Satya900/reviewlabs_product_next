@@ -16,39 +16,56 @@ Follow these in order. Each step says where to do it and what to check.
 
 ---
 
-## 2. Create the Vercel project
+## 2. Create the Cloudflare Worker
 
-1. Vercel → **Add New → Project** → import the GitHub repo. Framework: **Next.js** (auto-detected). Leave build settings as they are.
-2. Before the first deploy, open **Environment Variables** and add every variable below for **Production** (and Preview if you use it).
+The site runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`). It needs the **Workers Paid** plan ($5/month): the free plan's 10 ms CPU limit per request is too low for server-rendered pages.
+
+1. Cloudflare → **Workers & Pages → Create → Import a repository** → pick the GitHub repo.
+   - **Build command:** `npx opennextjs-cloudflare build`
+   - **Deploy command:** `npx opennextjs-cloudflare deploy`
+   - **Production branch:** `main`
+2. **Never deploy from your laptop.** The build copies every `.env*` file into the Worker, so a local deploy would ship your local secrets and test keys. `npm run deploy` refuses while a `.env` file exists.
+3. **Every setting and key lives in Cloudflare, none in the repo.** Worker → Settings:
+   - **Build → Variables and secrets:** `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. The build needs these three to make the pages.
+   - **Variables and Secrets** (type **Secret**): all of the variables below, including those three again.
 
 | Variable | Value |
 |---|---|
 | `NEXT_PUBLIC_APP_URL` | `https://reviewlabs.space` |
-| `ENCRYPTION_KEY` | **The exact same value as your local `.env`.** Saved Meta tokens were encrypted with it; a different key makes them unreadable. |
-| `CRON_SECRET` | A new random value: `openssl rand -hex 32` |
-| `NEXT_PUBLIC_SUPABASE_URL` | Same as local |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Same as local |
-| `SUPABASE_SECRET_KEY` | Same as local |
-| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | **Live** key id (`rzp_live_…`), see step 5. Use the test key until Razorpay activates live mode. |
-| `RAZORPAY_KEY_SECRET` | **Live** key secret |
-| `RAZORPAY_WEBHOOK_SECRET` | A new random value, also entered in Razorpay's live webhook (step 5) |
-| `RAZORPAY_PLAN_MONTHLY_ID` / `RAZORPAY_PLAN_YEARLY_ID` | Creator plan ids (₹299 monthly, ₹2,999 yearly) from `node scripts/create-razorpay-plan.mjs`. Test and live mode each need their own pair. |
-| `RESEND_API_KEY` | A **new** Resend key (the old one was shared in chat, so rotate it) |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase → Project settings → API |
+| `SUPABASE_SECRET_KEY` | Supabase → Project settings → API |
+| `ENCRYPTION_KEY` | **The exact value the live site used.** Saved Meta tokens were encrypted with it; a different key makes them unreadable. |
+| `CRON_SECRET` | The value already in the Supabase cron job (`supabase/cron.sql`) |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | **Live** keys from Razorpay |
+| `RAZORPAY_WEBHOOK_SECRET` | The secret in Razorpay's live webhook (step 5) |
+| `RAZORPAY_PLAN_*_ID` | Plan ids from `node scripts/create-razorpay-plan.mjs` (live mode) |
+| `RESEND_API_KEY` | Resend key |
 | `EMAIL_FROM` | `Reviewlabs <no-reply@reviewlabs.space>` |
-| `META_GRAPH_VERSION` | `v24.0` |
+| `META_APP_ID`, `META_APP_SECRET`, `META_LOGIN_CONFIG_ID`, `INSTAGRAM_WEBHOOK_VERIFY_TOKEN`, `META_GRAPH_VERSION` | The Meta app (Instagram AutoDM) |
 
 You don't need `DOWNLOAD_LINK_TTL_DAYS` or `DOWNLOAD_MAX_PER_GRANT`; the defaults are lifetime access and 50 downloads per link.
 
-3. Click **Deploy**. When it finishes, open the `*.vercel.app` URL and check the home page loads.
+4. Deploy. When it finishes, open the `*.workers.dev` URL and check the home page loads.
+
+To try a production build locally on the Workers runtime: `npm run preview` (http://localhost:8787, uses your `.env`).
 
 ---
 
 ## 3. Connect the domain
 
-1. Vercel → Project → **Settings → Domains** → add `reviewlabs.space`, and also `www.reviewlabs.space` set to redirect to the apex.
-2. Vercel shows the DNS records to add at your domain registrar (usually an `A` record to `76.76.21.21` for the apex and a `CNAME` to `cname.vercel-dns.com` for `www`).
-3. **Do not delete the Resend DNS records** (`resend._domainkey`, the `send` subdomain MX and TXT records). Email stops working without them.
-4. Wait until Vercel shows the domain as **Valid** with HTTPS, then open https://reviewlabs.space.
+The domain's DNS has to live on Cloudflare for the Worker to serve it.
+
+1. Cloudflare → **Add a domain** → `reviewlabs.space` (Free plan is fine for DNS).
+2. **Before switching nameservers**, make sure every existing record is in Cloudflare's DNS list. Cloudflare imports most of them; check these by hand, set to **DNS only** (grey cloud):
+   - `resend._domainkey` TXT (Resend DKIM)
+   - `send` MX → `feedback-smtp.ap-northeast-1.amazonses.com` (priority 10)
+   - `send` TXT → `v=spf1 include:amazonses.com ~all`
+   - any Meta or Google verification TXT records
+
+   Email stops working without the Resend records.
+3. Worker → Settings → **Domains & Routes → Add → Custom domain** → `reviewlabs.space`. Add `www.reviewlabs.space` too, and a **Redirect Rule** sending `www` to the apex.
+4. At the registrar (Hostinger), replace the nameservers with the two Cloudflare shows.
+5. Wait until Cloudflare shows the domain as **Active**, then open https://reviewlabs.space.
 
 ---
 
@@ -82,24 +99,23 @@ Custom SMTP through Resend and the email rate limit were set up earlier.
    - https://reviewlabs.space/contact
    - https://reviewlabs.space/pricing
 2. Once activated, switch the dashboard to **Live mode** and:
-   - **Settings → API Keys →** generate live keys and put them in Vercel (`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
+   - **Settings → API Keys →** generate live keys and put them in the Worker (`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
    - **Settings → Payment capture →** Automatic.
-   - **Settings → Webhooks → Add:** URL `https://reviewlabs.space/api/webhooks/razorpay`, the secret = `RAZORPAY_WEBHOOK_SECRET` from Vercel, and the events `payment.captured`, `payment.authorized`, `payment.failed`, `order.paid`, `refund.created`, `refund.processed`, `refund.failed`, plus the subscription events `subscription.authenticated`, `subscription.activated`, `subscription.charged`, `subscription.pending`, `subscription.halted`, `subscription.cancelled`, `subscription.completed`, `subscription.resumed`.
-   - **Creator plan:** with the live keys in your local `.env`, run `node scripts/create-razorpay-plan.mjs` and put the two printed ids in Vercel as `RAZORPAY_PLAN_MONTHLY_ID` and `RAZORPAY_PLAN_YEARLY_ID`.
+   - **Settings → Webhooks → Add:** URL `https://reviewlabs.space/api/webhooks/razorpay`, the secret = `RAZORPAY_WEBHOOK_SECRET` from the Worker, and the events `payment.captured`, `payment.authorized`, `payment.failed`, `order.paid`, `refund.created`, `refund.processed`, `refund.failed`, plus the subscription events `subscription.authenticated`, `subscription.activated`, `subscription.charged`, `subscription.pending`, `subscription.halted`, `subscription.cancelled`, `subscription.completed`, `subscription.resumed`.
+   - **Creator plan:** with the live keys in your local `.env`, run `node scripts/create-razorpay-plan.mjs` and put the printed ids in the Worker as `RAZORPAY_PLAN_MONTHLY_ID` and `RAZORPAY_PLAN_YEARLY_ID`.
    - **Subscriptions** must be enabled on your Razorpay account (Dashboard → Subscriptions). Ask Razorpay support if the menu isn't there.
    - Optional: **Settings → Branding →** upload `src/assets/logo-mark.svg` (as a PNG if it asks) so buyers see the logo in the payment popup.
-3. Vercel → **Deployments → Redeploy** so the new keys take effect.
+3. Redeploy (Worker → **Deployments**, or push to `main`) so the new keys take effect.
 
 Test-mode and live-mode webhooks are separate in Razorpay. Add the live one even if a test one exists.
 
 ---
 
-## 6. Fast recovery job (every 15 minutes)
+## 6. Recovery job (every 15 minutes)
 
-Vercel's free plan only runs crons daily (`vercel.json` reconciles once a day at 2 am IST).
-For 15-minute recovery of missed payments:
+Supabase calls `/api/cron/reconcile` every 15 minutes to recover missed payments and send pending emails. To set it up:
 1. Supabase → **Database → Extensions** → enable **pg_cron** and **pg_net**.
-2. Open `supabase/cron.sql`, replace `PASTE_CRON_SECRET_HERE` with the `CRON_SECRET` from Vercel, and run it in the SQL editor.
+2. Open `supabase/cron.sql`, replace `PASTE_CRON_SECRET_HERE` with the Worker `CRON_SECRET`, and run it in the SQL editor.
 3. A few minutes later, run `select status_code from net._http_response order by created desc limit 3;`. You should see `200`.
 
 ---
@@ -125,4 +141,4 @@ For 15-minute recovery of missed payments:
 - **New creators** sign up themselves at `/signup` and start on Free. Admin → a creator → **Grant Creator** gives a free period without a subscription.
 - **Payouts:** Admin → Creators → a creator → pay them by UPI or bank → **Record payout** with the UTR.
 - **Creator plan billing** runs through Razorpay Subscriptions. Renewals, failures and cancellations update accounts automatically, with the reconcile job as a safety net.
-- **Logs:** Vercel → Project → **Logs**. Payment problems show up there, and in the `webhook_events` and `meta_events` tables.
+- **Logs:** Cloudflare → Worker → **Observability** (or `npx wrangler tail`). Payment problems show up there, and in the `webhook_events` and `meta_events` tables.
